@@ -52,6 +52,10 @@ img{max-width:100%}
 .state button{margin-top:10px}
 .sec{grid-column:1/-1;margin:14px 0 0;padding:8px 14px;background:var(--paper);border:2.5px solid var(--ink);border-radius:12px;font-family:var(--display);font-size:17px;color:var(--red)}
 .sec small{font-family:var(--body);font-weight:400;font-size:13px;color:var(--muted)}
+.sec.ok{color:var(--ink);margin-top:4px}
+.price s{font-family:var(--body);font-weight:400;font-size:12px;color:var(--muted);margin-right:5px}
+.deal{font-size:12px;font-weight:600;color:var(--pink-deep)}
+.promo{margin:0;background:var(--pink);border:2.5px solid var(--ink);border-radius:12px;padding:8px 14px;font-family:var(--display);font-weight:700;text-align:center}
 .desc{margin:0;font-size:13px;color:var(--muted)}
 
 .cartbar{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:3px solid var(--ink);z-index:5}
@@ -97,6 +101,7 @@ img{max-width:100%}
     <div class="bar"><input id="q" type="search" placeholder="ค้นหาสินค้า" aria-label="ค้นหาสินค้า"><i></i><i></i></div>
     <label class="opt-row"><input type="checkbox" id="instock"> แสดงเฉพาะสินค้าที่มีของ</label>
   </header>
+  <p class="promo" id="promo" hidden></p>
   <main class="grid" id="grid"><div class="state">กำลังโหลดสินค้า...</div></main>
 </div>
 
@@ -109,8 +114,10 @@ img{max-width:100%}
 /* ================= ตั้งค่า ================= */
 const CONFIG = {
   API_URL: "https://ponpon-shop-api.workwithjariya.workers.dev/",
-  LIFF_ID: "2011930315-gkrgcbEk",                 // ใส่ LIFF ID หลังสร้าง LIFF แล้ว เช่น "2007286734-AbCdEfGh"
+  LIFF_ID: "2011930315-gkrgcbEk",
   OA_ID: "@ponponco",          // ไอดี LINE OA ของ PonPon
+  SHOP_URL: "shop.json",       // โปรโมชัน ส่วนลด และสินค้าขายดี แก้ได้ในไฟล์ shop.json
+  CONFIRM_TEXT: "ยืนยันคำสั่งซื้อ", // ข้อความที่ส่งต่อท้ายออเดอร์ ใช้เป็นคีย์เวิร์ดตอบกลับอัตโนมัติ
   NAMES_URL: "names.json",   // ชื่อสั้นสำหรับหน้าร้าน แก้ได้ในไฟล์ names.json
   GROUP_LEN: 7,                // SKU กี่ตัวแรกที่ถือเป็นสินค้าเดียวกัน
   IMAGE_DIR: "images/"         // โฟลเดอร์รูปบน GitHub: images/PP00383.jpg (รูปหลัก) หรือ images/PP00383BK26001.jpg (รูปของตัวเลือก)
@@ -136,7 +143,7 @@ function buildProducts(rows){
     const name = (r.name || "").trim(), m = name.match(RE_PAREN);
     if (!map.has(id)) map.set(id, {id, variants: []});
     map.get(id).variants.push({
-      sku: r.sku, price: r.price, stock: r.stock, image: r.image, cat: r.category || "อื่นๆ",
+      sku: r.sku, price: r.price, orig: r.orig || r.price, stock: r.stock, image: r.image, cat: r.category || "อื่นๆ",
       base: m ? m[1].trim() : name, label: m ? m[2].trim() : "",
       mid: r.sku.slice(CONFIG.GROUP_LEN).replace(/-?\d+$/, "")
     });
@@ -160,25 +167,36 @@ function buildProducts(rows){
     p.stock = p.variants.reduce((a, v) => a + v.stock, 0);
     const prices = p.variants.map(v => v.price);
     p.price = Math.min(...prices); p.multiPrice = Math.max(...prices) > p.price;
+    p.orig = Math.min(...p.variants.map(v => v.orig));
     p.search = (p.name + " " + p.id + " " + p.variants.map(v => v.label).join(" ")).toLowerCase();
     list.push(p);
   }
   return list.sort((a, b) => (b.stock > 0) - (a.stock > 0) || b.id.localeCompare(a.id));
 }
 
+let SHOP = {promoText: "", discountPercent: 0, bestSellers: [], newCount: 8};
+const linePrice = n => n > 0 && SHOP.discountPercent > 0 ? Math.max(1, Math.round(n * (100 - SHOP.discountPercent) / 100)) : n;
 let PRODUCTS = [], bySku = new Map(), cat = "ทั้งหมด", sel = null, qty = 1, sending = false;
 const cart = new Map();
 try { for (const [k, v] of JSON.parse(localStorage.getItem("ponpon-cart") || "[]")) cart.set(k, v); } catch (e) {}
 const saveCart = () => { try { localStorage.setItem("ponpon-cart", JSON.stringify([...cart])); } catch (e) {} };
 
 async function load(){
-  const [res, names] = await Promise.all([
+  const opt = url => fetch(url, {cache: "no-cache"}).then(r => r.ok ? r.json() : {}).catch(() => ({}));
+  const [res, names, shop] = await Promise.all([
     fetch(CONFIG.API_URL, {cache: "no-store"}),
-    fetch(CONFIG.NAMES_URL, {cache: "no-cache"}).then(r => r.ok ? r.json() : {}).catch(() => ({}))
+    opt(CONFIG.NAMES_URL), opt(CONFIG.SHOP_URL)
   ]);
   const data = await res.json();
   if (!Array.isArray(data.products)) throw new Error("no products");
-  PRODUCTS = buildProducts(data.products);
+  SHOP = {
+    promoText: String(shop.promoText || ""),
+    discountPercent: Math.min(90, Math.max(0, Number(shop.discountPercent) || 0)),
+    bestSellers: Array.isArray(shop.bestSellers) ? shop.bestSellers : [],
+    newCount: Number.isFinite(Number(shop.newCount)) ? Number(shop.newCount) : 8
+  };
+  $("promo").textContent = SHOP.promoText; $("promo").hidden = !SHOP.promoText;
+  PRODUCTS = buildProducts(data.products.map(r => ({...r, orig: r.price, price: linePrice(r.price)})));
   for (const p of PRODUCTS){ p.title = names[p.id] || p.name; p.search += " " + p.title.toLowerCase(); }
   bySku = new Map();
   for (const p of PRODUCTS) for (const v of p.variants) bySku.set(v.sku, {p, v});
@@ -207,13 +225,21 @@ function renderGrid(){
       <span class="pic">${img([CONFIG.IMAGE_DIR + p.id + ".jpg", p.variants[0].image], p.title)}</span>
       <span class="info">
         <span class="name">${esc(p.title)}</span>
-        <span class="price">${p.multiPrice ? "<small>เริ่ม </small>" : ""}${baht(p.price)}</span>
+        <span class="price">${p.orig > p.price ? `<s>${p.orig.toLocaleString("th-TH")}</s>` : ""}${p.multiPrice ? "<small>เริ่ม </small>" : ""}${baht(p.price)}</span>
         <span class="meta">${p.stock ? `เหลือ ${p.stock.toLocaleString("th-TH")} ชิ้น` : `<span class="out">สินค้าหมด</span>`}${p.variants.length > 1 ? ` · ${p.variants.length} ตัวเลือก` : ""}</span>
       </span>
     </button>`;
   const have = list.filter(p => p.stock > 0), sold = list.filter(p => !p.stock);
+  let top = "";
+  if (cat === "ทั้งหมด" && !q){
+    const best = SHOP.bestSellers.map(id => PRODUCTS.find(p => p.id === id)).filter(p => p && p.stock > 0);
+    const fresh = [...have].sort((a, b) => b.id.localeCompare(a.id)).slice(0, SHOP.newCount);
+    if (best.length) top += `<h2 class="sec ok">ขายดี</h2>` + best.map(card).join("");
+    if (fresh.length) top += `<h2 class="sec ok">มาใหม่</h2>` + fresh.map(card).join("");
+    if (top) top += `<h2 class="sec ok">สินค้าทั้งหมด</h2>`;
+  }
   $("grid").innerHTML = list.length
-    ? have.map(card).join("") + (sold.length ? `<h2 class="sec">สินค้าหมด <small>${sold.length} รายการ</small></h2>` + sold.map(card).join("") : "")
+    ? top + have.map(card).join("") + (sold.length ? `<h2 class="sec">สินค้าหมด <small>${sold.length} รายการ</small></h2>` + sold.map(card).join("") : "")
     : `<div class="state">ไม่พบสินค้า ลองพิมพ์คำอื่นหรือเลือกหมวดอื่น</div>`;
 }
 function renderCartBar(){
@@ -239,7 +265,8 @@ function showProduct(id, sku){
   openSheet(`
     <div class="head"><h2>${esc(p.title)}</h2>${closeBtn}</div>
     <div class="detail"><span class="pic">${img([CONFIG.IMAGE_DIR + v.sku + ".jpg", v.image, CONFIG.IMAGE_DIR + p.id + ".jpg"], p.name)}</span>
-      <div><div class="price">${baht(v.price)}</div>
+      <div><div class="price">${v.orig > v.price ? `<s>${v.orig.toLocaleString("th-TH")}</s>` : ""}${baht(v.price)}</div>
+      ${v.orig > v.price ? `<div class="deal">ราคาพิเศษ LINE ลด ${SHOP.discountPercent}%</div>` : ""}
       <div>${v.stock ? `เหลือ <b>${v.stock.toLocaleString("th-TH")}</b> ชิ้น` : `<span class="out">สินค้าหมด</span>`}</div>
       <div class="sku">${esc(v.sku)}</div></div></div>
     ${options}
@@ -276,7 +303,7 @@ function orderText(){
     const nm = p.title.length > 45 ? p.title.slice(0, 45) + "…" : p.title;
     return `${i}. ${nm}${v.label ? " [" + v.label + "]" : ""}\n    ${sku} x${k} = ${baht(k * v.price)}`;
   });
-  return `🛒 สั่งซื้อสินค้า\n${rows.join("\n")}\n\nรวม ${n} ชิ้น ${baht(total)}`;
+  return `🛒 สั่งซื้อสินค้า\n${rows.join("\n")}\n\nรวม ${n} ชิ้น ${baht(total)}${SHOP.discountPercent > 0 ? "\n(ราคาพิเศษ LINE ลด " + SHOP.discountPercent + "%)" : ""}`;
 }
 /* เช็กสต็อกล่าสุดก่อนส่ง แล้วส่งข้อความเข้าแชตในนามลูกค้า */
 async function placeOrder(){
@@ -294,7 +321,7 @@ async function placeOrder(){
   const text = orderText();
   if (CONFIG.LIFF_ID && window.liff && liff.isInClient()){
     try {
-      await liff.sendMessages([{type: "text", text}]);
+      await liff.sendMessages([{type: "text", text}, {type: "text", text: CONFIG.CONFIRM_TEXT}]);
       cart.clear(); saveCart(); sending = false;
       return liff.closeWindow();
     } catch (e) {}
