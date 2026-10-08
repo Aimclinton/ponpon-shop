@@ -4,8 +4,8 @@
     { "title": "ลดพิเศษ 20% ส่งฟรีทุกออเดอร์", "button": "ช้อปเลย!", "color": "red", "action": "products" }
   ],
   "discountPercent": 20,
-  "shippingFee": 0,
-  "freeShippingOver": 0,
+  "shippingFee": 50,
+  "freeShippingOver": 50,
   "coupons": [
     { "code": "PP1010", "title": "แคมเปญ 10.10 ลด 30%", "type": "percent", "value": 30, "min": 300, "max": 500, "expires": "2026-10-12" },
     { "code": "PONPO30", "title": "ส่วนลดสำหรับลูกค้าเก่า", "type": "amount", "value": 30, "min": 100, "expires": "" },
