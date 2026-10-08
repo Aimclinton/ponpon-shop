@@ -1,6 +1,6 @@
 {
-  "promoText": "",
-  "discountPercent": 0,
-  "bestSellers": [],
+  "promoText": "ซื้อผ่าน LINE ลดทันที 10% ส่งฟรี ทุกรายการ",
+  "discountPercent": 10,
+  "bestSellers": ["PP00383", "PP00194", "PP00376"],
   "newCount": 8
 }
