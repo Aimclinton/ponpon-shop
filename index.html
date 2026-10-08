@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mali:wght@500;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600&display=swap">
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <style>
 :root{
   --sky:#dcefff; --cream:#fff3dc; --paper:#fffdf8; --ink:#3b3b40; --muted:#716e78;
@@ -56,6 +57,23 @@ img{max-width:100%}
 .price s{font-family:var(--body);font-weight:400;font-size:12px;color:var(--muted);margin-right:5px}
 .deal{font-size:12px;font-weight:600;color:var(--pink-deep)}
 .promo{margin:0;background:var(--pink);border:2.5px solid var(--ink);border-radius:12px;padding:8px 14px;font-family:var(--display);font-weight:700;text-align:center}
+.cell{position:relative;display:flex;min-width:0}
+.cell .card{width:100%}
+.fav{position:absolute;top:8px;right:8px;width:36px;height:36px;padding:0;border:2.5px solid var(--ink);border-radius:50%;background:var(--paper);color:var(--pink-deep);font-size:17px;line-height:1}
+.row2{display:flex;gap:8px}
+.row2 .btn{flex:1;font-size:14px;padding:8px 10px}
+.user{display:flex;align-items:center;gap:8px;font-size:13px}
+.user img{width:28px;height:28px;border-radius:50%;border:2px solid var(--ink);object-fit:cover}
+.tot{display:flex;flex-direction:column;gap:4px;background:var(--cream);border:2.5px solid var(--ink);border-radius:12px;padding:10px 14px;font-variant-numeric:tabular-nums}
+.tot > div{display:flex;justify-content:space-between;gap:12px}
+.fld{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.fld input,.fld textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:2.5px solid var(--ink);border-radius:12px;padding:9px 12px;width:100%;resize:vertical}
+.pay{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;border:2.5px solid var(--ink);border-radius:12px;padding:12px}
+.pay .label{margin:0;align-self:flex-start}
+.qr{width:200px;max-width:100%;background:#fff;border-radius:8px}
+.qr svg{display:block;width:100%;height:auto}
+.payline{font-weight:600}
+.paytext{margin:0;white-space:pre-wrap}
 .desc{margin:0;font-size:13px;color:var(--muted)}
 
 .cartbar{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:3px solid var(--ink);z-index:5}
@@ -97,6 +115,7 @@ img{max-width:100%}
 <div class="wrap">
   <header class="win">
     <h1>PonPon ช้อปเลย!<small>เลือกสินค้า ใส่ตะกร้า แล้วส่งออเดอร์ให้แอดมินในแชต</small></h1>
+    <div class="user" id="user" hidden></div>
     <div class="tabs" id="tabs"></div>
     <div class="bar"><input id="q" type="search" placeholder="ค้นหาสินค้า" aria-label="ค้นหาสินค้า"><i></i><i></i></div>
     <label class="opt-row"><input type="checkbox" id="instock"> แสดงเฉพาะสินค้าที่มีของ</label>
@@ -174,9 +193,17 @@ function buildProducts(rows){
   return list.sort((a, b) => (b.stock > 0) - (a.stock > 0) || b.id.localeCompare(a.id));
 }
 
-let SHOP = {promoText: "", discountPercent: 0, bestSellers: [], newCount: 8};
+let SHOP = {promoText: "", discountPercent: 0, bestSellers: [], newCount: 8, shippingFee: null, freeShippingOver: 0, payment: {promptpayId: "", accountName: "", text: ""}, saveUrl: ""};
 const linePrice = n => n > 0 && SHOP.discountPercent > 0 ? Math.max(1, Math.round(n * (100 - SHOP.discountPercent) / 100)) : n;
 let PRODUCTS = [], bySku = new Map(), cat = "ทั้งหมด", sel = null, qty = 1, sending = false;
+const FAV = "♥ ถูกใจ";
+const favs = new Set();
+try { for (const id of JSON.parse(localStorage.getItem("ponpon-fav") || "[]")) favs.add(id); } catch (e) {}
+function toggleFav(id){
+  if (favs.has(id)) favs.delete(id); else favs.add(id);
+  try { localStorage.setItem("ponpon-fav", JSON.stringify([...favs])); } catch (e) {}
+  toast(favs.has(id) ? "เพิ่มในรายการถูกใจแล้ว" : "นำออกจากรายการถูกใจแล้ว");
+}
 const cart = new Map();
 try { for (const [k, v] of JSON.parse(localStorage.getItem("ponpon-cart") || "[]")) cart.set(k, v); } catch (e) {}
 const saveCart = () => { try { localStorage.setItem("ponpon-cart", JSON.stringify([...cart])); } catch (e) {} };
@@ -193,7 +220,11 @@ async function load(){
     promoText: String(shop.promoText || ""),
     discountPercent: Math.min(90, Math.max(0, Number(shop.discountPercent) || 0)),
     bestSellers: Array.isArray(shop.bestSellers) ? shop.bestSellers : [],
-    newCount: Number.isFinite(Number(shop.newCount)) ? Number(shop.newCount) : 8
+    newCount: Number.isFinite(Number(shop.newCount)) ? Number(shop.newCount) : 8,
+    shippingFee: shop.shippingFee === null || shop.shippingFee === undefined || shop.shippingFee === "" ? null : Math.max(0, Number(shop.shippingFee) || 0),
+    freeShippingOver: Math.max(0, Number(shop.freeShippingOver) || 0),
+    payment: {promptpayId: String((shop.payment || {}).promptpayId || ""), accountName: String((shop.payment || {}).accountName || ""), text: String((shop.payment || {}).text || "")},
+    saveUrl: String(shop.saveUrl || "")
   };
   $("promo").textContent = SHOP.promoText; $("promo").hidden = !SHOP.promoText;
   PRODUCTS = buildProducts(data.products.map(r => ({...r, orig: r.price, price: linePrice(r.price)})));
@@ -214,21 +245,21 @@ document.addEventListener("error", e => {
 }, true);
 
 function renderTabs(){
-  const cats = ["ทั้งหมด", ...new Set(PRODUCTS.map(p => p.cat))];
+  const cats = ["ทั้งหมด", FAV, ...new Set(PRODUCTS.map(p => p.cat))];
   $("tabs").innerHTML = cats.map(c => `<button class="tab" type="button" data-cat="${esc(c)}" aria-pressed="${c === cat}">${esc(c)}</button>`).join("");
 }
 function renderGrid(){
   const q = $("q").value.trim().toLowerCase(), only = $("instock").checked;
-  const list = PRODUCTS.filter(p => (cat === "ทั้งหมด" || p.cat === cat) && (!only || p.stock > 0) && (!q || p.search.includes(q)));
+  const list = PRODUCTS.filter(p => (cat === "ทั้งหมด" || (cat === FAV ? favs.has(p.id) : p.cat === cat)) && (!only || p.stock > 0) && (!q || p.search.includes(q)));
   const card = p => `
-    <button class="card${p.stock ? "" : " sold"}" type="button" data-id="${esc(p.id)}">
+    <div class="cell"><button class="card${p.stock ? "" : " sold"}" type="button" data-id="${esc(p.id)}">
       <span class="pic">${img([CONFIG.IMAGE_DIR + p.id + ".jpg", p.variants[0].image], p.title)}</span>
       <span class="info">
         <span class="name">${esc(p.title)}</span>
         <span class="price">${p.orig > p.price ? `<s>${p.orig.toLocaleString("th-TH")}</s>` : ""}${p.multiPrice ? "<small>เริ่ม </small>" : ""}${baht(p.price)}</span>
         <span class="meta">${p.stock ? `เหลือ ${p.stock.toLocaleString("th-TH")} ชิ้น` : `<span class="out">สินค้าหมด</span>`}${p.variants.length > 1 ? ` · ${p.variants.length} ตัวเลือก` : ""}</span>
       </span>
-    </button>`;
+    </button><button class="fav" type="button" data-fav="${esc(p.id)}" aria-pressed="${favs.has(p.id)}" aria-label="ถูกใจ">${favs.has(p.id) ? "♥" : "♡"}</button></div>`;
   const have = list.filter(p => p.stock > 0), sold = list.filter(p => !p.stock);
   let top = "";
   if (cat === "ทั้งหมด" && !q){
@@ -240,7 +271,7 @@ function renderGrid(){
   }
   $("grid").innerHTML = list.length
     ? top + have.map(card).join("") + (sold.length ? `<h2 class="sec">สินค้าหมด <small>${sold.length} รายการ</small></h2>` + sold.map(card).join("") : "")
-    : `<div class="state">ไม่พบสินค้า ลองพิมพ์คำอื่นหรือเลือกหมวดอื่น</div>`;
+    : `<div class="state">${cat === FAV && !q ? "ยังไม่มีสินค้าที่ถูกใจ กดรูปหัวใจบนสินค้าเพื่อเก็บไว้ดูทีหลังได้เลย" : "ไม่พบสินค้า ลองพิมพ์คำอื่นหรือเลือกหมวดอื่น"}</div>`;
 }
 function renderCartBar(){
   let n = 0, total = 0;
@@ -269,6 +300,10 @@ function showProduct(id, sku){
       ${v.orig > v.price ? `<div class="deal">ราคาพิเศษ LINE ลด ${SHOP.discountPercent}%</div>` : ""}
       <div>${v.stock ? `เหลือ <b>${v.stock.toLocaleString("th-TH")}</b> ชิ้น` : `<span class="out">สินค้าหมด</span>`}</div>
       <div class="sku">${esc(v.sku)}</div></div></div>
+    <div class="row2">
+      <button class="btn ghost" type="button" data-act="fav" aria-pressed="${favs.has(p.id)}">${favs.has(p.id) ? "♥ ถูกใจแล้ว" : "♡ ถูกใจ"}</button>
+      <button class="btn ghost" type="button" data-act="share">แชร์สินค้า</button>
+    </div>
     ${options}
     ${p.title !== p.name ? `<p class="desc">${esc(p.name)}</p>` : ""}
     <div><div class="label">จำนวน</div><div class="qty">
@@ -293,17 +328,92 @@ function showCart(notice){
     ${notice ? `<p class="warn">${esc(notice)}</p>` : ""}
     <div>${lines}</div>
     <div class="sum"><span>รวม ${n} ชิ้น</span><span>${baht(total)}</span></div>
-    <button class="btn" type="button" data-act="order">ส่งออเดอร์ให้แอดมิน</button>
+    <button class="btn" type="button" data-act="checkout">ดำเนินการสั่งซื้อ</button>
     <button class="btn ghost" type="button" data-act="close">เลือกสินค้าต่อ</button>`, "cart");
 }
+/* ---------- สรุปยอด ค่าส่ง ที่อยู่ และการชำระเงิน ---------- */
+let draft = {name: "", phone: "", address: "", note: "", remember: true};
+try { Object.assign(draft, JSON.parse(localStorage.getItem("ponpon-customer") || "{}")); } catch (e) {}
+function totals(){
+  let goods = 0, n = 0;
+  for (const [sku, k] of cart){ goods += k * bySku.get(sku).v.price; n += k; }
+  const ship = SHOP.shippingFee === null ? null : (SHOP.freeShippingOver > 0 && goods >= SHOP.freeShippingOver ? 0 : SHOP.shippingFee);
+  return {goods, n, ship, total: goods + (ship || 0)};
+}
+const shipLabel = ship => ship === null ? "แอดมินแจ้งในแชต" : ship === 0 ? "ฟรี" : baht(ship);
+/* สร้างข้อความ QR พร้อมเพย์ตามมาตรฐาน EMVCo (ใส่ยอดเงินได้) */
+function promptpayPayload(id, amount){
+  const d = String(id || "").replace(/\D/g, ""); if (![10, 13, 15].includes(d.length)) return "";
+  const f = (t, v) => t + String(v.length).padStart(2, "0") + v;
+  const acct = d.length === 10 ? f("01", "0066" + d.slice(1)) : d.length === 13 ? f("02", d) : f("03", d);
+  const body = f("00", "01") + f("01", amount ? "12" : "11") + f("29", f("00", "A000000677010111") + acct) + f("58", "TH") + f("53", "764") + (amount ? f("54", amount.toFixed(2)) : "") + "6304";
+  let crc = 0xFFFF;
+  for (const ch of body){ crc ^= ch.charCodeAt(0) << 8; for (let i = 0; i < 8; i++) crc = crc & 0x8000 ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF; }
+  return body + crc.toString(16).toUpperCase().padStart(4, "0");
+}
+function promptpayQR(amount){
+  const payload = promptpayPayload(SHOP.payment.promptpayId, amount);
+  if (!payload || typeof qrcode !== "function") return "";
+  try { const q = qrcode(0, "M"); q.addData(payload); q.make(); return q.createSvgTag({cellSize: 4, margin: 2, scalable: true}); } catch (e) { return ""; }
+}
+function showCheckout(error){
+  const t = totals(); if (!t.n) return showCart();
+  const pay = SHOP.payment, qr = promptpayQR(t.ship === null ? 0 : t.total);
+  const payBox = qr || pay.text ? `<div class="pay"><div class="label">ช่องทางชำระเงิน</div>
+      ${qr ? `<div class="qr">${qr}</div><div class="payline">สแกนจ่ายด้วยพร้อมเพย์${t.ship === null ? "" : " " + baht(t.total)}${pay.accountName ? "<br>ชื่อบัญชี " + esc(pay.accountName) : ""}</div>` : ""}
+      ${pay.text ? `<p class="paytext">${esc(pay.text)}</p>` : ""}
+      <p class="desc">โอนแล้วส่งสลิปในแชตได้เลยค่ะ</p></div>` : "";
+  openSheet(`
+    <div class="head"><h2>ที่อยู่จัดส่งและชำระเงิน</h2>${closeBtn}</div>
+    ${error ? `<p class="warn">${esc(error)}</p>` : ""}
+    <div class="tot">
+      <div><span>ค่าสินค้า ${t.n} ชิ้น</span><span>${baht(t.goods)}</span></div>
+      <div><span>ค่าจัดส่ง</span><span>${shipLabel(t.ship)}</span></div>
+      <div class="sum"><span>${t.ship === null ? "ยอดสินค้า" : "ยอดชำระ"}</span><span>${baht(t.total)}</span></div>
+    </div>
+    <label class="fld">ชื่อผู้รับ<input id="c-name" data-f="name" autocomplete="name" value="${esc(draft.name)}"></label>
+    <label class="fld">เบอร์โทร<input id="c-phone" data-f="phone" type="tel" inputmode="tel" autocomplete="tel" value="${esc(draft.phone)}"></label>
+    <label class="fld">ที่อยู่จัดส่ง (รวมรหัสไปรษณีย์)<textarea id="c-address" data-f="address" rows="3" autocomplete="street-address">${esc(draft.address)}</textarea></label>
+    <label class="fld">หมายเหตุถึงร้าน (ไม่บังคับ)<input id="c-note" data-f="note" value="${esc(draft.note)}"></label>
+    <label class="opt-row"><input type="checkbox" id="c-remember" data-f="remember" ${draft.remember ? "checked" : ""}> จำข้อมูลนี้ไว้ในเครื่องสำหรับครั้งหน้า</label>
+    ${payBox}
+    <button class="btn" type="button" data-act="order">ยืนยันและส่งออเดอร์</button>
+    <button class="btn ghost" type="button" data-act="cart">กลับไปที่ตะกร้า</button>
+    <p class="desc">ข้อมูลนี้ใช้เพื่อจัดส่งสินค้าและติดต่อเรื่องคำสั่งซื้อเท่านั้น</p>`, "checkout");
+}
+function checkDraft(){
+  if (draft.name.trim().length < 2) return "กรอกชื่อผู้รับก่อนนะคะ";
+  const d = draft.phone.replace(/\D/g, ""); if (d.length < 9 || d.length > 10) return "เบอร์โทรควรเป็นตัวเลข 9 หรือ 10 หลักค่ะ";
+  if (draft.address.trim().length < 10) return "กรอกที่อยู่จัดส่งให้ครบ รวมรหัสไปรษณีย์ด้วยนะคะ";
+  return "";
+}
+function orderItems(){
+  return [...cart].map(([sku, k]) => { const {p, v} = bySku.get(sku); return {sku, name: p.title, option: v.label, qty: k, price: v.price}; });
+}
 function orderText(){
-  let total = 0, n = 0, i = 0;
-  const rows = [...cart].map(([sku, k]) => {
-    const {p, v} = bySku.get(sku); total += k * v.price; n += k; i++;
-    const nm = p.title.length > 45 ? p.title.slice(0, 45) + "…" : p.title;
-    return `${i}. ${nm}${v.label ? " [" + v.label + "]" : ""}\n    ${sku} x${k} = ${baht(k * v.price)}`;
+  const t = totals();
+  const rows = orderItems().map((it, i) => {
+    const nm = it.name.length > 45 ? it.name.slice(0, 45) + "…" : it.name;
+    return `${i + 1}. ${nm}${it.option ? " [" + it.option + "]" : ""}\n    ${it.sku} x${it.qty} = ${baht(it.qty * it.price)}`;
   });
-  return `🛒 สั่งซื้อสินค้า\n${rows.join("\n")}\n\nรวม ${n} ชิ้น ${baht(total)}${SHOP.discountPercent > 0 ? "\n(ราคาพิเศษ LINE ลด " + SHOP.discountPercent + "%)" : ""}`;
+  const lines = ["🛒 สั่งซื้อสินค้า", ...rows, "", `ค่าสินค้า ${t.n} ชิ้น ${baht(t.goods)}`, `ค่าจัดส่ง ${shipLabel(t.ship)}`, `${t.ship === null ? "ยอดสินค้า" : "ยอดชำระ"} ${baht(t.total)}`];
+  if (SHOP.discountPercent > 0) lines.push(`(ราคาพิเศษ LINE ลด ${SHOP.discountPercent}%)`);
+  lines.push("", "📦 ผู้รับ", draft.name.trim(), "โทร " + draft.phone.trim(), draft.address.trim());
+  if (draft.note.trim()) lines.push("หมายเหตุ: " + draft.note.trim());
+  return lines.join("\n");
+}
+/* ส่งสำเนาออเดอร์ไปเก็บที่ระบบหลังบ้าน (ทำงานเมื่อใส่ saveUrl ใน shop.json) */
+async function saveOrder(){
+  if (!SHOP.saveUrl) return;
+  const t = totals(), rec = {time: new Date().toISOString(), items: orderItems(), goods: t.goods, shipping: t.ship, total: t.total,
+    customer: {name: draft.name.trim(), phone: draft.phone.trim(), address: draft.address.trim(), note: draft.note.trim()}, line: {}};
+  try { if (CONFIG.LIFF_ID && window.liff && liff.isLoggedIn()){ const pf = await liff.getProfile(); rec.line = {userId: pf.userId, displayName: pf.displayName}; } } catch (e) {}
+  try {
+    await Promise.race([
+      fetch(SHOP.saveUrl, {method: "POST", mode: "no-cors", headers: {"Content-Type": "text/plain"}, body: JSON.stringify(rec)}),
+      new Promise(r => setTimeout(r, 5000))
+    ]);
+  } catch (e) {}
 }
 /* เช็กสต็อกล่าสุดก่อนส่ง แล้วส่งข้อความเข้าแชตในนามลูกค้า */
 async function placeOrder(){
@@ -312,13 +422,15 @@ async function placeOrder(){
     await load();
     let changed = false;
     for (const [sku, k] of [...cart]){
-      const s = bySku.get(sku).v.stock;
-      if (k > s){ changed = true; if (s > 0) cart.set(sku, s); else cart.delete(sku); }
+      const st = bySku.get(sku).v.stock;
+      if (k > st){ changed = true; if (st > 0) cart.set(sku, st); else cart.delete(sku); }
     }
     saveCart(); renderGrid(); renderCartBar();
     if (changed){ sending = false; return showCart("สต็อกเพิ่งเปลี่ยน เราปรับจำนวนในตะกร้าให้ตรงกับของที่มีแล้ว ตรวจดูอีกครั้งก่อนส่งนะคะ"); }
-  } catch (e) { sending = false; return showCart("เช็กสต็อกไม่สำเร็จ ลองกดส่งอีกครั้งนะคะ"); }
+  } catch (e) { sending = false; return showCheckout("เช็กสต็อกไม่สำเร็จ ลองกดส่งอีกครั้งนะคะ"); }
+  try { if (draft.remember) localStorage.setItem("ponpon-customer", JSON.stringify(draft)); else localStorage.removeItem("ponpon-customer"); } catch (e) {}
   const text = orderText();
+  await saveOrder();
   if (CONFIG.LIFF_ID && window.liff && liff.isInClient()){
     try {
       await liff.sendMessages([{type: "text", text}, {type: "text", text: CONFIG.CONFIRM_TEXT}]);
@@ -330,20 +442,22 @@ async function placeOrder(){
   openSheet(`
     <div class="head"><h2>ส่งข้อความนี้ให้แอดมิน</h2>${closeBtn}</div>
     <pre class="msg" id="msg">${esc(text)}</pre>
-    <a class="btn" href="https://line.me/R/oaMessage/${encodeURIComponent(CONFIG.OA_ID)}/?${encodeURIComponent(text)}">เปิดแชต PonPon พร้อมข้อความนี้</a>
-    <button class="btn ghost" type="button" data-act="copy">คัดลอกข้อความ</button>`, "order");
+    <button class="btn" type="button" data-act="copy">คัดลอกข้อความ</button>
+    <a class="btn ghost" href="https://line.me/R/ti/p/${encodeURIComponent(CONFIG.OA_ID)}">เปิดแชต PonPon แล้ววางข้อความ</a>`, "order");
 }
 
 $("tabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (!b) return; cat = b.dataset.cat; renderTabs(); renderGrid(); });
 $("q").addEventListener("input", renderGrid);
 $("instock").addEventListener("change", renderGrid);
 $("grid").addEventListener("click", e => {
+  const f = e.target.closest("[data-fav]"); if (f){ toggleFav(f.dataset.fav); return renderGrid(); }
   const c = e.target.closest(".card"); if (c){ qty = 1; return showProduct(c.dataset.id); }
   if (e.target.closest("[data-act=retry]")) start();
 });
 $("openCart").addEventListener("click", () => showCart());
 $("backdrop").addEventListener("click", closeSheet);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); });
+$("sheet").addEventListener("input", e => { const f = e.target.dataset.f; if (f) draft[f] = e.target.type === "checkbox" ? e.target.checked : e.target.value; });
 $("sheet").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b || b.disabled) return;
   const id = $("sheet").dataset.id, act = b.dataset.act;
@@ -357,7 +471,11 @@ $("sheet").addEventListener("click", e => {
     if (k <= 0) cart.delete(b.dataset.sku); else cart.set(b.dataset.sku, k);
     saveCart(); renderCartBar(); return showCart();
   }
-  if (act === "order") return placeOrder();
+  if (act === "fav"){ toggleFav(id); renderGrid(); return showProduct(id, sel); }
+  if (act === "share") return shareProduct(id);
+  if (act === "checkout") return showCheckout();
+  if (act === "cart") return showCart();
+  if (act === "order"){ const err = checkDraft(); return err ? showCheckout(err) : placeOrder(); }
   if (act === "copy"){
     const fallback = () => { const r = document.createRange(); r.selectNodeContents($("msg")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast("เลือกข้อความให้แล้ว กดคัดลอกได้เลย"); };
     try { navigator.clipboard.writeText(orderText()).then(() => toast("คัดลอกแล้ว"), fallback); } catch (err) { fallback(); }
@@ -369,8 +487,42 @@ async function start(){
   try { await load(); renderTabs(); renderGrid(); renderCartBar(); }
   catch (e) { $("grid").innerHTML = `<div class="state">โหลดสินค้าไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่อีกครั้ง<br><button class="btn" type="button" data-act="retry">ลองใหม่</button></div>`; }
 }
-if (CONFIG.LIFF_ID && window.liff) liff.init({liffId: CONFIG.LIFF_ID}).catch(() => {});
-start();
+/* ---------- เข้าสู่ระบบ LINE และแชร์สินค้า ---------- */
+const liffReady = CONFIG.LIFF_ID && window.liff ? liff.init({liffId: CONFIG.LIFF_ID}).then(() => true).catch(() => false) : Promise.resolve(false);
+async function renderUser(){
+  if (!(await liffReady)) return;
+  const el = $("user");
+  if (liff.isLoggedIn()){
+    try {
+      const pf = await liff.getProfile();
+      el.innerHTML = `${pf.pictureUrl ? `<img src="${esc(pf.pictureUrl)}" alt="">` : ""}<span>สวัสดีค่ะ คุณ${esc(pf.displayName)}</span>`;
+      el.hidden = false;
+    } catch (e) {}
+  } else {
+    el.innerHTML = `<button class="tab" type="button" id="login">เข้าสู่ระบบด้วย LINE</button>`;
+    el.hidden = false;
+    $("login").addEventListener("click", () => liff.login({redirectUri: location.href}));
+  }
+}
+function productLink(id){
+  return (CONFIG.LIFF_ID ? "https://miniapp.line.me/" + CONFIG.LIFF_ID : location.origin + location.pathname) + "?p=" + encodeURIComponent(id);
+}
+async function shareProduct(id){
+  const p = PRODUCTS.find(x => x.id === id); if (!p) return;
+  const url = productLink(p.id);
+  const text = `${p.title}\n${p.multiPrice ? "เริ่ม " : ""}${baht(p.price)}\n${url}`;
+  if (await liffReady && liff.isLoggedIn() && liff.isApiAvailable("shareTargetPicker")){
+    try { const r = await liff.shareTargetPicker([{type: "text", text}]); if (r) toast("แชร์แล้ว"); return; } catch (e) {}
+  }
+  try { await navigator.clipboard.writeText(url); toast("คัดลอกลิงก์สินค้าแล้ว"); }
+  catch (e) { toast("คัดลอกไม่สำเร็จ ลองเปิดจากในแอป LINE นะคะ"); }
+}
+renderUser();
+start().then(async () => {
+  await liffReady;
+  const id = (new URLSearchParams(location.search).get("p") || "").toUpperCase();
+  if (/^[A-Z0-9]{3,20}$/.test(id) && PRODUCTS.some(p => p.id === id)){ qty = 1; showProduct(id); }
+});
 </script>
 </body>
 </html>
