@@ -1,6 +1,6 @@
 {
-  "promoText": "ซื้อผ่าน LINE ลดทันที 10% ส่งฟรี ทุกรายการ",
-  "discountPercent": 10,
+  "promoText": "ซื้อผ่าน LINE ลดทันที 15% ส่งฟรี ทุกรายการ",
+  "discountPercent": 15,
   "bestSellers": ["PP00194", "PP00013", "PP00011", "PP00023", "PP00029", "PP00384", "PP00400", "PP00401"],
   "newCount": 8,
   "shippingFee": 40,
