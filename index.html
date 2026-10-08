@@ -169,7 +169,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stro
 .sheet h2{font-family:var(--display);font-weight:700;font-size:17px}
 .share{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;text-align:center;font-size:12px}
 .share button{display:flex;flex-direction:column;align-items:center;gap:6px}
-.share span{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;color:#fff;font-family:var(--display);font-weight:700;font-size:13px}
+.share svg{width:52px;height:52px;display:block}
 .toast{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:20;background:var(--ink);color:#fff;padding:9px 18px;border-radius:999px;font-size:14px;max-width:88%;text-align:center}
 </style>
 </head>
@@ -304,7 +304,10 @@ let PRODUCTS = [], byId = new Map(), bySku = new Map(), loaded = false, loadErro
 const cart = new Map(store.get("ponpon-cart", []));
 const favs = new Set(store.get("ponpon-fav", []));
 const myCoupons = new Set(store.get("ponpon-coupons", []));
-let usedCoupon = store.get("ponpon-used-coupon", "");
+let usedCoupon = store.get("ponpon-used-coupon", "");   // โค้ดส่วนลดสินค้า
+let usedShip = store.get("ponpon-used-ship", "");       // โค้ดส่วนลดค่าจัดส่ง
+const isShip = c => !!c && c.type === "freeship";
+const isUsed = code => usedCoupon === code || usedShip === code;
 let draft = Object.assign({name: "", phone: "", address: "", note: "", remember: true}, store.get("ponpon-customer", {}));
 let homeTab = "all", listCat = "all", listQ = "", listOnly = false, sel = null, qty = 1, sending = false, profile = null, formError = "";
 const saveCart = () => store.set("ponpon-cart", [...cart]);
@@ -326,7 +329,7 @@ function readShop(shop){
     ],
     coupons: (Array.isArray(shop.coupons) ? shop.coupons : []).filter(c => c && c.code).map(c => ({
       code: String(c.code).toUpperCase(), title: String(c.title || ""), type: c.type === "amount" || c.type === "freeship" ? c.type : "percent",
-      value: Math.max(0, Number(c.value) || 0), min: Math.max(0, Number(c.min) || 0), expires: c.expires ? String(c.expires) : ""
+      value: Math.max(0, Number(c.value) || 0), min: Math.max(0, Number(c.min) || 0), max: Math.max(0, Number(c.max) || 0), expires: c.expires ? String(c.expires) : ""
     })),
     categoryNames: shop.categoryNames || {},
     saveUrl: String(shop.saveUrl || "")
@@ -380,8 +383,8 @@ async function copyText(text, ok){
 /* ---------- โค้ดส่วนลด ---------- */
 const today = () => new Date().toISOString().slice(0, 10);
 const couponOf = code => SHOP.coupons.find(c => c.code === String(code || "").toUpperCase());
-const couponFace = c => c.type === "freeship" ? "ส่งฟรี" : c.type === "amount" ? "ลด " + baht(c.value) : "ลด " + c.value + "%";
-const couponNote = c => [c.min ? "ขั้นต่ำ " + baht(c.min) : "ไม่มีขั้นต่ำ", c.expires ? "ถึง " + c.expires : ""].filter(Boolean).join(" · ");
+const couponFace = c => c.type === "freeship" ? (c.value > 0 ? "ค่าส่งลด " + baht(c.value) : "ส่งฟรี") : c.type === "amount" ? "ลด " + baht(c.value) : "ลด " + c.value + "%";
+const couponNote = c => [c.min ? "ขั้นต่ำ " + baht(c.min) : "ไม่มีขั้นต่ำ", c.type === "percent" && c.max ? "ลดสูงสุด " + baht(c.max) : "", c.expires ? "ถึง " + c.expires : ""].filter(Boolean).join(" · ");
 function couponProblem(c, goods){
   if (!c) return "ไม่พบโค้ดนี้ค่ะ ลองตรวจตัวสะกดอีกครั้ง";
   if (c.expires && today() > c.expires) return "โค้ดนี้หมดอายุแล้วค่ะ";
@@ -391,21 +394,27 @@ function couponProblem(c, goods){
 function totals(){
   let goods = 0, n = 0;
   for (const [sku, k] of cart){ goods += k * bySku.get(sku).v.price; n += k; }
-  let c = couponOf(usedCoupon); if (c && couponProblem(c, goods)) c = null;
+  let c = couponOf(usedCoupon); if (!c || isShip(c) || couponProblem(c, goods)) c = null;
+  let sc = couponOf(usedShip); if (!isShip(sc) || couponProblem(sc, goods)) sc = null;
   let discount = 0;
   if (c && c.type === "percent") discount = Math.round(goods * Math.min(100, c.value) / 100);
   if (c && c.type === "amount") discount = Math.min(goods, c.value);
-  let ship = SHOP.shippingFee === null ? null : (SHOP.freeShippingOver > 0 && goods >= SHOP.freeShippingOver ? 0 : SHOP.shippingFee);
-  if (c && c.type === "freeship") ship = 0;
-  return {goods, n, discount, ship, coupon: c, total: goods - discount + (ship || 0)};
+  if (c && c.type === "percent" && c.max > 0) discount = Math.min(discount, c.max);
+  const baseShip = SHOP.shippingFee === null ? null : (SHOP.freeShippingOver > 0 && goods >= SHOP.freeShippingOver ? 0 : SHOP.shippingFee);
+  let ship = baseShip, shipDiscount = 0;
+  if (sc){
+    if (!(sc.value > 0)){ shipDiscount = baseShip || 0; ship = 0; }
+    else if (baseShip !== null){ shipDiscount = Math.min(baseShip, sc.value); ship = baseShip - shipDiscount; }
+  }
+  return {goods, n, discount, ship, baseShip, shipDiscount, coupon: c, shipCoupon: sc, total: goods - discount + (ship || 0)};
 }
 const shipLabel = ship => ship === null ? "แอดมินแจ้งในแชต" : ship === 0 ? "ฟรี" : baht(ship);
 function couponCard(c, mode){
   const have = myCoupons.has(c.code), expired = c.expires && today() > c.expires;
   const action = mode === "pick"
-    ? `<span class="a${usedCoupon === c.code ? " done" : ""}">${usedCoupon === c.code ? "ใช้อยู่" : "ใช้"}</span>`
+    ? `<span class="a${isUsed(c.code) ? " done" : ""}">${isUsed(c.code) ? "ใช้อยู่" : "ใช้"}</span>`
     : `<span class="a${have || expired ? " done" : ""}">${expired ? "หมดอายุ" : have ? "เก็บแล้ว" : "เก็บ"}</span>`;
-  return `<button class="cp${mode === "pick" && usedCoupon === c.code ? " sel" : ""}" type="button" data-act="${mode === "pick" ? "usecoupon" : "collect"}" data-code="${esc(c.code)}">
+  return `<button class="cp${mode === "pick" && isUsed(c.code) ? " sel" : ""}" type="button" data-act="${mode === "pick" ? "usecoupon" : "collect"}" data-code="${esc(c.code)}">
     <span class="l">${esc(couponFace(c))}</span><span class="m"><b>${esc(c.title || c.code)}</b><small>โค้ด ${esc(c.code)} · ${esc(couponNote(c))}</small></span>${action}</button>`;
 }
 function showCoupons(){
@@ -497,7 +506,7 @@ function viewProduct(id){
 function summaryRows(t){
   return `<div class="rows"><div><span>ค่าสินค้า</span><span>${baht(t.goods)}</span></div>
     <div><span>ส่วนลด${t.coupon ? " (" + esc(t.coupon.code) + ")" : ""}</span><span class="${t.discount ? "neg" : ""}">${t.discount ? "−" + baht(t.discount) : baht(0)}</span></div>
-    <div><span>ค่าจัดส่ง</span><span>${shipLabel(t.ship)}</span></div></div>`;
+    <div><span>ค่าจัดส่ง${t.shipCoupon ? " (" + esc(t.shipCoupon.code) + ")" : ""}</span><span class="${t.shipCoupon ? "neg" : ""}">${t.shipDiscount > 0 && t.ship > 0 ? `<s style="color:var(--muted);font-size:12px;margin-right:6px">${baht(t.baseShip)}</s>` : ""}${shipLabel(t.ship)}</span></div></div>`;
 }
 function viewCart(){
   if (!cart.size) return `<div class="state" style="margin-top:20px">ตะกร้ายังว่างอยู่ เลือกสินค้าที่ชอบได้เลยค่ะ<br><br><button class="btn" type="button" data-act="nav" data-to="#home">เลือกซื้อสินค้า</button></div>`;
@@ -509,13 +518,19 @@ function viewCart(){
         <div class="step"><button type="button" data-act="dec" data-sku="${esc(sku)}" aria-label="ลดจำนวน">−</button><b>${k}</b>
         <button class="plus" type="button" data-act="inc" data-sku="${esc(sku)}" aria-label="เพิ่มจำนวน" ${k >= v.stock ? "disabled" : ""}>+</button></div></div></div>`; }).join("");
   const mine = SHOP.coupons.filter(c => myCoupons.has(c.code));
-  const bad = usedCoupon && !t.coupon ? couponProblem(couponOf(usedCoupon), t.goods) : "";
+  const group = (title, list, used, okCoupon, clearAct) => {
+    const bad = used && !okCoupon ? couponProblem(couponOf(used), t.goods) : "";
+    return `<div class="lbl" style="margin:6px 0 0">${title}</div>
+      ${bad ? `<p class="warn" style="margin:0">${esc(bad)}</p>` : ""}
+      ${list.length ? list.map(c => couponCard(c, "pick")).join("") : `<p class="desc">ยังไม่มีโค้ดประเภทนี้ที่เก็บไว้</p>`}
+      ${used ? `<button type="button" data-act="${clearAct}" class="desc" style="text-align:left;text-decoration:underline">ไม่ใช้โค้ดนี้</button>` : ""}`;
+  };
   return `<div class="items">${items}</div>
     <div class="box"><h3>โค้ดส่วนลด</h3>
       <div class="code"><input id="code" placeholder="กรอกโค้ดส่วนลด" aria-label="กรอกโค้ดส่วนลด" autocapitalize="characters" autocomplete="off"><button type="button" data-act="applycode">ใช้โค้ด</button></div>
-      ${bad ? `<p class="warn" style="margin:0">${esc(bad)}</p>` : ""}
-      ${mine.length ? mine.map(c => couponCard(c, "pick")).join("") : `<p class="desc">ยังไม่มีโค้ดที่เก็บไว้ <button type="button" data-act="coupons" style="color:var(--red);font-weight:500">ดูโค้ดทั้งหมด</button></p>`}
-      ${usedCoupon ? `<button type="button" data-act="clearcoupon" class="desc" style="text-align:left;text-decoration:underline">ไม่ใช้โค้ดส่วนลด</button>` : ""}</div>
+      <p class="desc">ใช้ได้ออเดอร์ละ 1 โค้ดส่วนลดสินค้า และ 1 โค้ดส่วนลดค่าจัดส่ง <button type="button" data-act="coupons" style="color:var(--red);font-weight:500">ดูโค้ดทั้งหมด</button></p>
+      ${group("โค้ดส่วนลดสินค้า", mine.filter(c => !isShip(c)), usedCoupon, t.coupon, "clearcoupon")}
+      ${group("โค้ดส่วนลดค่าจัดส่ง", mine.filter(isShip), usedShip, t.shipCoupon, "clearship")}</div>
     <div class="box">${summaryRows(t)}</div>`;
 }
 function viewCheckout(){
@@ -591,12 +606,25 @@ function startBanners(){
 /* ---------- แชร์สินค้า ---------- */
 const productLink = id => (CONFIG.LIFF_ID ? "https://miniapp.line.me/" + CONFIG.LIFF_ID : location.origin + location.pathname) + "?p=" + encodeURIComponent(id);
 const openExternal = url => { try { if (window.liff && liff.isInClient()) return liff.openWindow({url, external: true}); } catch (e) {} location.href = url; };
+const SHARE_ICON = {
+  line: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#06C755"/><path fill="#fff" d="M24 10c-8.3 0-15 5.4-15 12.1 0 6 5.3 11 12.5 11.9.5.1 1.2.3 1.3.800.2.4.1 1 0 1.500l-.200 1.300c-.1.4-.3 1.5 1.3.800 1.6-.7 8.8-5.2 12-8.900C38 27.3 39 24.8 39 22.1 39 15.4 32.3 10 24 10z"/><text x="24" y="25.5" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="7.5" fill="#06C755">LINE</text></svg>',
+  sms: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#34C759"/><path fill="#fff" d="M24 11c-8.3 0-15 5.6-15 12.5 0 3.9 2.1 7.3 5.5 9.6-.3 1.7-1.2 3.3-2.5 4.5 2.7-.1 5.2-1.1 7.2-2.6 1.5.4 3.1.6 4.8.6 8.3 0 15-5.6 15-12.500S32.3 11 24 11z"/></svg>',
+  fb: '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="24" fill="#1877F2"/><path fill="#fff" d="M26.7 40V25.800h4.600l.700-5.500h-5.300v-3.500c0-1.6.4-2.7 2.7-2.700h2.800V9.200c-.5-.1-2.2-.2-4.1-.2-4.1 0-6.9 2.5-6.9 7.100v4.200h-4.600v5.500h4.600V40z"/></svg>',
+  ig: '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="igg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#FEDA75"/><stop offset=".35" stop-color="#FA7E1E"/><stop offset=".6" stop-color="#D62976"/><stop offset=".85" stop-color="#962FBF"/><stop offset="1" stop-color="#4F5BD5"/></linearGradient></defs><rect width="48" height="48" rx="12" fill="url(#igg)"/><rect x="12" y="12" width="24" height="24" rx="7" fill="none" stroke="#fff" stroke-width="3"/><circle cx="24" cy="24" r="5.5" fill="none" stroke="#fff" stroke-width="3"/><circle cx="31" cy="17" r="1.8" fill="#fff"/></svg>',
+  copy: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#1E1E22"/><g fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M21 27l6-6"/><path d="M19.5 22.500l-3 3a5 5 0 0 0 7 7l3-3"/><path d="M28.5 25.500l3-3a5 5 0 0 0-7-7l-3 3"/></g></svg>'
+};
 function showShare(id){
   const p = byId.get(id); if (!p) return;
-  const b = (k, label, bg, txt) => `<button type="button" data-act="shareto" data-k="${k}" data-id="${esc(id)}"><span style="background:${bg}">${txt}</span>${label}</button>`;
+  const b = (k, label) => `<button type="button" data-act="shareto" data-k="${k}" data-id="${esc(id)}">${SHARE_ICON[k]}${label}</button>`;
   openSheet(`<h2>แชร์สินค้า</h2><p class="desc">${esc(p.title)}</p>
-    <div class="share">${b("line", "LINE", "#06C755", "LINE")}${b("sms", "ข้อความ", "#F7944A", "SMS")}${b("fb", "Facebook", "#1877F2", "f")}${b("ig", "Instagram", "#C13584", "IG")}${b("copy", "คัดลอกลิงก์", "#1E1E22", "🔗")}</div>
+    <div class="share">${b("line", "LINE")}${b("sms", "ข้อความ")}${b("fb", "Facebook")}${b("ig", "Instagram")}${b("copy", "คัดลอกลิงก์")}</div>
     <button class="btn line" type="button" data-act="closesheet">ปิด</button>`);
+}
+/* เปิดแอปปลายทางโดยตรง ถ้าเครื่องไม่มีแอปนั้นจะเปิดหน้าเว็บแทน */
+function openApp(appUrl, webUrl){
+  const t = Date.now();
+  setTimeout(() => { if (!document.hidden && Date.now() - t < 2500) openExternal(webUrl); }, 1400);
+  location.href = appUrl;
 }
 async function shareTo(k, id){
   const p = byId.get(id); if (!p) return;
@@ -606,11 +634,17 @@ async function shareTo(k, id){
     if (await liffReady && liff.isLoggedIn() && liff.isApiAvailable("shareTargetPicker")){
       try { const r = await liff.shareTargetPicker([{type: "text", text}]); closeSheet(); if (r) toast("แชร์แล้ว"); return; } catch (e) {}
     }
-    return openExternal("https://line.me/R/share?text=" + encodeURIComponent(text));
+    closeSheet(); return openApp("line://msg/text/" + encodeURIComponent(text), "https://line.me/R/share?text=" + encodeURIComponent(text));
   }
-  if (k === "sms") return openExternal("sms:?&body=" + encodeURIComponent(text));
-  if (k === "fb") return openExternal("https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(url));
-  if (k === "ig"){ await copyText(url, "คัดลอกลิงก์แล้ว วางในสตอรี่หรือข้อความ Instagram ได้เลย"); return setTimeout(() => openExternal("https://www.instagram.com/"), 900); }
+  if (k === "sms"){ closeSheet(); location.href = "sms:?&body=" + encodeURIComponent(text); return; }
+  if (k === "fb"){
+    const web = "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(url);
+    closeSheet(); return openApp("fb://facewebmodal/f?href=" + encodeURIComponent(web), web);
+  }
+  if (k === "ig"){
+    closeSheet(); await copyText(url, "คัดลอกลิงก์แล้ว วางในสตอรี่หรือข้อความได้เลย");
+    return setTimeout(() => openApp("instagram://app", "https://www.instagram.com/"), 900);
+  }
 }
 
 /* ---------- สั่งซื้อ ---------- */
@@ -625,15 +659,15 @@ function orderText(){
   const t = totals();
   const rows = orderItems().map((it, i) => `${i + 1}. ${it.name.length > 45 ? it.name.slice(0, 45) + "…" : it.name}${it.option ? " [" + it.option + "]" : ""}\n    ${it.sku} x${it.qty} = ${baht(it.qty * it.price)}`);
   const lines = ["🛒 สั่งซื้อสินค้า", ...rows, "", `ค่าสินค้า ${t.n} ชิ้น ${baht(t.goods)}`];
-  if (t.coupon) lines.push(`โค้ด ${t.coupon.code} (${couponFace(t.coupon)})${t.discount ? " −" + baht(t.discount) : ""}`);
-  lines.push(`ค่าจัดส่ง ${shipLabel(t.ship)}`, `${t.ship === null ? "ยอดสินค้า" : "ยอดชำระ"} ${baht(t.total)}`);
+  if (t.coupon) lines.push(`โค้ดส่วนลด ${t.coupon.code} (${couponFace(t.coupon)})${t.discount ? " −" + baht(t.discount) : ""}`);
+  lines.push(`ค่าจัดส่ง ${shipLabel(t.ship)}${t.shipCoupon ? " (โค้ด " + t.shipCoupon.code + ")" : ""}`, `${t.ship === null ? "ยอดสินค้า" : "ยอดชำระ"} ${baht(t.total)}`);
   lines.push("", "📦 ผู้รับ", draft.name.trim(), "โทร " + draft.phone.trim(), draft.address.trim());
   if (draft.note.trim()) lines.push("หมายเหตุ: " + draft.note.trim());
   return lines.join("\n");
 }
 async function saveOrder(){
   if (!SHOP.saveUrl) return;
-  const t = totals(), rec = {time: new Date().toISOString(), items: orderItems(), goods: t.goods, discount: t.discount, coupon: t.coupon ? t.coupon.code : "", shipping: t.ship, total: t.total,
+  const t = totals(), rec = {time: new Date().toISOString(), items: orderItems(), goods: t.goods, discount: t.discount, coupon: t.coupon ? t.coupon.code : "", shipCoupon: t.shipCoupon ? t.shipCoupon.code : "", shipping: t.ship, total: t.total,
     customer: {name: draft.name.trim(), phone: draft.phone.trim(), address: draft.address.trim(), note: draft.note.trim()}, line: profile ? {userId: profile.userId, displayName: profile.displayName} : {}};
   try { await Promise.race([fetch(SHOP.saveUrl, {method: "POST", mode: "no-cors", headers: {"Content-Type": "text/plain"}, body: JSON.stringify(rec)}), new Promise(r => setTimeout(r, 5000))]); } catch (e) {}
 }
@@ -654,7 +688,7 @@ async function placeOrder(){
   if (CONFIG.LIFF_ID && window.liff && await liffReady && liff.isInClient()){
     try {
       await liff.sendMessages([{type: "text", text}, {type: "text", text: CONFIG.CONFIRM_TEXT}]);
-      cart.clear(); saveCart(); usedCoupon = ""; store.set("ponpon-used-coupon", ""); sending = false;
+      cart.clear(); saveCart(); usedCoupon = ""; usedShip = ""; store.set("ponpon-used-coupon", ""); store.set("ponpon-used-ship", ""); sending = false;
       return liff.closeWindow();
     } catch (e) {}
   }
@@ -674,7 +708,8 @@ function setCoupon(code){
   const c = couponOf(code), problem = couponProblem(c, totals().goods);
   if (!c) return toast(problem);
   myCoupons.add(c.code); store.set("ponpon-coupons", [...myCoupons]);
-  usedCoupon = c.code; store.set("ponpon-used-coupon", usedCoupon);
+  if (isShip(c)){ usedShip = c.code; store.set("ponpon-used-ship", usedShip); }
+  else { usedCoupon = c.code; store.set("ponpon-used-coupon", usedCoupon); }
   toast(problem || `ใช้โค้ด ${c.code} แล้ว`);
 }
 document.addEventListener("click", e => {
@@ -696,6 +731,7 @@ document.addEventListener("click", e => {
   if (a === "usecoupon"){ setCoupon(b.dataset.code); return keep(); }
   if (a === "applycode"){ const v = ($("code").value || "").trim(); if (!v) return toast("กรอกโค้ดส่วนลดก่อนนะคะ"); setCoupon(v); return keep(); }
   if (a === "clearcoupon"){ usedCoupon = ""; store.set("ponpon-used-coupon", ""); return keep(); }
+  if (a === "clearship"){ usedShip = ""; store.set("ponpon-used-ship", ""); return keep(); }
   if (a === "share") return showShare(b.dataset.id);
   if (a === "shareto") return shareTo(b.dataset.k, b.dataset.id);
   if (a === "picksku"){ sel = b.dataset.v; qty = 1; return keep(); }
