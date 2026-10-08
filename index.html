@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PonPon Shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mali:wght@500;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600&display=swap">
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+:root{
+  --sky:#dcefff; --cream:#fff3dc; --paper:#fffdf8; --ink:#3b3b40; --muted:#716e78;
+  --pink:#f6b9d4; --pink-deep:#c8437f; --mint:#bfe6cc; --red:#d63b40; --line:#e6dfd2;
+  --display:"Mali","IBM Plex Sans Thai Looped","Leelawadee UI",Thonburi,sans-serif;
+  --body:"IBM Plex Sans Thai Looped","Leelawadee UI",Thonburi,Tahoma,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:repeating-linear-gradient(90deg,var(--sky) 0 44px,var(--cream) 44px 88px);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+img{max-width:100%}
+:focus-visible{outline:3px solid var(--pink-deep);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px 120px;display:flex;flex-direction:column;gap:14px}
+
+.win{background:var(--paper);border:3px solid var(--ink);border-radius:18px 18px 14px 14px;padding:12px 12px 14px;display:flex;flex-direction:column;gap:10px}
+.win h1{font-family:var(--display);font-weight:700;font-size:26px;line-height:1.2;margin:0}
+.win h1 small{display:block;font-family:var(--body);font-weight:400;font-size:13px;color:var(--muted)}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;font-family:var(--display);font-weight:500;font-size:14px;padding:6px 12px;border:2.5px solid var(--ink);border-radius:12px 12px 4px 4px;background:var(--paper);color:var(--muted)}
+.tab[aria-pressed="true"]{background:var(--sky);color:var(--ink);font-weight:700}
+.bar{display:flex;align-items:center;gap:10px}
+.bar input{flex:1;min-width:0;border:2.5px solid var(--ink);border-radius:999px;padding:8px 16px;background:var(--paper)}
+.bar i{flex:none;width:22px;height:22px;border:3px solid var(--ink);border-radius:5px}
+.bar i + i{border-radius:50%}
+.opt-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.card{display:flex;flex-direction:column;text-align:left;background:var(--paper);border:2.5px solid var(--ink);border-radius:14px;padding:0;overflow:hidden}
+.card.sold .pic img{opacity:.45}
+.pic{aspect-ratio:1;width:100%;background:var(--sky);border-bottom:2.5px solid var(--ink);display:block;overflow:hidden}
+.pic img{width:100%;height:100%;object-fit:cover;display:block}
+.info{padding:10px 12px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.name{font-weight:600;font-size:13.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.price{font-family:var(--display);font-weight:700;font-size:17px;color:var(--pink-deep)}
+.price small{font-family:var(--body);font-weight:400;font-size:12px;color:var(--muted)}
+.meta{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.out{color:var(--red);font-weight:600}
+.state{grid-column:1/-1;background:var(--paper);border:2.5px solid var(--ink);border-radius:14px;padding:24px;text-align:center}
+.state button{margin-top:10px}
+
+.cartbar{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:3px solid var(--ink);z-index:5}
+.cartbar div{max-width:728px;margin:0 auto}
+.btn{display:block;width:100%;text-align:center;text-decoration:none;color:var(--ink);border:2.5px solid var(--ink);border-radius:999px;padding:11px 18px;background:var(--pink);font-family:var(--display);font-weight:700;font-size:16px;font-variant-numeric:tabular-nums}
+.btn:disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
+.btn.ghost{background:var(--paper)}
+
+.backdrop{position:fixed;inset:0;background:rgba(59,59,64,.45);z-index:10}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:11;max-height:90%;overflow-y:auto;background:var(--paper);border:3px solid var(--ink);border-bottom:0;border-radius:20px 20px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.sheet > div{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.sheet h2{font-family:var(--display);font-size:18px;line-height:1.35;margin:0}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.x{flex:none;width:36px;height:36px;border:2.5px solid var(--ink);border-radius:50%;background:var(--paper);font-weight:700}
+.detail{display:flex;gap:12px;align-items:center}
+.detail .pic{flex:none;width:130px;border:2.5px solid var(--ink);border-radius:12px}
+.label{font-size:12px;letter-spacing:.04em;color:var(--muted);margin-bottom:6px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{display:flex;align-items:center;gap:8px;border:2.5px solid var(--ink);border-radius:12px;background:var(--paper);padding:7px 12px;text-align:left;line-height:1.25;max-width:100%}
+.opt small{display:block;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.opt[aria-pressed="true"]{background:var(--sky)}
+.opt:disabled{opacity:.5;cursor:not-allowed}
+.dot{flex:none;width:14px;height:14px;border-radius:50%;border:1.5px solid var(--ink)}
+.qty{display:flex;align-items:center;gap:10px;font-variant-numeric:tabular-nums}
+.qty button{width:38px;height:38px;border:2.5px solid var(--ink);border-radius:50%;background:var(--paper);font-weight:700;font-size:18px}
+.qty button:disabled{opacity:.4;cursor:not-allowed}
+.qty b{min-width:28px;text-align:center;font-size:17px}
+.sku{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--muted);word-break:break-all}
+.line{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1.5px dashed var(--line)}
+.line .t{flex:1;min-width:0}
+.line .t b{display:block;font-size:13.5px;line-height:1.35}
+.sum{display:flex;justify-content:space-between;font-family:var(--display);font-weight:700;font-size:18px;font-variant-numeric:tabular-nums}
+.warn{margin:0;background:var(--cream);border:2px dashed var(--red);border-radius:12px;padding:8px 12px;font-size:13px}
+.msg{white-space:pre-wrap;word-break:break-word;background:var(--mint);border:2.5px solid var(--ink);border-radius:16px 16px 4px 16px;padding:12px 14px;font-size:14px;margin:0;font-family:var(--body);user-select:all;-webkit-user-select:all}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:20;background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:999px;font-size:14px;max-width:90%;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="win">
+    <h1>PonPon ช้อปเลย!<small>เลือกสินค้า ใส่ตะกร้า แล้วส่งออเดอร์ให้แอดมินในแชต</small></h1>
+    <div class="tabs" id="tabs"></div>
+    <div class="bar"><input id="q" type="search" placeholder="ค้นหาสินค้า" aria-label="ค้นหาสินค้า"><i></i><i></i></div>
+    <label class="opt-row"><input type="checkbox" id="instock"> แสดงเฉพาะสินค้าที่มีของ</label>
+  </header>
+  <main class="grid" id="grid"><div class="state">กำลังโหลดสินค้า...</div></main>
+</div>
+
+<div class="cartbar" id="cartbar" hidden><div><button class="btn" id="openCart" type="button"></button></div></div>
+<div class="backdrop" id="backdrop" hidden></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" hidden></section>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+/* ================= ตั้งค่า ================= */
+const CONFIG = {
+  API_URL: "https://ponpon-shop-api.workwithjariya.workers.dev/",
+  LIFF_ID: "",                 // ใส่ LIFF ID หลังสร้าง LIFF แล้ว เช่น "2007286734-AbCdEfGh"
+  OA_ID: "@611whdtg",          // ไอดี LINE OA ของ PonPon
+  GROUP_LEN: 7,                // SKU กี่ตัวแรกที่ถือเป็นสินค้าเดียวกัน
+  IMAGE_DIR: "images/"         // โฟลเดอร์รูปบน GitHub: images/PP00383.jpg (รูปหลัก) หรือ images/PP00383BK26001.jpg (รูปของตัวเลือก)
+};
+/* ========================================== */
+
+const RE_PAREN = /^(.*?)\s*[\(（]([^()（）]*)[\)）]\s*$/;
+const RE_SIZE = /^(?:[A-Z]{2})?(XS|S|M|L|XL)$/;
+const SWATCH = [["น้ำเงิน","#3d5a9e"],["กรม","#2f3f6b"],["กาแฟ","#8a6a52"],["ฟ้า","#a9d4f5"],["ชมพู","#f6b9d4"],["เขียว","#bfe6cc"],["เหลือง","#fbe38a"],["ม่วง","#cdb8ee"],["ส้ม","#f8b27a"],["แดง","#e2575b"],["น้ำตาล","#a67c5b"],["ครีม","#f4e6c8"],["เบจ","#e8d9bd"],["เทา","#b5b5bb"],["ขาว","#ffffff"],["ดำ","#3b3b40"],["ใส","#eef6f8"]];
+const PLACEHOLDER = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#dcefff"/><text x="100" y="108" text-anchor="middle" font-family="sans-serif" font-size="26" font-weight="700" fill="#3b3b40">PonPon</text></svg>');
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const baht = n => Number(n).toLocaleString("th-TH") + " บาท";
+const $ = id => document.getElementById(id);
+const swatch = label => { for (const [k, hex] of SWATCH) if (label.includes(k)) return hex; return ""; };
+
+/* รวม SKU ที่ตัวอักษรชุดแรกเหมือนกันให้เป็นสินค้าเดียว แล้วใช้ข้อความในวงเล็บท้ายชื่อเป็นชื่อตัวเลือก */
+function buildProducts(rows){
+  const map = new Map();
+  for (const r of rows){
+    if (!r.sku || !(r.price > 0)) continue;
+    const id = r.sku.slice(0, CONFIG.GROUP_LEN);
+    const name = (r.name || "").trim(), m = name.match(RE_PAREN);
+    if (!map.has(id)) map.set(id, {id, variants: []});
+    map.get(id).variants.push({
+      sku: r.sku, price: r.price, stock: r.stock, image: r.image, cat: r.category || "อื่นๆ",
+      base: m ? m[1].trim() : name, label: m ? m[2].trim() : "",
+      mid: r.sku.slice(CONFIG.GROUP_LEN).replace(/-?\d+$/, "")
+    });
+  }
+  const list = [];
+  for (const p of map.values()){
+    const tally = new Map();
+    for (const v of p.variants) tally.set(v.base, (tally.get(v.base) || 0) + 1);
+    p.name = [...tally].sort((a, b) => b[1] - a[1])[0][0];
+    for (const v of p.variants) if (v.base !== p.name) v.label = v.base + (v.label ? " (" + v.label + ")" : "");
+    const seen = new Map();
+    for (const v of p.variants) seen.set(v.label, (seen.get(v.label) || 0) + 1);
+    for (const v of p.variants){
+      if (p.variants.length > 1 && (seen.get(v.label) > 1 || !v.label)){
+        const s = v.mid.match(RE_SIZE), extra = s ? "ไซซ์ " + s[1] : v.mid;
+        v.label = [v.label, extra].filter(Boolean).join(" ") || v.sku;
+      }
+      v.hex = swatch(v.label);
+    }
+    p.cat = p.variants[0].cat;
+    p.stock = p.variants.reduce((a, v) => a + v.stock, 0);
+    const prices = p.variants.map(v => v.price);
+    p.price = Math.min(...prices); p.multiPrice = Math.max(...prices) > p.price;
+    p.search = (p.name + " " + p.id + " " + p.variants.map(v => v.label).join(" ")).toLowerCase();
+    list.push(p);
+  }
+  return list.sort((a, b) => (b.stock > 0) - (a.stock > 0) || b.id.localeCompare(a.id));
+}
+
+let PRODUCTS = [], bySku = new Map(), cat = "ทั้งหมด", sel = null, qty = 1, sending = false;
+const cart = new Map();
+try { for (const [k, v] of JSON.parse(localStorage.getItem("ponpon-cart") || "[]")) cart.set(k, v); } catch (e) {}
+const saveCart = () => { try { localStorage.setItem("ponpon-cart", JSON.stringify([...cart])); } catch (e) {} };
+
+async function load(){
+  const res = await fetch(CONFIG.API_URL, {cache: "no-store"});
+  const data = await res.json();
+  if (!Array.isArray(data.products)) throw new Error("no products");
+  PRODUCTS = buildProducts(data.products);
+  bySku = new Map();
+  for (const p of PRODUCTS) for (const v of p.variants) bySku.set(v.sku, {p, v});
+  for (const sku of [...cart.keys()]) if (!bySku.has(sku)) cart.delete(sku);
+}
+const left = v => v.stock - (cart.get(v.sku) || 0);
+/* ลำดับรูป: รูปใน GitHub ก่อน ถ้าไม่มีใช้รูปจาก ZORT ถ้าไม่มีอีกใช้รูปสำรอง */
+const img = (srcs, alt) => { const s = srcs.filter(Boolean); return `<img src="${esc(s[0])}" data-next="${esc(s.slice(1).join("|"))}" alt="${esc(alt)}" loading="lazy">`; };
+document.addEventListener("error", e => {
+  const el = e.target; if (el.tagName !== "IMG") return;
+  const next = (el.dataset.next || "").split("|").filter(Boolean);
+  el.dataset.next = next.slice(1).join("|");
+  el.src = next[0] || PLACEHOLDER;
+  if (!next[0]) el.removeAttribute("data-next");
+}, true);
+
+function renderTabs(){
+  const cats = ["ทั้งหมด", ...new Set(PRODUCTS.map(p => p.cat))];
+  $("tabs").innerHTML = cats.map(c => `<button class="tab" type="button" data-cat="${esc(c)}" aria-pressed="${c === cat}">${esc(c)}</button>`).join("");
+}
+function renderGrid(){
+  const q = $("q").value.trim().toLowerCase(), only = $("instock").checked;
+  const list = PRODUCTS.filter(p => (cat === "ทั้งหมด" || p.cat === cat) && (!only || p.stock > 0) && (!q || p.search.includes(q)));
+  $("grid").innerHTML = list.length ? list.map(p => `
+    <button class="card${p.stock ? "" : " sold"}" type="button" data-id="${esc(p.id)}">
+      <span class="pic">${img([CONFIG.IMAGE_DIR + p.id + ".jpg", p.variants[0].image], p.name)}</span>
+      <span class="info">
+        <span class="name">${esc(p.name)}</span>
+        <span class="price">${p.multiPrice ? "<small>เริ่ม </small>" : ""}${baht(p.price)}</span>
+        <span class="meta">${p.stock ? `เหลือ ${p.stock.toLocaleString("th-TH")} ชิ้น` : `<span class="out">สินค้าหมด</span>`}${p.variants.length > 1 ? ` · ${p.variants.length} ตัวเลือก` : ""}</span>
+      </span>
+    </button>`).join("") : `<div class="state">ไม่พบสินค้า ลองพิมพ์คำอื่นหรือเลือกหมวดอื่น</div>`;
+}
+function renderCartBar(){
+  let n = 0, total = 0;
+  for (const [sku, k] of cart){ n += k; total += k * bySku.get(sku).v.price; }
+  $("cartbar").hidden = n === 0;
+  $("openCart").textContent = `ดูตะกร้า ${n} ชิ้น · ${baht(total)}`;
+}
+function openSheet(html, view){ const s = $("sheet"); s.innerHTML = `<div>${html}</div>`; s.dataset.view = view; s.hidden = false; $("backdrop").hidden = false; s.scrollTop = 0; }
+function closeSheet(){ $("sheet").hidden = true; $("backdrop").hidden = true; }
+function toast(t){ const el = $("toast"); el.textContent = t; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, 2200); }
+const closeBtn = `<button class="x" type="button" data-act="close" aria-label="ปิด">✕</button>`;
+
+function showProduct(id, sku){
+  const p = PRODUCTS.find(x => x.id === id); if (!p) return;
+  const v = p.variants.find(x => x.sku === sku) || p.variants.find(x => left(x) > 0) || p.variants[0];
+  sel = v.sku;
+  const max = left(v);
+  qty = Math.max(1, Math.min(qty, max));
+  const options = p.variants.length > 1 ? `<div><div class="label">เลือกแบบ</div><div class="opts">${p.variants.map(o => `
+      <button class="opt" type="button" data-sku="${esc(o.sku)}" aria-pressed="${o.sku === v.sku}" ${o.stock ? "" : "disabled"}>
+        ${o.hex ? `<span class="dot" style="background:${o.hex}"></span>` : ""}<span>${esc(o.label)}<small>${o.stock ? `เหลือ ${o.stock.toLocaleString("th-TH")}` : "หมด"}</small></span></button>`).join("")}</div></div>` : "";
+  openSheet(`
+    <div class="head"><h2>${esc(p.name)}</h2>${closeBtn}</div>
+    <div class="detail"><span class="pic">${img([CONFIG.IMAGE_DIR + v.sku + ".jpg", v.image, CONFIG.IMAGE_DIR + p.id + ".jpg"], p.name)}</span>
+      <div><div class="price">${baht(v.price)}</div>
+      <div>${v.stock ? `เหลือ <b>${v.stock.toLocaleString("th-TH")}</b> ชิ้น` : `<span class="out">สินค้าหมด</span>`}</div>
+      <div class="sku">${esc(v.sku)}</div></div></div>
+    ${options}
+    <div><div class="label">จำนวน</div><div class="qty">
+      <button type="button" data-act="minus" aria-label="ลดจำนวน" ${qty <= 1 ? "disabled" : ""}>−</button><b>${max > 0 ? qty : 0}</b>
+      <button type="button" data-act="plus" aria-label="เพิ่มจำนวน" ${qty >= max ? "disabled" : ""}>+</button>
+      <span class="sku">${cart.get(v.sku) ? `อยู่ในตะกร้าแล้ว ${cart.get(v.sku)} ชิ้น` : ""}</span></div></div>
+    <button class="btn" type="button" data-act="add" ${max > 0 ? "" : "disabled"}>${max > 0 ? `ใส่ตะกร้า · ${baht(v.price * qty)}` : (v.stock ? "ใส่ตะกร้าครบจำนวนที่มีแล้ว" : "สินค้าหมด")}</button>`, "product");
+  $("sheet").dataset.id = id;
+}
+function showCart(notice){
+  let total = 0, n = 0;
+  const lines = [...cart].map(([sku, k]) => {
+    const {p, v} = bySku.get(sku); total += k * v.price; n += k;
+    return `<div class="line">
+      <div class="t"><b>${esc(p.name)}</b><span class="sku">${v.label ? esc(v.label) + " · " : ""}${baht(v.price)}</span></div>
+      <div class="qty"><button type="button" data-act="dec" data-sku="${esc(sku)}" aria-label="ลดจำนวน">−</button><b>${k}</b>
+      <button type="button" data-act="inc" data-sku="${esc(sku)}" aria-label="เพิ่มจำนวน" ${k >= v.stock ? "disabled" : ""}>+</button></div></div>`;
+  }).join("");
+  if (!n){ closeSheet(); renderCartBar(); if (notice) toast(notice); return; }
+  openSheet(`
+    <div class="head"><h2>ตะกร้าของคุณ</h2>${closeBtn}</div>
+    ${notice ? `<p class="warn">${esc(notice)}</p>` : ""}
+    <div>${lines}</div>
+    <div class="sum"><span>รวม ${n} ชิ้น</span><span>${baht(total)}</span></div>
+    <button class="btn" type="button" data-act="order">ส่งออเดอร์ให้แอดมิน</button>
+    <button class="btn ghost" type="button" data-act="close">เลือกสินค้าต่อ</button>`, "cart");
+}
+function orderText(){
+  let total = 0, n = 0, i = 0;
+  const rows = [...cart].map(([sku, k]) => {
+    const {p, v} = bySku.get(sku); total += k * v.price; n += k; i++;
+    const nm = p.name.length > 45 ? p.name.slice(0, 45) + "…" : p.name;
+    return `${i}. ${nm}${v.label ? " [" + v.label + "]" : ""}\n    ${sku} x${k} = ${baht(k * v.price)}`;
+  });
+  return `🛒 สั่งซื้อสินค้า\n${rows.join("\n")}\n\nรวม ${n} ชิ้น ${baht(total)}`;
+}
+/* เช็กสต็อกล่าสุดก่อนส่ง แล้วส่งข้อความเข้าแชตในนามลูกค้า */
+async function placeOrder(){
+  if (sending) return; sending = true; toast("กำลังเช็กสต็อกล่าสุด...");
+  try {
+    await load();
+    let changed = false;
+    for (const [sku, k] of [...cart]){
+      const s = bySku.get(sku).v.stock;
+      if (k > s){ changed = true; if (s > 0) cart.set(sku, s); else cart.delete(sku); }
+    }
+    saveCart(); renderGrid(); renderCartBar();
+    if (changed){ sending = false; return showCart("สต็อกเพิ่งเปลี่ยน เราปรับจำนวนในตะกร้าให้ตรงกับของที่มีแล้ว ตรวจดูอีกครั้งก่อนส่งนะคะ"); }
+  } catch (e) { sending = false; return showCart("เช็กสต็อกไม่สำเร็จ ลองกดส่งอีกครั้งนะคะ"); }
+  const text = orderText();
+  if (CONFIG.LIFF_ID && window.liff && liff.isInClient()){
+    try {
+      await liff.sendMessages([{type: "text", text}]);
+      cart.clear(); saveCart(); sending = false;
+      return liff.closeWindow();
+    } catch (e) {}
+  }
+  sending = false;
+  openSheet(`
+    <div class="head"><h2>ส่งข้อความนี้ให้แอดมิน</h2>${closeBtn}</div>
+    <pre class="msg" id="msg">${esc(text)}</pre>
+    <a class="btn" href="https://line.me/R/oaMessage/${encodeURIComponent(CONFIG.OA_ID)}/?${encodeURIComponent(text)}">เปิดแชต PonPon พร้อมข้อความนี้</a>
+    <button class="btn ghost" type="button" data-act="copy">คัดลอกข้อความ</button>`, "order");
+}
+
+$("tabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (!b) return; cat = b.dataset.cat; renderTabs(); renderGrid(); });
+$("q").addEventListener("input", renderGrid);
+$("instock").addEventListener("change", renderGrid);
+$("grid").addEventListener("click", e => {
+  const c = e.target.closest(".card"); if (c){ qty = 1; return showProduct(c.dataset.id); }
+  if (e.target.closest("[data-act=retry]")) start();
+});
+$("openCart").addEventListener("click", () => showCart());
+$("backdrop").addEventListener("click", closeSheet);
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); });
+$("sheet").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b || b.disabled) return;
+  const id = $("sheet").dataset.id, act = b.dataset.act;
+  if (b.classList.contains("opt")){ qty = 1; return showProduct(id, b.dataset.sku); }
+  if (act === "close") return closeSheet();
+  if (act === "plus"){ qty++; return showProduct(id, sel); }
+  if (act === "minus"){ qty--; return showProduct(id, sel); }
+  if (act === "add"){ cart.set(sel, (cart.get(sel) || 0) + qty); qty = 1; saveCart(); closeSheet(); renderCartBar(); return toast("ใส่ตะกร้าแล้ว"); }
+  if (act === "inc" || act === "dec"){
+    const k = (cart.get(b.dataset.sku) || 0) + (act === "inc" ? 1 : -1);
+    if (k <= 0) cart.delete(b.dataset.sku); else cart.set(b.dataset.sku, k);
+    saveCart(); renderCartBar(); return showCart();
+  }
+  if (act === "order") return placeOrder();
+  if (act === "copy"){
+    const fallback = () => { const r = document.createRange(); r.selectNodeContents($("msg")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast("เลือกข้อความให้แล้ว กดคัดลอกได้เลย"); };
+    try { navigator.clipboard.writeText(orderText()).then(() => toast("คัดลอกแล้ว"), fallback); } catch (err) { fallback(); }
+  }
+});
+
+async function start(){
+  $("grid").innerHTML = `<div class="state">กำลังโหลดสินค้า...</div>`;
+  try { await load(); renderTabs(); renderGrid(); renderCartBar(); }
+  catch (e) { $("grid").innerHTML = `<div class="state">โหลดสินค้าไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่อีกครั้ง<br><button class="btn" type="button" data-act="retry">ลองใหม่</button></div>`; }
+}
+if (CONFIG.LIFF_ID && window.liff) liff.init({liffId: CONFIG.LIFF_ID}).catch(() => {});
+start();
+</script>
+</body>
+</html>
