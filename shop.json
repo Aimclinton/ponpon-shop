@@ -3,8 +3,8 @@
     { "title": "กดรับโค้ดส่วนลดสุดพิเศษ", "button": "คลิกเลย!", "color": "orange", "action": "coupons" },
     { "title": "ลดพิเศษ 20% ส่งฟรีทุกออเดอร์", "button": "ช้อปเลย!", "color": "red", "action": "products" }
   ],
-  "discountPercent": 0,
-  "shippingFee": null,
+  "discountPercent": 20,
+  "shippingFee": 0,
   "freeShippingOver": 0,
   "coupons": [
     { "code": "PONPO30", "title": "ส่วนลดสำหรับลูกค้าเก่า", "type": "amount", "value": 30, "min": 0, "expires": "" }
