@@ -1,6 +1,13 @@
 {
   "promoText": "ซื้อผ่าน LINE ลดทันที 10% ส่งฟรี ทุกรายการ",
   "discountPercent": 10,
-  "bestSellers": ["PP00383", "PP00194", "PP00376"],
-  "newCount": 8
+  "bestSellers": ["PP00194", "PP00013", "PP00011", "PP00023", "PP00029"],
+  "newCount": 8,
+  "shippingFee": 40,
+  "freeShippingOver": 49,
+  "payment": {
+    "promptpayId": "1518730319",
+    "accountName": "บริษัท เอ็มบีเค มอลล์ จำกัด",
+    "text": ""
+  }
 }
