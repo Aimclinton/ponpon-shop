@@ -7,14 +7,17 @@
   "shippingFee": 0,
   "freeShippingOver": 0,
   "coupons": [
-    { "code": "PONPO30", "title": "ส่วนลดสำหรับลูกค้าเก่า", "type": "amount", "value": 30, "min": 0, "expires": "" }
+    { "code": "PP1010", "title": "แคมเปญ 10.10 ลด 30%", "type": "percent", "value": 30, "min": 300, "max": 500, "expires": "2026-10-12" },
+    { "code": "PONPO30", "title": "ส่วนลดสำหรับลูกค้าเก่า", "type": "amount", "value": 30, "min": 100, "expires": "" },
+    { "code": "FREESHIP", "title": "ส่งฟรีเมื่อซื้อครบ 300", "type": "freeship", "min": 300, "expires": "" },
+    { "code": "SHIP20", "title": "ลดค่าส่ง 20 บาท", "type": "freeship", "value": 20, "min": 100, "expires": "" }
   ],
   "bestSellers": ["PP00194", "PP00013", "PP00011", "PP00023", "PP00029", "PP00384", "PP00400", "PP00401"],
   "newCount": 8,
   "payment": {
-    "bank": "",
-    "accountNumber": "",
-    "accountName": "",
+    "bank": "ธนาคารกสิกรไทย",
+    "accountNumber": "1518730319",
+    "accountName": "บริษัท เอ็มบีเค มอลล์ จำกัด",
     "text": ""
   }
 }
