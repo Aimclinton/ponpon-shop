@@ -1,13 +1,20 @@
 {
-  "promoText": "ซื้อผ่าน LINE ลดทันที 20% ส่งฟรี ทุกรายการ",
-  "discountPercent": 20,
+  "banners": [
+    { "title": "กดรับโค้ดส่วนลดสุดพิเศษ", "button": "คลิกเลย!", "color": "orange", "action": "coupons" },
+    { "title": "ลดพิเศษ 20% ส่งฟรีทุกออเดอร์", "button": "ช้อปเลย!", "color": "red", "action": "products" }
+  ],
+  "discountPercent": 0,
+  "shippingFee": null,
+  "freeShippingOver": 0,
+  "coupons": [
+    { "code": "PONPO30", "title": "ส่วนลดสำหรับลูกค้าเก่า", "type": "amount", "value": 30, "min": 0, "expires": "" }
+  ],
   "bestSellers": ["PP00194", "PP00013", "PP00011", "PP00023", "PP00029", "PP00384", "PP00400", "PP00401"],
   "newCount": 8,
-  "shippingFee": 40,
-  "freeShippingOver": 49,
   "payment": {
-    "promptpayId": "1518730319",
-    "accountName": "บริษัท เอ็มบีเค มอลล์ จำกัด",
+    "bank": "",
+    "accountNumber": "",
+    "accountName": "",
     "text": ""
   }
 }
