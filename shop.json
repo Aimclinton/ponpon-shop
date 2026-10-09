@@ -14,10 +14,9 @@
   ],
   "bestSellers": ["PP00194", "PP00013", "PP00011", "PP00023", "PP00029", "PP00384", "PP00400", "PP00401"],
   "newCount": 8,
-  "payment": {
-    "bank": "ธนาคารกสิกรไทย",
-    "accountNumber": "1518730319",
-    "accountName": "บริษัท เอ็มบีเค มอลล์ จำกัด",
-    "text": ""
-  }
+   "payment": {
+     "promptpayId": "0105569166326",
+     "accountName": "บริษัท ปอนปอน แอนด์ โค จำกัด",
+     "bank": "", "accountNumber": "", "text": ""
+   }
 }
