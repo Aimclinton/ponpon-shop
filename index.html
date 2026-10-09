@@ -215,7 +215,8 @@ const ICON = {
   back:'<path d="M15 5l-7 7 7 7"/>', close:'<path d="M6 6l12 12M18 6L6 18"/>',
   search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
   share:'<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.9l7.6-3.8M8.2 13.1l7.6 3.8"/>',
-  trash:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/>'
+  trash:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/>',
+  box:'<path d="M3.5 8 12 3.5 20.5 8v8L12 20.5 3.5 16z"/><path d="M3.5 8 12 12.5 20.5 8M12 12.5v8"/>'
 };
 const ic = n => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
 const MOTIF = [
@@ -309,6 +310,7 @@ let usedShip = store.get("ponpon-used-ship", "");       // โค้ดส่ว
 const isShip = c => !!c && c.type === "freeship";
 const isUsed = code => usedCoupon === code || usedShip === code;
 let draft = Object.assign({name: "", phone: "", address: "", note: "", remember: true}, store.get("ponpon-customer", {}));
+let orders = null, ordersState = "", orderTab = "all";
 let homeTab = "all", listCat = "all", listQ = "", listOnly = false, sel = null, qty = 1, sending = false, profile = null, formError = "";
 const saveCart = () => store.set("ponpon-cart", [...cart]);
 const linePrice = n => n > 0 && SHOP.discountPercent > 0 ? Math.max(1, Math.round(n * (100 - SHOP.discountPercent) / 100)) : n;
@@ -381,7 +383,7 @@ async function copyText(text, ok){
 }
 
 /* ---------- โค้ดส่วนลด ---------- */
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10); // วันที่ตามเวลาไทย
 const couponOf = code => SHOP.coupons.find(c => c.code === String(code || "").toUpperCase());
 const couponFace = c => c.type === "freeship" ? (c.value > 0 ? "ค่าส่งลด " + baht(c.value) : "ส่งฟรี") : c.type === "amount" ? "ลด " + baht(c.value) : "ลด " + c.value + "%";
 const couponNote = c => [c.min ? "ขั้นต่ำ " + baht(c.min) : "ไม่มีขั้นต่ำ", c.type === "percent" && c.max ? "ลดสูงสุด " + baht(c.max) : "", c.expires ? "ถึง " + c.expires : ""].filter(Boolean).join(" · ");
@@ -426,7 +428,7 @@ function showCoupons(){
 function route(){ const h = location.hash.replace(/^#\/?/, ""); const [page, arg] = h.split("/"); return {page: page || "home", arg: arg ? decodeURIComponent(arg) : ""}; }
 function go(hash){ if (location.hash === hash) render(); else location.hash = hash; }
 function topBar(r){
-  const titles = {product: "รายละเอียดสินค้า", cart: `ตะกร้าของฉัน (${[...cart.values()].reduce((a, b) => a + b, 0)})`, checkout: "ที่อยู่และการชำระเงิน", me: "ข้อมูลของฉัน", products: "สินค้าทั้งหมด"};
+  const titles = {product: "รายละเอียดสินค้า", cart: `ตะกร้าของฉัน (${[...cart.values()].reduce((a, b) => a + b, 0)})`, checkout: "ที่อยู่และการชำระเงิน", me: "ข้อมูลของฉัน", products: "สินค้าทั้งหมด", orders: "คำสั่งซื้อของฉัน"};
   if (r.page === "home") return `<div class="brand"><img src="${esc(CONFIG.LOGO_URL)}" data-logo alt=""><b>PonPon<br>Shopping Center</b></div>
     <button class="round" type="button" data-act="nav" data-to="#products" aria-label="ค้นหาสินค้า">${ic("search")}</button>`;
   const right = r.page === "product" ? `<button class="round" type="button" data-act="share" data-id="${esc(r.arg)}" aria-label="แชร์สินค้า">${ic("share")}</button>`
@@ -435,7 +437,7 @@ function topBar(r){
 }
 function navBar(r){
   const n = [...cart.values()].reduce((a, b) => a + b, 0);
-  const items = [["home", "#home", "หน้าหลัก", "home"], ["products", "#products", "สินค้าทั้งหมด", "grid"], ["cart", "#cart", "ตะกร้า", "cart"], ["me", "#me", "ข้อมูลของฉัน", "user"]];
+  const items = [["home", "#home", "หน้าหลัก", "home"], ["products", "#products", "สินค้าทั้งหมด", "grid"], ["cart", "#cart", "ตะกร้า", "cart"], ["orders", "#orders", "คำสั่งซื้อของฉัน", "box"], ["me", "#me", "ข้อมูลของฉัน", "user"]];
   const cur = r.page === "product" ? "products" : r.page === "checkout" ? "cart" : r.page;
   return items.map(([k, to, label, icon]) => `<button type="button" data-act="nav" data-to="${to}" aria-label="${label}" ${cur === k ? 'aria-current="page"' : ""}>${ic(icon)}${k === "cart" && n ? `<em>${n}</em>` : ""}</button>`).join("");
 }
@@ -544,6 +546,7 @@ function viewCheckout(){
       ${pay.text ? `<p style="white-space:pre-wrap">${esc(pay.text)}</p>` : ""}
       <p class="desc">โอนแล้วส่งสลิปในแชต PonPon ได้เลยค่ะ</p></div>` : "";
   return `${formError ? `<p class="warn">${esc(formError)}</p>` : ""}
+    ${profile ? "" : `<div class="box"><h3>เข้าสู่ระบบก่อนสั่งซื้อ</h3><p class="desc">ใช้บัญชี LINE ของคุณเพื่อยืนยันคำสั่งซื้อและติดตามสถานะได้</p><button class="btn" type="button" data-act="login">เข้าสู่ระบบด้วย LINE</button></div>`}
     <div class="box"><h3>ที่อยู่จัดส่ง</h3>
       <label class="fld">ชื่อผู้รับ<input id="c-name" data-f="name" autocomplete="name" value="${esc(draft.name)}"></label>
       <label class="fld">เบอร์โทร<input id="c-phone" data-f="phone" type="tel" inputmode="tel" autocomplete="tel" value="${esc(draft.phone)}"></label>
@@ -571,8 +574,8 @@ function viewMe(){
       <button class="btn line" type="button" data-act="coupons">ดูโค้ดส่วนลดทั้งหมด</button></div>
     <div class="box"><h3>สินค้าที่ถูกใจ</h3>
       ${favList.length ? `<div class="hscroll">${favList.map(card).join("")}</div>` : `<p class="desc">กดรูปหัวใจบนสินค้าเพื่อเก็บไว้ดูทีหลังได้เลย</p>`}</div>
-    <div class="box"><h3>ประวัติคำสั่งซื้อ</h3><p class="desc">ดูรายการสั่งซื้อและสถานะได้ในแชต PonPon ค่ะ</p>
-      <a class="btn line" href="https://line.me/R/ti/p/${encodeURIComponent(CONFIG.OA_ID)}">เปิดแชต PonPon</a></div>`;
+    <div class="box"><h3>คำสั่งซื้อของฉัน</h3><p class="desc">ดูรายการสั่งซื้อ สถานะการชำระเงิน และการจัดส่ง</p>
+      <button class="btn line" type="button" data-act="nav" data-to="#orders">ดูคำสั่งซื้อทั้งหมด</button></div>`;
 }
 
 let bannerTimer = null;
@@ -586,7 +589,7 @@ function render(){
     $("view").innerHTML = loadError ? `<div class="state" style="margin-top:20px">โหลดสินค้าไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่อีกครั้ง<br><br><button class="btn" type="button" data-act="retry">ลองใหม่</button></div>` : `<div class="state" style="margin-top:20px">กำลังโหลดสินค้า...</div>`;
     return;
   }
-  const views = {home: viewHome, products: viewProducts, product: () => viewProduct(r.arg), cart: viewCart, checkout: viewCheckout, me: viewMe};
+  const views = {home: viewHome, products: viewProducts, product: () => viewProduct(r.arg), cart: viewCart, checkout: viewCheckout, me: viewMe, orders: viewOrders};
   $("view").innerHTML = (views[r.page] || viewHome)();
   if ((r.page === "cart" || r.page === "checkout") && cart.size){
     const t = totals();
@@ -665,37 +668,91 @@ function orderText(){
   if (draft.note.trim()) lines.push("หมายเหตุ: " + draft.note.trim());
   return lines.join("\n");
 }
-async function saveOrder(){
-  if (!SHOP.saveUrl) return;
-  const t = totals(), rec = {time: new Date().toISOString(), items: orderItems(), goods: t.goods, discount: t.discount, coupon: t.coupon ? t.coupon.code : "", shipCoupon: t.shipCoupon ? t.shipCoupon.code : "", shipping: t.ship, total: t.total,
-    customer: {name: draft.name.trim(), phone: draft.phone.trim(), address: draft.address.trim(), note: draft.note.trim()}, line: profile ? {userId: profile.userId, displayName: profile.displayName} : {}};
-  try { await Promise.race([fetch(SHOP.saveUrl, {method: "POST", mode: "no-cors", headers: {"Content-Type": "text/plain"}, body: JSON.stringify(rec)}), new Promise(r => setTimeout(r, 5000))]); } catch (e) {}
+/* ---------- ระบบหลังบ้าน: สร้างออเดอร์และดูคำสั่งซื้อ ---------- */
+async function idToken(){
+  if (!(await liffReady) || !liff.isLoggedIn()) return "";
+  try { return liff.getIDToken() || ""; } catch (e) { return ""; }
+}
+async function api(path, opt, token){
+  const res = await fetch(CONFIG.API_URL + path, {...opt, headers: {"Content-Type": "application/json", Authorization: "Bearer " + token}});
+  let data = {}; try { data = await res.json(); } catch (e) {}
+  if (!res.ok){ const err = new Error(data.error || "ระบบขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้ง"); err.status = res.status; throw err; }
+  return data;
+}
+const dateText = ms => new Date(ms).toLocaleString("th-TH", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"});
+function bankBox(total){
+  const pay = SHOP.payment; if (!pay.accountNumber) return "";
+  return `<div class="bank"><span class="desc">${esc(pay.bank || "โอนเข้าบัญชีธนาคาร")}</span>
+    <div class="acc"><b>${esc(pay.accountNumber)}</b><button class="mini" type="button" data-act="copyacc">คัดลอก</button></div>
+    ${pay.accountName ? `<span>ชื่อบัญชี ${esc(pay.accountName)}</span>` : ""}
+    <div class="acc"><span>ยอดโอน <b style="font-size:17px">${baht(total)}</b></span><button class="mini" type="button" data-act="copynum" data-v="${total}">คัดลอกยอด</button></div></div>`;
 }
 async function placeOrder(){
   if (sending) return;
-  formError = checkDraft(); if (formError){ render(); return scrollTo(0, 0); }
-  sending = true; toast("กำลังเช็กสต็อกล่าสุด...");
+  const fail = msg => { sending = false; formError = msg; render(); scrollTo(0, 0); };
+  formError = checkDraft(); if (formError) return fail(formError);
+  const token = await idToken();
+  if (!token) return fail(profile ? "ระบบเข้าสู่ระบบยังตั้งค่าไม่ครบ กรุณาติดต่อแอดมินค่ะ" : "กรุณาเข้าสู่ระบบด้วย LINE ก่อนยืนยันสั่งซื้อค่ะ");
+  sending = true; toast("กำลังสร้างคำสั่งซื้อ...");
+  const t = totals(), titles = {};
+  for (const it of orderItems()) titles[it.sku] = it.name + (it.option ? " [" + it.option + "]" : "");
+  let res;
   try {
-    await load();
-    let changed = false;
-    for (const [sku, k] of [...cart]){ const st = bySku.get(sku).v.stock; if (k > st){ changed = true; if (st > 0) cart.set(sku, st); else cart.delete(sku); } }
-    saveCart();
-    if (changed){ sending = false; toast("สต็อกเพิ่งเปลี่ยน เราปรับจำนวนในตะกร้าให้แล้ว ตรวจดูอีกครั้งนะคะ"); return go("#cart"); }
-  } catch (e) { sending = false; formError = "เช็กสต็อกไม่สำเร็จ ลองกดยืนยันอีกครั้งนะคะ"; return render(); }
-  if (draft.remember) store.set("ponpon-customer", draft); else { try { localStorage.removeItem("ponpon-customer"); } catch (e) {} }
-  const text = orderText();
-  await saveOrder();
-  if (CONFIG.LIFF_ID && window.liff && await liffReady && liff.isInClient()){
-    try {
-      await liff.sendMessages([{type: "text", text}, {type: "text", text: CONFIG.CONFIRM_TEXT}]);
-      cart.clear(); saveCart(); usedCoupon = ""; usedShip = ""; store.set("ponpon-used-coupon", ""); store.set("ponpon-used-ship", ""); sending = false;
-      return liff.closeWindow();
-    } catch (e) {}
+    res = await api("api/order", {method: "POST", body: JSON.stringify({
+      items: [...cart].map(([sku, qty]) => ({sku, qty})), titles,
+      customer: {name: draft.name.trim(), phone: draft.phone.trim(), address: draft.address.trim(), note: draft.note.trim()},
+      coupon: t.coupon ? t.coupon.code : "", shipCoupon: t.shipCoupon ? t.shipCoupon.code : "", expectedTotal: t.total
+    })}, token);
+  } catch (e) {
+    if (e.status === 409){ try { await load(); saveCart(); } catch (x) {} }
+    return fail(e.message);
   }
-  sending = false;
-  openSheet(`<h2>ส่งข้อความนี้ให้แอดมิน</h2><pre class="msg" id="msg">${esc(text)}</pre>
-    <button class="btn" type="button" data-act="copyorder">คัดลอกข้อความ</button>
-    <a class="btn line" href="https://line.me/R/ti/p/${encodeURIComponent(CONFIG.OA_ID)}">เปิดแชต PonPon แล้ววางข้อความ</a>`);
+  if (draft.remember) store.set("ponpon-customer", draft); else { try { localStorage.removeItem("ponpon-customer"); } catch (e) {} }
+  cart.clear(); saveCart(); usedCoupon = ""; usedShip = ""; store.set("ponpon-used-coupon", ""); store.set("ponpon-used-ship", "");
+  orders = null; ordersState = ""; orderTab = "all"; sending = false; formError = "";
+  $("toast").hidden = true;
+  try { if (liff.isInClient()) await liff.sendMessages([{type: "text", text: `${CONFIG.CONFIRM_TEXT} #${res.number}`}]); } catch (e) {}
+  holdSheet = location.hash !== "#orders";
+  go("#orders");
+  openSheet(`<h2>สั่งซื้อสำเร็จ</h2>
+    <p>เลขที่คำสั่งซื้อ <b>${esc(res.number)}</b></p>
+    <p class="warn" style="margin:0">กรุณาชำระเงินภายใน ${esc(dateText(res.expiresAt))} หากเลยเวลา ระบบจะยกเลิกคำสั่งซื้ออัตโนมัติ</p>
+    ${bankBox(res.total)}
+    <button class="btn" type="button" data-act="tochat">กลับไปที่แชตเพื่อส่งสลิป</button>
+    <button class="btn line" type="button" data-act="closesheet">ดูคำสั่งซื้อของฉัน</button>`);
+  try { await load(); } catch (e) {}
+}
+const STAGE = {pending: ["ที่ต้องชำระ", "#F7944A"], toship: ["ที่ต้องจัดส่ง", "#1E1E22"], shipping: ["ที่ต้องได้รับ", "#1E1E22"], done: ["สำเร็จ", "#5a7d1f"], cancelled: ["ยกเลิก", "#75757D"]};
+async function loadOrders(){
+  ordersState = "loading"; if (route().page === "orders") render();
+  const token = await idToken();
+  if (!token){ ordersState = "login"; }
+  else { try { orders = (await api("api/orders", {method: "GET"}, token)).orders || []; ordersState = "ok"; } catch (e) { ordersState = e.status === 401 ? "login" : "error"; } }
+  if (route().page === "orders") render();
+}
+function viewOrders(){
+  if (!ordersState){ loadOrders(); return `<div class="state" style="margin-top:20px">กำลังโหลดคำสั่งซื้อ...</div>`; }
+  if (ordersState === "loading") return `<div class="state" style="margin-top:20px">กำลังโหลดคำสั่งซื้อ...</div>`;
+  if (ordersState === "login") return `<div class="state" style="margin-top:20px">เข้าสู่ระบบด้วย LINE เพื่อดูคำสั่งซื้อของคุณ<br><br><button class="btn" type="button" data-act="login">เข้าสู่ระบบด้วย LINE</button></div>`;
+  if (ordersState === "error") return `<div class="state" style="margin-top:20px">โหลดคำสั่งซื้อไม่สำเร็จ ลองใหม่อีกครั้งนะคะ<br><br><button class="btn" type="button" data-act="reloadorders">ลองใหม่</button></div>`;
+  const tabs = [["all", "ทั้งหมด"], ...Object.entries(STAGE).map(([k, v]) => [k, v[0]])];
+  const list = orders.filter(o => orderTab === "all" || o.status === orderTab);
+  const cards = list.map(o => {
+    const st = STAGE[o.status] || STAGE.pending, more = o.lines.length - 3;
+    return `<div class="box" style="margin-top:0">
+      <div class="acc"><b style="font-family:var(--display)">${esc(o.number)}</b><span class="badge" style="background:${st[1]};color:#fff">${st[0]}</span></div>
+      <span class="desc">สั่งเมื่อ ${esc(dateText(o.createdAt))}</span>
+      <div class="rows">${o.lines.slice(0, 3).map(l => `<div><span>${esc(l.title)} x${l.qty}</span><span>${baht(l.price * l.qty)}</span></div>`).join("")}
+        ${more > 0 ? `<div><span class="desc">และอีก ${more} รายการ</span><span></span></div>` : ""}
+        ${o.discount ? `<div><span>ส่วนลด${o.coupon ? " (" + esc(o.coupon) + ")" : ""}</span><span class="neg">−${baht(o.discount)}</span></div>` : ""}
+        <div><span>ค่าจัดส่ง</span><span>${shipLabel(o.ship)}</span></div>
+        <div><b>ยอดรวม</b><b style="color:var(--red)">${baht(o.total)}</b></div></div>
+      ${o.status === "pending" ? `<p class="warn" style="margin:0">ชำระเงินภายใน ${esc(dateText(o.expiresAt))}</p>${bankBox(o.total)}<button class="btn" type="button" data-act="tochat">ส่งสลิปในแชต</button>` : ""}
+      ${o.tracking ? `<div class="acc"><span>เลขพัสดุ <b>${esc(o.tracking)}</b></span><button class="mini" type="button" data-act="copynum" data-v="${esc(o.tracking)}">คัดลอก</button></div>` : ""}
+    </div>`; }).join("");
+  return `<div class="tabs" style="margin-top:4px">${tabs.map(([k, t]) => `<button class="tab" type="button" data-act="ordertab" data-k="${k}" aria-pressed="${orderTab === k}">${t}</button>`).join("")}</div>
+    <div class="items">${cards || `<div class="state">${orders.length ? "ไม่มีคำสั่งซื้อในสถานะนี้" : "ยังไม่มีคำสั่งซื้อ เลือกสินค้าที่ชอบได้เลยค่ะ"}</div>`}</div>
+    <button class="btn line" type="button" data-act="reloadorders" style="margin-top:14px">อัปเดตสถานะล่าสุด</button>`;
 }
 
 /* ---------- การกดปุ่มทั้งหมด ---------- */
@@ -749,7 +806,10 @@ document.addEventListener("click", e => {
   if (a === "order") return placeOrder();
   if (a === "copyacc") return copyText(SHOP.payment.accountNumber.replace(/[^\d]/g, ""), "คัดลอกเลขบัญชีแล้ว");
   if (a === "copyamt") return copyText(String(totals().total), "คัดลอกยอดโอนแล้ว");
-  if (a === "copyorder") return copyText(orderText(), "คัดลอกแล้ว");
+  if (a === "copynum") return copyText(b.dataset.v, "คัดลอกแล้ว");
+  if (a === "ordertab"){ orderTab = b.dataset.k; return keep(); }
+  if (a === "reloadorders") return loadOrders();
+  if (a === "tochat"){ closeSheet(); try { if (window.liff && liff.isInClient()) return liff.closeWindow(); } catch (e) {} location.href = "https://line.me/R/ti/p/" + encodeURIComponent(CONFIG.OA_ID); return; }
   if (a === "saveaddr"){ draft.remember = true; store.set("ponpon-customer", draft); return toast("บันทึกที่อยู่แล้ว"); }
   if (a === "login"){ return liffReady.then(ok => ok ? liff.login({redirectUri: location.href}) : toast("เปิดหน้านี้จากในแอป LINE เพื่อเข้าสู่ระบบนะคะ")); }
 });
@@ -760,11 +820,12 @@ document.addEventListener("input", e => {
   if (t.id === "only"){ listOnly = t.checked; $("plist").innerHTML = productList(); }
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); if (e.key === "Enter" && e.target.id === "code"){ e.preventDefault(); setCoupon(e.target.value.trim()); render(); } });
-window.addEventListener("hashchange", () => { closeSheet(); render(); });
+let holdSheet = false; // ให้หน้าต่างแจ้งผลสั่งซื้อค้างไว้ตอนเปลี่ยนหน้า
+window.addEventListener("hashchange", () => { if (holdSheet) holdSheet = false; else closeSheet(); render(); });
 
 /* ---------- เริ่มต้น ---------- */
 const liffReady = CONFIG.LIFF_ID && window.liff ? liff.init({liffId: CONFIG.LIFF_ID}).then(() => true).catch(() => false) : Promise.resolve(false);
-liffReady.then(async ok => { if (ok && liff.isLoggedIn()){ try { profile = await liff.getProfile(); if (route().page === "me") render(); } catch (e) {} } });
+liffReady.then(async ok => { if (ok && liff.isLoggedIn()){ try { profile = await liff.getProfile(); if (["me", "checkout"].includes(route().page)) render(); } catch (e) {} } });
 async function start(){
   loadError = false; render();
   try { await load(); } catch (e) { loadError = true; }
@@ -772,7 +833,9 @@ async function start(){
 }
 start().then(async () => {
   await liffReady;
-  const id = (new URLSearchParams(location.search).get("p") || "").toUpperCase();
+  const qs = new URLSearchParams(location.search);
+  if (qs.get("page") === "orders" && route().page === "home") return go("#orders");
+  const id = (qs.get("p") || "").toUpperCase();
   if (/^[A-Z0-9]{3,20}$/.test(id) && byId.has(id) && route().page === "home"){ sel = null; qty = 1; go("#product/" + id); }
 });
 </script>
