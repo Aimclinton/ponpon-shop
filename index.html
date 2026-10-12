@@ -113,6 +113,15 @@ main{animation:rise .25s ease-out}
 /* product */
 .hero{margin:0 -16px;background:var(--red-tint);background-image:radial-gradient(rgba(228,0,25,.16) 1.4px,transparent 1.5px);background-size:16px 16px}
 .hero img{width:100%;aspect-ratio:1;object-fit:contain}
+.gal{position:relative}
+.gal-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.gal-track::-webkit-scrollbar{display:none}
+.gal-track img{flex:0 0 100%;scroll-snap-align:center}
+.gal-count{position:absolute;right:14px;top:14px;background:var(--ink);color:#fff;font-family:var(--display);font-weight:700;font-size:12px;border-radius:999px;padding:3px 10px}
+.gal-thumbs{position:absolute;left:0;right:0;bottom:38px;display:flex;justify-content:center;gap:6px;padding:0 16px;overflow-x:auto;scrollbar-width:none}
+.gal-thumbs button{flex:none;width:44px;height:44px;border-radius:12px;overflow:hidden;border:2px solid var(--card);background:var(--card);opacity:.75;transition:transform .15s}
+.gal-thumbs button[aria-current]{border-color:var(--red);opacity:1;transform:scale(1.08)}
+.gal-thumbs img{width:100%;height:100%;object-fit:cover;aspect-ratio:auto}
 .pd{background:var(--card);border-radius:28px 28px 0 0;margin:-28px -16px 0;padding:22px 16px 24px;position:relative;display:flex;flex-direction:column;gap:14px;border-top:var(--edge)}
 .pd::before{content:"";position:absolute;top:8px;left:50%;width:44px;height:5px;border-radius:3px;background:var(--line);transform:translateX(-50%)}
 .pd-h{display:flex;gap:12px;align-items:flex-start}
@@ -257,7 +266,8 @@ const CONFIG = {
   LOGO_URL: "images/logo.png", // โลโก้ร้าน (อัปไฟล์ไว้ที่ images/logo.png)
   CONFIRM_TEXT: "ยืนยันคำสั่งซื้อ",
   GROUP_LEN: 7,
-  IMAGE_DIR: "images/"
+  IMAGE_DIR: "images/",
+  MAX_PHOTOS: 6               // รูปต่อชื่อไฟล์สูงสุด เช่น PP00350GN.jpg, PP00350GN-2.jpg ... PP00350GN-6.jpg
 };
 const CAT_TH = {"Home Suppliers":"ของใช้ในบ้าน","Fashion&Accessories":"แฟชั่นและเครื่องประดับ","Storage&Organization":"จัดเก็บและจัดระเบียบ","Beauty&Care Products":"ความงามและดูแลตัวเอง","Kitchen Utensils":"เครื่องครัว","Cleaning":"ทำความสะอาด","Gadgets":"แกดเจ็ต","Light&Digital":"โคมไฟและดิจิทัล","Pet Care":"สัตว์เลี้ยง","อุปโภค&บริโภค":"อุปโภคบริโภค"};
 /* ========================================== */
@@ -397,12 +407,15 @@ function readShop(shop){
       value: Math.max(0, Number(c.value) || 0), min: Math.max(0, Number(c.min) || 0), max: Math.max(0, Number(c.max) || 0), expires: c.expires ? String(c.expires) : ""
     })),
     categoryNames: shop.categoryNames || {},
+    imageVersion: shop.imageVersion ? String(shop.imageVersion) : "",
     texts: shop.texts && typeof shop.texts === "object" ? shop.texts : {},
     saveUrl: String(shop.saveUrl || "")
   };
 }
 async function load(){
-  const opt = url => fetch(url, {cache: "no-cache"}).then(r => r.ok ? r.json() : {}).catch(() => ({}));
+  // อ่าน JSON แบบยืดหยุ่น: ถ้ามีลูกน้ำเกินท้ายรายการ (เช่น },] ) ก็ยังอ่านได้
+  const lenient = t => { try { return JSON.parse(t); } catch (e) { try { const v = JSON.parse(t.replace(/,(\s*[}\]])/g, "$1")); console.warn("shop.json มีลูกน้ำเกิน ระบบแก้ให้ชั่วคราวแล้ว"); return v; } catch (x) { console.error("shop.json อ่านไม่ได้", x); return {}; } } };
+  const opt = url => fetch(url, {cache: "no-cache"}).then(r => r.ok ? r.text() : "{}").then(lenient).catch(() => ({}));
   const [res, names, shop] = await Promise.all([fetch(CONFIG.API_URL, {cache: "no-store"}), opt(CONFIG.NAMES_URL), opt(CONFIG.SHOP_URL)]);
   const data = await res.json();
   if (!Array.isArray(data.products)) throw new Error("no products");
@@ -422,6 +435,46 @@ async function load(){
 }
 
 /* ---------- ส่วนประกอบที่ใช้ซ้ำ ---------- */
+/* ---------- รูปสินค้า ----------
+   ใส่รูปในโฟลเดอร์ images/ ตั้งชื่อไฟล์ตามนี้ (.jpg) แล้วรูปจะขึ้นเองโดยไม่ต้องแก้โค้ด
+   - รูปทั้งสินค้า (ทุกสี):        PP00350.jpg, PP00350-2.jpg, PP00350-3.jpg ...
+   - รูปเฉพาะสี (ทุกไซซ์ของสีนั้น):  PP00350GN.jpg, PP00350GN-2.jpg ...   (รหัส 7 ตัวแรก + รหัสสีใน SKU)
+   - รูปเฉพาะ SKU:                  PP00350GNM25001.jpg, PP00350GNM25001-2.jpg ...
+   หน้าสินค้าจะเรียงรูป SKU > รูปสี > รูปทั้งสินค้า และเปลี่ยนตามสีที่ลูกค้าเลือก
+   เปลี่ยนรูป: อัปไฟล์ชื่อเดิมทับ แล้วเปลี่ยน "imageVersion" ใน shop.json (เช่น "2") ให้ลูกค้าเห็นรูปใหม่ทันที */
+const picUrl = (base, n) => CONFIG.IMAGE_DIR + base + (n > 1 ? "-" + n : "") + ".jpg" + (SHOP.imageVersion ? "?v=" + encodeURIComponent(SHOP.imageVersion) : "");
+const colorKey = (p, v) => { const m = (v.mid || "").match(RE_MID); return m && m[2] ? p.id + m[2] : ""; };
+const photoCache = new Map();
+const imgExists = url => new Promise(ok => { const im = new Image(); im.onload = () => ok(true); im.onerror = () => ok(false); im.src = url; });
+function probePhotos(base){
+  if (!base) return Promise.resolve([]);
+  if (!photoCache.has(base)) photoCache.set(base, (async () => {
+    const urls = Array.from({length: CONFIG.MAX_PHOTOS}, (_, i) => picUrl(base, i + 1));
+    const ok = await Promise.all(urls.map(imgExists));
+    return urls.filter((u, i) => ok[i]);
+  })());
+  return photoCache.get(base);
+}
+async function photosOf(p, v){
+  const ck = colorKey(p, v);
+  const lists = await Promise.all([probePhotos(v.sku), ck && ck !== v.sku ? probePhotos(ck) : [], probePhotos(p.id)]);
+  const all = [...new Set(lists.flat())];
+  return all.length ? all : [v.image].filter(Boolean);
+}
+const quickPics = (p, v) => [picUrl(v.sku, 1), colorKey(p, v) ? picUrl(colorKey(p, v), 1) : "", v.image, picUrl(p.id, 1)];
+function galleryHtml(list, alt){
+  return `<div class="gal-track" id="galtrack">${list.map((u, i) => `<img src="${esc(u)}" alt="${esc(alt)}" ${i ? 'loading="lazy"' : ""}>`).join("")}</div>
+    ${list.length > 1 ? `<div class="gal-count" id="galcount" translate="no">1/${list.length}</div><div class="gal-thumbs">${list.map((u, i) => `<button type="button" data-act="galgo" data-i="${i}" aria-label="รูปที่ ${i + 1}"${i ? "" : ' aria-current="true"'}><img src="${esc(u)}" alt="" loading="lazy"></button>`).join("")}</div>` : ""}`;
+}
+async function loadGallery(p, v){
+  const list = await photosOf(p, v);
+  const el = $("gal"); if (!el || el.dataset.sku !== v.sku || !list.length) return;
+  if (el.dataset.list === list.join("|")) return;
+  el.dataset.list = list.join("|");
+  el.innerHTML = galleryHtml(list, p.title);
+  const tr = $("galtrack");
+  tr.addEventListener("scroll", () => { const i = Math.round(tr.scrollLeft / tr.clientWidth); const c = $("galcount"); if (c) c.textContent = `${i + 1}/${list.length}`; el.querySelectorAll(".gal-thumbs button").forEach((b, k) => b.toggleAttribute("aria-current", k === i)); }, {passive: true});
+}
 const img = (srcs, alt) => { const s = srcs.filter(Boolean); return `<img src="${esc(s[0] || PLACEHOLDER)}" data-next="${esc(s.slice(1).join("|"))}" alt="${esc(alt)}" loading="lazy">`; };
 document.addEventListener("error", e => {
   const el = e.target; if (el.tagName !== "IMG") return;
@@ -434,8 +487,8 @@ document.addEventListener("error", e => {
 const priceHtml = (price, orig, multi) => `<span class="pr"><b>${multi ? "เริ่ม " : ""}${baht(price)}</b>${orig > price ? `<s>${baht(orig)}</s>` : ""}</span>`;
 const heartBtn = id => `<button class="heart" type="button" data-act="fav" data-id="${esc(id)}" aria-pressed="${favs.has(id)}" aria-label="ถูกใจ">${ic("heart")}</button>`;
 const card = p => `<div class="cell"><button class="card${p.stock ? "" : " sold"}" type="button" data-act="open" data-id="${esc(p.id)}">
-    <span class="ph">${img([CONFIG.IMAGE_DIR + p.id + ".jpg", p.variants[0].image], p.title)}</span>
-    <span class="nm" translate="no">${esc(p.title)}</span>
+    <span class="ph">${img([picUrl(p.id, 1), colorKey(p, p.variants[0]) ? picUrl(colorKey(p, p.variants[0]), 1) : "", p.variants[0].image], p.title)}</span>
+    <span class="nm" translate="no">${esc(tName(p))}</span>
     ${priceHtml(p.price, p.orig, p.multiPrice)}
     <span class="st">${p.stock ? `เหลือ ${num(p.stock)} ชิ้น` : `<span class="out">สินค้าหมด</span>`}</span>
   </button>${heartBtn(p.id)}</div>`;
@@ -533,7 +586,7 @@ function viewProducts(){
 }
 function productList(){
   const q = listQ.trim().toLowerCase();
-  const list = PRODUCTS.filter(p => (listCat === "all" || p.cat === listCat) && (!listOnly || p.stock > 0) && (!q || p.search.includes(q)));
+  const list = PRODUCTS.filter(p => (listCat === "all" || p.cat === listCat) && (!listOnly || p.stock > 0) && (!q || p.search.includes(q) || tName(p).toLowerCase().includes(q)));
   if (!list.length) return `<div class="state">ไม่พบสินค้า ลองพิมพ์คำอื่นหรือเลือกหมวดอื่น</div>`;
   const have = list.filter(p => p.stock > 0), sold = list.filter(p => !p.stock);
   return have.map(card).join("") + (sold.length ? `<h2 class="sec">สินค้าหมด <small>${sold.length} รายการ</small></h2>` + sold.map(card).join("") : "");
@@ -548,20 +601,21 @@ function viewProduct(id){
   let options = "";
   if (p.dims){
     const has = (c, s) => p.variants.find(x => x.c === c && x.s === s);
-    options = `<div><div class="lbl">สี <span translate="no">${esc((p.dims.colors.find(c => c.id === v.c) || {}).name || "")}</span></div><div class="chips" translate="no">${p.dims.colors.map(c => {
+    options = `<div><div class="lbl">สี <span translate="no">${esc(tOpt((p.dims.colors.find(c => c.id === v.c) || {}).name || ""))}</span></div><div class="chips" translate="no">${p.dims.colors.map(c => {
         const any = p.variants.some(x => x.c === c.id && x.stock > 0);
-        return `<button class="chip" type="button" data-act="pickc" data-v="${esc(c.id)}" aria-pressed="${c.id === v.c}" ${any ? "" : "disabled"}>${c.hex ? `<i style="background:${c.hex}"></i>` : ""}${esc(c.name)}</button>`; }).join("")}</div></div>
-      <div><div class="lbl">${p.dims.sizes.every(z => /\d|^(XS|S|M|L|XL|2XL|3XL)\b|ฟรีไซซ์|มาตรฐาน/.test(z.name)) ? "ขนาด" : "แบบ"} <span translate="no">${esc((p.dims.sizes.find(s => s.id === v.s) || {}).name || "")}</span></div><div class="chips" translate="no">${p.dims.sizes.map(s => {
+        return `<button class="chip" type="button" data-act="pickc" data-v="${esc(c.id)}" aria-pressed="${c.id === v.c}" ${any ? "" : "disabled"}>${c.hex ? `<i style="background:${c.hex}"></i>` : ""}${esc(tOpt(c.name))}</button>`; }).join("")}</div></div>
+      <div><div class="lbl">${p.dims.sizes.every(z => /\d|^(XS|S|M|L|XL|2XL|3XL)\b|ฟรีไซซ์|มาตรฐาน/.test(z.name)) ? "ขนาด" : "แบบ"} <span translate="no">${esc(tOpt((p.dims.sizes.find(s => s.id === v.s) || {}).name || ""))}</span></div><div class="chips" translate="no">${p.dims.sizes.map(s => {
         const x = has(v.c, s.id);
-        return `<button class="chip" type="button" data-act="picks" data-v="${esc(s.id)}" aria-pressed="${s.id === v.s}" ${x && x.stock > 0 ? "" : "disabled"}>${esc(s.name)}</button>`; }).join("")}</div></div>`;
+        return `<button class="chip" type="button" data-act="picks" data-v="${esc(s.id)}" aria-pressed="${s.id === v.s}" ${x && x.stock > 0 ? "" : "disabled"}>${esc(tOpt(s.name))}</button>`; }).join("")}</div></div>`;
   } else if (p.variants.length > 1){
     const allColor = p.variants.every(o => o.hex);
-    options = `<div><div class="lbl">${allColor ? "สี" : "ตัวเลือก"} <span translate="no">${esc(v.label)}</span></div><div class="chips" translate="no">${p.variants.map(o =>
-      `<button class="chip" type="button" data-act="picksku" data-v="${esc(o.sku)}" aria-pressed="${o.sku === v.sku}" ${o.stock ? "" : "disabled"}>${o.hex ? `<i style="background:${o.hex}"></i>` : ""}${esc(o.label)}</button>`).join("")}</div></div>`;
+    options = `<div><div class="lbl">${allColor ? "สี" : "ตัวเลือก"} <span translate="no">${esc(tOpt(v.label))}</span></div><div class="chips" translate="no">${p.variants.map(o =>
+      `<button class="chip" type="button" data-act="picksku" data-v="${esc(o.sku)}" aria-pressed="${o.sku === v.sku}" ${o.stock ? "" : "disabled"}>${o.hex ? `<i style="background:${o.hex}"></i>` : ""}${esc(tOpt(o.label))}</button>`).join("")}</div></div>`;
   }
-  return `<div class="hero">${img([CONFIG.IMAGE_DIR + v.sku + ".jpg", v.image, CONFIG.IMAGE_DIR + p.id + ".jpg"], p.title)}</div>
+  setTimeout(() => loadGallery(p, v));
+  return `<div class="hero gal" id="gal" data-sku="${esc(v.sku)}">${img(quickPics(p, v), p.title)}</div>
     <div class="pd">
-      <div class="pd-h"><h2 translate="no">${esc(p.title)}</h2><button class="round${favs.has(p.id) ? " on" : ""}" type="button" data-act="fav" data-id="${esc(p.id)}" aria-pressed="${favs.has(p.id)}" aria-label="ถูกใจ" style="background:var(--white)">${ic("heart")}</button></div>
+      <div class="pd-h"><h2 translate="no">${esc(tName(p))}</h2><button class="round${favs.has(p.id) ? " on" : ""}" type="button" data-act="fav" data-id="${esc(p.id)}" aria-pressed="${favs.has(p.id)}" aria-label="ถูกใจ" style="background:var(--white)">${ic("heart")}</button></div>
       <div class="pr"><b>${baht(v.price)}</b>${off ? `<s>${baht(v.orig)}</s><span class="badge">ลด ${off}%</span>` : ""}</div>
       <div class="desc">${v.stock ? `มีสินค้า ${num(v.stock)} ชิ้น` : `<span class="out">สินค้าหมด</span>`}${cart.get(v.sku) ? ` · อยู่ในตะกร้าแล้ว ${cart.get(v.sku)} ชิ้น` : ""}</div>
       ${options}
@@ -570,7 +624,7 @@ function viewProduct(id){
         <button class="plus" type="button" data-act="qplus" aria-label="เพิ่มจำนวน" ${qty >= max ? "disabled" : ""}>+</button></div></div>
       <div class="cta"><button class="btn soft" type="button" data-act="add" ${max > 0 ? "" : "disabled"}>ใส่ตะกร้า</button>
         <button class="btn" type="button" data-act="buy" ${max > 0 ? "" : "disabled"}>${max > 0 ? "ซื้อเลย" : (v.stock ? "ครบจำนวนที่มีแล้ว" : "สินค้าหมด")}</button></div>
-      ${p.title !== p.name ? `<p class="desc" translate="no">${esc(p.name)}</p>` : ""}
+      ${p.title !== p.name && LANG === "th" ? `<p class="desc" translate="no">${esc(p.name)}</p>` : ""}
       <p class="desc">รหัสสินค้า ${esc(v.sku)}</p>
     </div>`;
 }
@@ -583,8 +637,8 @@ function viewCart(){
   if (!cart.size) return `<div class="state" style="margin-top:20px">ตะกร้ายังว่างอยู่เลย~<br>ไปเลือกของน่ารัก ๆ กันเถอะค่ะ<br><br><button class="btn" type="button" data-act="nav" data-to="#home">เลือกซื้อสินค้า</button></div>`;
   const t = totals();
   const items = [...cart].map(([sku, k]) => { const {p, v} = bySku.get(sku);
-    return `<div class="item"><button type="button" data-act="open" data-id="${esc(p.id)}" data-sku="${esc(sku)}" aria-label="ดูสินค้า">${img([CONFIG.IMAGE_DIR + sku + ".jpg", v.image], p.title)}</button>
-      <div class="t"><span class="n" translate="no">${esc(p.title)}</span>${v.label ? `<span class="o" translate="no">${esc(v.label)}</span>` : ""}${priceHtml(v.price, v.orig, false)}</div>
+    return `<div class="item"><button type="button" data-act="open" data-id="${esc(p.id)}" data-sku="${esc(sku)}" aria-label="ดูสินค้า">${img(quickPics(p, v), p.title)}</button>
+      <div class="t"><span class="n" translate="no">${esc(tName(p))}</span>${v.label ? `<span class="o" translate="no">${esc(tOpt(v.label))}</span>` : ""}${priceHtml(v.price, v.orig, false)}</div>
       <div class="r"><button class="trash" type="button" data-act="remove" data-sku="${esc(sku)}" aria-label="ลบออกจากตะกร้า">${ic("trash")}</button>
         <div class="step"><button type="button" data-act="dec" data-sku="${esc(sku)}" aria-label="ลดจำนวน">−</button><b>${k}</b>
         <button class="plus" type="button" data-act="inc" data-sku="${esc(sku)}" aria-label="เพิ่มจำนวน" ${k >= v.stock ? "disabled" : ""}>+</button></div></div></div>`; }).join("");
@@ -693,7 +747,7 @@ const SHARE_ICON = {
 function showShare(id){
   const p = byId.get(id); if (!p) return;
   const b = (k, label) => `<button type="button" data-act="shareto" data-k="${k}" data-id="${esc(id)}">${SHARE_ICON[k]}${label}</button>`;
-  openSheet(`<h2>แชร์สินค้า</h2><p class="desc" translate="no">${esc(p.title)}</p>
+  openSheet(`<h2>แชร์สินค้า</h2><p class="desc" translate="no">${esc(tName(p))}</p>
     <div class="share">${b("line", "LINE")}${b("sms", "ข้อความ")}${b("fb", "Facebook")}${b("ig", "Instagram")}${b("copy", "คัดลอกลิงก์")}</div>
     <button class="btn line" type="button" data-act="closesheet">ปิด</button>`);
 }
@@ -884,7 +938,7 @@ async function uploadSlip(number, file){
   sending = false;
   await loadOrders();
 }
-const lineImg = l => { const hit = bySku.get(l.sku); return img([l.sku ? CONFIG.IMAGE_DIR + l.sku + ".jpg" : "", hit ? CONFIG.IMAGE_DIR + hit.p.id + ".jpg" : "", hit ? hit.v.image : ""], l.title); };
+const lineImg = l => { const hit = bySku.get(l.sku); return img(hit ? quickPics(hit.p, hit.v) : [l.sku ? picUrl(l.sku, 1) : ""], l.title); };
 const countdown = o => `<p class="warn" style="margin:0">ชำระเงินภายใน ${esc(dateText(o.expiresAt))} · เหลือเวลา <span class="count" data-exp="${o.expiresAt}"></span></p>`;
 function ordersGate(){
   if (!ordersState){ loadOrders(); return `<div class="state" style="margin-top:20px">กำลังโหลดคำสั่งซื้อ...</div>`; }
@@ -903,7 +957,7 @@ function viewOrders(){
       <div class="acc"><b style="font-family:var(--display)">${esc(o.number)}</b><span class="badge" style="background:${st[1]};color:#fff">${st[0]}</span></div>
       <span class="desc">สั่งเมื่อ ${esc(dateText(o.createdAt))}</span>
       <div class="thumbs">${o.lines.slice(0, 4).map(lineImg).join("")}${more > 0 ? `<span class="desc">+${more}</span>` : ""}</div>
-      <span style="font-size:14px"><span translate="no">${esc(o.lines[0] ? o.lines[0].title : "")}</span>${o.lines.length > 1 ? ` และอีก ${o.lines.length - 1} รายการ` : ""}</span>
+      <span style="font-size:14px"><span translate="no">${esc(o.lines[0] ? lineTitle(o.lines[0]) : "")}</span>${o.lines.length > 1 ? ` และอีก ${o.lines.length - 1} รายการ` : ""}</span>
       <div class="rows"><div><span>สินค้า ${n} ชิ้น</span><span>ยอดรวม <b style="color:var(--red)">${baht(o.total)}</b></span></div></div>
       ${o.status === "pending" ? countdown(o) : ""}
       ${o.tracking ? `<span class="desc">เลขพัสดุ ${esc(o.tracking)}</span>` : ""}
@@ -927,7 +981,7 @@ function viewOrder(number){
       <p class="desc">โอนแล้วอัปโหลดสลิปที่นี่ หรือส่งรูปสลิปในแชต PonPon ก็ได้ค่ะ ระบบจะตรวจสลิปให้อัตโนมัติ</p>${slipButtons(o.number)}</div>` : ""}
     <div class="box"><h3>ที่อยู่จัดส่ง</h3><p translate="no"><b>${esc(c.name || "")}</b> · ${esc(c.phone || "")}</p><p translate="no" style="white-space:pre-wrap">${esc(c.address || "")}</p>${c.note ? `<p class="desc">หมายเหตุ: ${esc(c.note)}</p>` : ""}</div>
     <div class="box"><h3>รายการสินค้า</h3>
-      ${o.lines.map(l => `<div class="oline">${lineImg(l)}<div class="t"><span translate="no">${esc(l.title)}</span><small>${baht(l.price)} x ${l.qty}</small></div><b>${baht(l.price * l.qty)}</b></div>`).join("")}
+      ${o.lines.map(l => `<div class="oline">${lineImg(l)}<div class="t"><span translate="no">${esc(lineTitle(l))}</span><small>${baht(l.price)} x ${l.qty}</small></div><b>${baht(l.price * l.qty)}</b></div>`).join("")}
       <div class="rows">${o.goods ? `<div><span>ค่าสินค้า</span><span>${baht(o.goods)}</span></div>` : ""}
         ${o.discount ? `<div><span>ส่วนลด${o.coupon ? " (" + esc(o.coupon) + ")" : ""}</span><span class="neg">−${baht(o.discount)}</span></div>` : ""}
         <div><span>ค่าจัดส่ง${o.shipCoupon ? " (" + esc(o.shipCoupon) + ")" : ""}</span><span>${shipLabel(o.ship)}</span></div>
@@ -999,6 +1053,7 @@ document.addEventListener("click", e => {
     <button class="btn line" type="button" data-act="closesheet">ไม่ยกเลิก</button>`);
   if (a === "cancelyes") return cancelOrder(b.dataset.v);
   if (a === "lang") return showLangs();
+  if (a === "galgo"){ const tr = $("galtrack"); if (tr) tr.scrollTo({left: Number(b.dataset.i) * tr.clientWidth, behavior: "smooth"}); return; }
   if (a === "setlang") return setLang(b.dataset.v);
   if (a === "orderopen"){ go("#order/" + encodeURIComponent(b.dataset.v)); return scrollTo(0, 0); }
   if (a === "refundask"){ const o = (orders || []).find(x => x.number === b.dataset.v); return openSheet(`<h2>ยกเลิกคำสั่งซื้อ ${esc(b.dataset.v)}</h2>
@@ -1048,7 +1103,18 @@ function setTexts(map){
   document.documentElement.lang = LANG;
   if (textPairs.length) swapTexts(document.body);
 }
-const applyLang = () => setTexts(LANG === "th" ? SHOP.texts : (LANGDATA && LANGDATA[LANG]) || {});
+const applyLang = () => { optPairs = null; setTexts(LANG === "th" ? SHOP.texts : (LANGDATA && LANGDATA[LANG]) || {}); };
+/* ชื่อสินค้าและตัวเลือก (สี/ไซซ์) ตามภาษาที่เลือก: ชื่ออยู่ใน lang.json > names, คำในตัวเลือกอยู่ใน options */
+const tName = p => (LANG !== "th" && LANGDATA && LANGDATA.names && LANGDATA.names[LANG] && LANGDATA.names[LANG][p.id]) || p.title;
+let optPairs = null;
+function tOpt(t){
+  if (LANG === "th" || !t || !LANGDATA || !LANGDATA.options) return t;
+  if (!optPairs) optPairs = Object.entries(LANGDATA.options[LANG] || {}).sort((a, b) => b[0].length - a[0].length);
+  let o = String(t);
+  for (const [a, b] of optPairs) if (o.includes(a)) o = o.split(a).join(b);
+  return o;
+}
+const lineTitle = l => { const hit = l.sku && bySku.get(l.sku); return hit && LANG !== "th" ? tName(hit.p) + (hit.v.label ? " [" + tOpt(hit.v.label) + "]" : "") : l.title; };
 async function loadLang(){
   if (LANGDATA) return LANGDATA;
   const res = await fetch(CONFIG.LANG_URL, {cache: "no-cache"});
