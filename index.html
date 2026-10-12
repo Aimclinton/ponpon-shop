@@ -347,6 +347,7 @@ function readShop(shop){
       value: Math.max(0, Number(c.value) || 0), min: Math.max(0, Number(c.min) || 0), max: Math.max(0, Number(c.max) || 0), expires: c.expires ? String(c.expires) : ""
     })),
     categoryNames: shop.categoryNames || {},
+    texts: shop.texts && typeof shop.texts === "object" ? shop.texts : {},
     saveUrl: String(shop.saveUrl || "")
   };
 }
@@ -355,7 +356,7 @@ async function load(){
   const [res, names, shop] = await Promise.all([fetch(CONFIG.API_URL, {cache: "no-store"}), opt(CONFIG.NAMES_URL), opt(CONFIG.SHOP_URL)]);
   const data = await res.json();
   if (!Array.isArray(data.products)) throw new Error("no products");
-  SHOP = readShop(shop);
+  SHOP = readShop(shop); setTexts(SHOP.texts);
   PRODUCTS = buildProducts(data.products.map(r => ({...r, orig: r.price, price: linePrice(r.price)})));
   byId = new Map(); bySku = new Map();
   for (const p of PRODUCTS){
@@ -972,6 +973,23 @@ let holdSheet = false; // ให้หน้าต่างแจ้งผลส
 window.addEventListener("hashchange", () => { if (holdSheet) holdSheet = false; else closeSheet(); render(); });
 
 /* ---------- เริ่มต้น ---------- */
+/* ---------- เปลี่ยนคำบนหน้าร้านจาก shop.json ("texts": {"คำเดิม": "คำใหม่"}) ---------- */
+let textPairs = [];
+function setTexts(map){
+  textPairs = Object.entries(map || {}).filter(([a, b]) => a && typeof b === "string" && a !== b).sort((x, y) => y[0].length - x[0].length);
+  if (textPairs.length) swapTexts(document.body);
+}
+function swapOne(t){ let o = t; for (const [a, b] of textPairs) if (o.includes(a)) o = o.split(a).join(b); return o; }
+function swapTexts(root){
+  if (!textPairs.length || !root) return;
+  if (root.nodeType === 3){ const v = swapOne(root.nodeValue); if (v !== root.nodeValue) root.nodeValue = v; return; }
+  if (root.nodeType !== 1 || /^(SCRIPT|STYLE|TEXTAREA)$/.test(root.tagName)) return;
+  for (const at of ["placeholder", "aria-label", "title"]) if (root.hasAttribute(at)){ const v = swapOne(root.getAttribute(at)); if (v !== root.getAttribute(at)) root.setAttribute(at, v); }
+  for (const c of root.childNodes) swapTexts(c);
+}
+new MutationObserver(list => { if (!textPairs.length) return; for (const m of list){ if (m.type === "characterData") swapTexts(m.target); else for (const n of m.addedNodes) swapTexts(n); } })
+  .observe(document.body, {childList: true, subtree: true, characterData: true});
+
 const liffReady = CONFIG.LIFF_ID && window.liff ? liff.init({liffId: CONFIG.LIFF_ID}).then(() => true).catch(() => false) : Promise.resolve(false);
 liffReady.then(async ok => { if (ok && liff.isLoggedIn()){ try { profile = await liff.getProfile(); if (["me", "checkout"].includes(route().page)) render(); } catch (e) {} } });
 async function start(){
