@@ -135,6 +135,19 @@ body.admin-mode .app{max-width:1280px;padding-bottom:40px}
 .rp-days i{width:100%;min-height:2px;background:var(--red);border-radius:5px 5px 0 0}
 .rp-days small{position:absolute;bottom:-17px;font-size:10px;color:var(--muted)}
 @media (min-width:900px){.kpis{grid-template-columns:repeat(3,1fr)}.rp-bar{grid-template-columns:150px 1fr 36px 90px}}
+.db-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.kpi span .up{color:#1b7a3a;font-weight:700}.kpi span .down{color:var(--red);font-weight:700}
+.db-grid{display:grid;gap:0 18px}
+.db-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.db-row > span:first-child{flex:1;min-width:0}.db-row > span:first-child b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.db-row small{color:var(--muted);font-size:12px;display:block}
+.db-tag{font-size:12px;color:var(--muted);white-space:nowrap}
+.db-amt{font-family:var(--display);white-space:nowrap}.db-amt.out{color:var(--red)}
+.db-todo{display:flex;flex-direction:column;gap:2px;padding-bottom:8px}
+.db-todo .acc{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.db-n{min-width:28px;height:24px;border-radius:12px;display:grid;place-items:center;font-weight:700;font-size:13px;background:var(--line);color:var(--muted);padding:0 8px}
+.db-n.hot{background:var(--red);color:#fff}
+@media (min-width:1100px){.db-grid{grid-template-columns:1.1fr 1fr}}
 .hello{display:flex;align-items:center;gap:8px;margin:2px 0 12px;font-family:var(--display);font-weight:600;font-size:15px}
 .hello .spark{color:var(--red);width:18px;height:18px;animation:spin 6s linear infinite}
 
@@ -1194,7 +1207,7 @@ function viewOrder(number){
 
 /* ---------- หลังบ้านสำหรับแอดมิน (#admin) ----------
    เข้าได้เฉพาะบัญชี LINE ที่เป็นแอดมิน ครั้งแรกต้องกรอกรหัสแอดมิน (ADMIN_CODE ที่ตั้งใน Cloudflare) */
-let AD = {state: "", data: null, tab: "report", edit: null, err: "", busy: false, isAdmin: false};
+let AD = {state: "", data: null, tab: "dash", edit: null, err: "", busy: false, isAdmin: false};
 const adminLink = () => (CONFIG.LIFF_ID ? "https://miniapp.line.me/" + CONFIG.LIFF_ID : location.origin + location.pathname) + "?page=admin";
 async function adminCheck(){
   const token = await idToken(); if (!token) return false;
@@ -1241,8 +1254,8 @@ function viewAdmin(){
       <label class="fld">รหัสแอดมิน<input id="bo-code" type="password" autocomplete="off"></label>
       <p class="warn" id="bo-err" style="margin:0" hidden></p>
       <button class="btn" type="button" data-act="ad-login">เข้าสู่หลังบ้าน</button></div>`;
-  const tabs = [["report", "📊 รายงานยอดขาย"], ["products", "📦 สินค้าและรูป"], ["coupons", "🎟 โค้ดส่วนลด"], ["promos", "🎁 โปรโมชั่น"], ["store", "🏪 ตั้งค่าร้าน"], ["team", "👥 ทีมแอดมิน"]];
-  const body = {report: adReport, products: adProducts, coupons: adCoupons, promos: adPromos, store: adStore, team: adTeam}[AD.tab]();
+  const tabs = [["dash", "🏠 ภาพรวม"], ["report", "📊 รายงานยอดขาย"], ["products", "📦 สินค้าและรูป"], ["coupons", "🎟 โค้ดส่วนลด"], ["promos", "🎁 โปรโมชั่น"], ["store", "🏪 ตั้งค่าร้าน"], ["team", "👥 ทีมแอดมิน"]];
+  const body = {dash: adDash, report: adReport, products: adProducts, coupons: adCoupons, promos: adPromos, store: adStore, team: adTeam}[AD.tab]();
   return `<div class="bo-shell"><nav class="bo-side">${tabs.map(([k, t]) => `<button class="tab" type="button" data-act="ad-tab" data-k="${k}" aria-pressed="${AD.tab === k}">${t}</button>`).join("")}
       <a class="bo-shop" href="#home">← กลับหน้าร้าน</a></nav><div class="bo-main">${body}</div></div>`;
 }
@@ -1360,6 +1373,7 @@ function adSaveEdit(){
 function adminClick(a, b){
   if (a.startsWith("ad-pd") || a.startsWith("ad-ph")) return pdClick(a, b);
   if (a.startsWith("ad-rp")) return rpClick(a, b);
+  if (a.startsWith("ad-db")) return dbClick(a, b);
   if (a === "ad-reload") return adminLoad();
   if (a === "ad-tab"){ AD.tab = b.dataset.k; render(); return scrollTo(0, 0); }
   if (a === "ad-login"){
@@ -1709,6 +1723,74 @@ function rpClick(a, b){
   if (a === "ad-rppreset"){ RP.preset = b.dataset.v; if (RP.preset !== "custom") return rpLoad(); return render(); }
   if (a === "ad-rpgo"){ RP.preset = "custom"; RP.from = $("rp-from").value; RP.to = $("rp-to").value; return rpLoad(); }
   if (a === "ad-rpxlsx") return rpExport();
+  return false;
+}
+
+/* ----- หลังบ้าน: ภาพรวม (Dashboard) ----- */
+const DB = {data: null, state: "", err: "", at: 0};
+async function dbLoad(){
+  DB.state = DB.data ? "refresh" : "loading"; if (route().page === "admin" && AD.tab === "dash") render();
+  try { DB.data = await api("api/admin/dashboard", {method: "GET"}, await idToken()); DB.state = "ok"; DB.at = Date.now(); }
+  catch (e) { DB.state = "error"; DB.err = e.message; }
+  if (route().page === "admin" && AD.tab === "dash") render();
+}
+function dbCalc(){
+  const o = DB.data.orders, t = bkkDay(DB.data.now), y = addDays(t, -1), m = t.slice(0, 8), lm = addDays(m + "01", -1).slice(0, 8);
+  const dayOf = x => bkkDay(x.createdAt), paid = x => RP_PAID.includes(x.status);
+  const stat = f => { const l = o.filter(f), p = l.filter(paid); return {n: l.length, paidN: p.length, sales: p.reduce((s, x) => s + x.total, 0)}; };
+  const dom = Number(t.slice(8));
+  const today = stat(x => dayOf(x) === t), yest = stat(x => dayOf(x) === y);
+  const month = stat(x => dayOf(x).startsWith(m)), lastMtd = stat(x => dayOf(x).startsWith(lm) && Number(dayOf(x).slice(8)) <= dom);
+  const days = []; for (let i = 13; i >= 0; i--){ const d = addDays(t, -i); const s = stat(x => dayOf(x) === d); days.push({day: d, ...s}); }
+  const prod = new Map();
+  for (const x of o) if (paid(x) && dayOf(x).startsWith(m)) for (const l of x.lines){ if (l.gift) continue; const p = prod.get(l.sku) || {sku: l.sku, title: l.title, qty: 0, sales: 0}; p.qty += l.qty; p.sales += l.qty * l.price; prod.set(l.sku, p); }
+  const toship = o.filter(x => x.status === "toship").sort((a, b) => (a.paidAt || a.createdAt) - (b.paidAt || b.createdAt));
+  const pending = o.filter(x => x.status === "pending").sort((a, b) => a.expiresAt - b.expiresAt);
+  const refund = o.filter(x => x.status === "refund");
+  const shipping = o.filter(x => x.status === "shipping");
+  return {today, yest, month, lastMtd, days, top: [...prod.values()].sort((a, b) => b.qty - a.qty).slice(0, 5), toship, pending, refund, shipping, recent: [...o].sort((a, b) => b.createdAt - a.createdAt).slice(0, 8)};
+}
+const dbDiff = (a, b) => { if (!b) return a ? `<span class="up">ใหม่</span>` : ""; const p = Math.round((a - b) / b * 100); return `<span class="${p >= 0 ? "up" : "down"}">${p >= 0 ? "▲" : "▼"} ${Math.abs(p)}%</span>`; };
+function adDash(){
+  if (!DB.state){ dbLoad(); return `<div class="state">กำลังโหลดภาพรวม...</div>`; }
+  if (DB.state === "loading") return `<div class="state">กำลังโหลดภาพรวม และอัปเดตสถานะจาก ZORT...</div>`;
+  if (DB.state === "error" && !DB.data) return `<div class="state">${esc(DB.err)}<br><br><button class="btn" type="button" data-act="ad-dbreload">ลองใหม่</button></div>`;
+  const c = dbCalc(), max = Math.max(1, ...c.days.map(d => d.sales));
+  const kpi = (label, val, sub) => `<div class="kpi"><small>${label}</small><b>${val}</b><span>${sub}</span></div>`;
+  const ordRow = (x, extra) => `<div class="db-row"><span><b>${esc(x.number)}</b><small>${esc(x.name)} · ${bkkTime(x.createdAt)}</small></span>${extra || ""}<b class="db-amt">${baht(x.total)}</b></div>`;
+  const todo = [
+    ["📦 ชำระแล้ว รอแพ็ก/จัดส่ง", c.toship, x => ordRow(x, `<small class="db-tag">จ่ายเมื่อ ${bkkTime(x.paidAt || x.createdAt).slice(5)}</small>`), "ไม่มีออเดอร์ค้างแพ็ก"],
+    ["💸 รอโอนเงินคืนลูกค้า", c.refund, x => `<div class="db-row"><span><b>${esc(x.number)}</b><small>${esc(x.name)} · ${x.refund ? esc(`${x.refund.bank} ${x.refund.account} ${x.refund.name}`) : ""}</small></span><b class="db-amt">${baht(x.total)}</b>
+        <button class="mini" type="button" data-act="ad-dbrefund" data-v="${esc(x.number)}">โอนคืนแล้ว</button></div>`, "ไม่มีรายการรอคืนเงิน"],
+    ["⏳ รอลูกค้าชำระเงิน", c.pending, x => ordRow(x, `<small class="db-tag">หมดเวลา ${bkkTime(x.expiresAt).slice(11)}</small>`), "ไม่มีออเดอร์รอชำระ"],
+  ];
+  return `<div class="db-head"><span class="desc">อัปเดตล่าสุด ${bkkTime(DB.at).slice(11)} น.${DB.state === "refresh" ? " · กำลังอัปเดต..." : ""}</span><button class="mini line" type="button" data-act="ad-dbreload">↻ อัปเดต</button></div>
+    <div class="kpis">
+      ${kpi("ยอดขายวันนี้", baht(c.today.sales), `${c.today.paidN} ออเดอร์ชำระแล้ว · ${dbDiff(c.today.sales, c.yest.sales)} จากเมื่อวาน`)}
+      ${kpi("ออเดอร์ใหม่วันนี้", num(c.today.n), `เมื่อวาน ${c.yest.n} ออเดอร์`)}
+      ${kpi("ยอดขายเดือนนี้", baht(c.month.sales), `${c.month.paidN} ออเดอร์ · ${dbDiff(c.month.sales, c.lastMtd.sales)} จากช่วงเดียวกันเดือนก่อน`)}
+      ${kpi("รอแพ็ก/จัดส่ง", num(c.toship.length), "ออเดอร์ที่ชำระแล้ว")}
+      ${kpi("กำลังจัดส่ง", num(c.shipping.length), "ออเดอร์")}
+      ${kpi("คนเก็บโค้ดวันนี้", num(DB.data.collectsToday), "ครั้ง")}</div>
+    <div class="db-grid">
+      <div class="db-col">
+        <div class="box"><h3>ต้องทำ</h3>${todo.map(([title, list, row, empty]) => `<div class="db-todo"><div class="acc"><b>${title}</b><span class="db-n${list.length ? " hot" : ""}">${list.length}</span></div>
+          ${list.length ? list.slice(0, 8).map(row).join("") + (list.length > 8 ? `<p class="desc">และอีก ${list.length - 8} รายการ</p>` : "") : `<p class="desc">${empty}</p>`}</div>`).join("")}</div>
+        <div class="box"><h3>ออเดอร์ล่าสุด</h3>${c.recent.length ? c.recent.map(x => ordRow(x, `<span class="bo-st ${RP_PAID.includes(x.status) ? "on" : x.status === "pending" ? "soon" : "off"}">${RP_STATUS[x.status] || x.status}</span>`)).join("") : `<p class="desc">ยังไม่มีออเดอร์</p>`}</div>
+      </div>
+      <div class="db-col">
+        <div class="box"><h3>ยอดขาย 14 วันล่าสุด</h3><div class="rp-days">${c.days.map(d => `<div title="${d.day} ${baht(d.sales)} (${d.paidN}/${d.n} ออเดอร์)"><i style="height:${Math.round(d.sales / max * 100)}%"></i><small>${d.day.slice(8)}</small></div>`).join("")}</div></div>
+        <div class="box"><h3>ขายดีเดือนนี้</h3>${c.top.length ? c.top.map((p, i) => `<div class="db-row"><span><b>${i + 1}. ${esc(p.title)}</b><small>${esc(p.sku)}</small></span><span class="db-tag">${num(p.qty)} ชิ้น</span><b class="db-amt">${baht(p.sales)}</b></div>`).join("") : `<p class="desc">ยังไม่มียอดขายเดือนนี้</p>`}</div>
+        <div class="box"><h3>สินค้าใกล้หมด (เหลือ ≤ 5)</h3>${DB.data.low.length ? DB.data.low.slice(0, 15).map(p => `<div class="db-row"><span><b>${esc(p.name)}</b><small>${esc(p.sku)}</small></span><b class="db-amt${p.stock ? "" : " out"}">${p.stock ? "เหลือ " + p.stock : "หมด"}</b></div>`).join("") + (DB.data.low.length > 15 ? `<p class="desc">และอีก ${DB.data.low.length - 15} รายการ</p>` : "") : `<p class="desc">สต็อกยังพอทุกตัว</p>`}</div>
+        <button class="btn line" type="button" data-act="ad-tab" data-k="report" style="width:100%">ดูรายงานละเอียด / ส่งออก Excel →</button>
+      </div></div>`;
+}
+function dbClick(a, b){
+  if (a === "ad-dbreload") return dbLoad();
+  if (a === "ad-dbrefund"){ const x = DB.data.orders.find(o => o.number === b.dataset.v); return openSheet(`<h2>ยืนยันว่าโอนเงินคืนแล้ว?</h2><p>${esc(b.dataset.v)} · ${baht(x ? x.total : 0)}</p>${x && x.refund ? `<p class="msg">${esc(x.refund.bank)}\n${esc(x.refund.account)}\n${esc(x.refund.name)}</p>` : ""}
+      <p class="desc">กดแล้วรายการนี้จะออกจาก "ต้องทำ" และลูกค้าจะเห็นสถานะเป็น "ยกเลิก"</p>
+      <button class="btn" type="button" data-act="ad-dbrefundyes" data-v="${esc(b.dataset.v)}">โอนคืนเรียบร้อยแล้ว</button><button class="btn line" type="button" data-act="closesheet">ยังไม่ได้โอน</button>`); }
+  if (a === "ad-dbrefundyes"){ closeSheet(); return idToken().then(t => api("api/admin/refund-done", {method: "POST", body: JSON.stringify({number: b.dataset.v})}, t)).then(() => { toast("บันทึกแล้ว"); dbLoad(); }).catch(e => toast(e.message)); }
   return false;
 }
 
