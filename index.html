@@ -101,7 +101,7 @@ body.admin-mode .app{max-width:1280px;padding-bottom:40px}
 .tbl table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:520px}
 .tbl th{text-align:left;font-weight:600;font-size:12px;color:var(--muted);padding:6px 6px;border-bottom:1.5px solid var(--line)}
 .tbl td{padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
-.tbl td small{display:block;color:var(--muted);font-size:11px}
+.tbl td small,.tbl th small{display:block;color:var(--muted);font-size:11px}
 .pd-in{width:96px;font-size:16px;border:1.5px solid var(--ink);border-radius:10px;padding:6px 8px}
 .pd-cust{font-family:var(--display);font-weight:700;color:var(--red)}
 .sw{display:flex;align-items:center;gap:6px;font-size:13px}.sw input{accent-color:var(--red);width:20px;height:20px}
@@ -124,6 +124,17 @@ body.admin-mode .app{max-width:1280px;padding-bottom:40px}
   .pd-row{grid-template-columns:56px 1fr auto auto;grid-template-areas:"img n p s" "img t p s"}
   .pd-wrap:not(.has-ed) .pd-rows{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr))}
 }
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
+.kpi{background:var(--card);border:var(--edge);border-radius:18px;padding:12px 14px;box-shadow:var(--pop);display:flex;flex-direction:column;gap:2px;min-width:0}
+.kpi small{font-size:12.5px;color:var(--muted)}.kpi b{font-family:var(--display);font-size:22px;color:var(--red);overflow-wrap:anywhere}.kpi span{font-size:12px;color:var(--muted)}
+.rp-bar{display:grid;grid-template-columns:minmax(96px,auto) 1fr 26px 62px;align-items:center;gap:8px;font-size:13.5px}
+.rp-bar i{height:12px;border-radius:6px;background:linear-gradient(90deg,var(--red) var(--w),var(--white) var(--w));border:1px solid var(--line)}
+.rp-bar b{text-align:right}.rp-bar small{text-align:right;color:var(--muted)}
+.rp-days{display:flex;align-items:flex-end;gap:3px;height:150px;overflow-x:auto;padding-bottom:18px}
+.rp-days div{flex:1 0 14px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;position:relative}
+.rp-days i{width:100%;min-height:2px;background:var(--red);border-radius:5px 5px 0 0}
+.rp-days small{position:absolute;bottom:-17px;font-size:10px;color:var(--muted)}
+@media (min-width:900px){.kpis{grid-template-columns:repeat(3,1fr)}.rp-bar{grid-template-columns:150px 1fr 36px 90px}}
 .hello{display:flex;align-items:center;gap:8px;margin:2px 0 12px;font-family:var(--display);font-weight:600;font-size:15px}
 .hello .spark{color:var(--red);width:18px;height:18px;animation:spin 6s linear infinite}
 
@@ -1183,7 +1194,7 @@ function viewOrder(number){
 
 /* ---------- หลังบ้านสำหรับแอดมิน (#admin) ----------
    เข้าได้เฉพาะบัญชี LINE ที่เป็นแอดมิน ครั้งแรกต้องกรอกรหัสแอดมิน (ADMIN_CODE ที่ตั้งใน Cloudflare) */
-let AD = {state: "", data: null, tab: "products", edit: null, err: "", busy: false, isAdmin: false};
+let AD = {state: "", data: null, tab: "report", edit: null, err: "", busy: false, isAdmin: false};
 const adminLink = () => (CONFIG.LIFF_ID ? "https://miniapp.line.me/" + CONFIG.LIFF_ID : location.origin + location.pathname) + "?page=admin";
 async function adminCheck(){
   const token = await idToken(); if (!token) return false;
@@ -1230,8 +1241,8 @@ function viewAdmin(){
       <label class="fld">รหัสแอดมิน<input id="bo-code" type="password" autocomplete="off"></label>
       <p class="warn" id="bo-err" style="margin:0" hidden></p>
       <button class="btn" type="button" data-act="ad-login">เข้าสู่หลังบ้าน</button></div>`;
-  const tabs = [["products", "📦 สินค้าและรูป"], ["coupons", "🎟 โค้ดส่วนลด"], ["promos", "🎁 โปรโมชั่น"], ["store", "🏪 ตั้งค่าร้าน"], ["team", "👥 ทีมแอดมิน"]];
-  const body = {products: adProducts, coupons: adCoupons, promos: adPromos, store: adStore, team: adTeam}[AD.tab]();
+  const tabs = [["report", "📊 รายงานยอดขาย"], ["products", "📦 สินค้าและรูป"], ["coupons", "🎟 โค้ดส่วนลด"], ["promos", "🎁 โปรโมชั่น"], ["store", "🏪 ตั้งค่าร้าน"], ["team", "👥 ทีมแอดมิน"]];
+  const body = {report: adReport, products: adProducts, coupons: adCoupons, promos: adPromos, store: adStore, team: adTeam}[AD.tab]();
   return `<div class="bo-shell"><nav class="bo-side">${tabs.map(([k, t]) => `<button class="tab" type="button" data-act="ad-tab" data-k="${k}" aria-pressed="${AD.tab === k}">${t}</button>`).join("")}
       <a class="bo-shop" href="#home">← กลับหน้าร้าน</a></nav><div class="bo-main">${body}</div></div>`;
 }
@@ -1348,6 +1359,7 @@ function adSaveEdit(){
 }
 function adminClick(a, b){
   if (a.startsWith("ad-pd") || a.startsWith("ad-ph")) return pdClick(a, b);
+  if (a.startsWith("ad-rp")) return rpClick(a, b);
   if (a === "ad-reload") return adminLoad();
   if (a === "ad-tab"){ AD.tab = b.dataset.k; render(); return scrollTo(0, 0); }
   if (a === "ad-login"){
@@ -1477,6 +1489,7 @@ function pdEditor(){
     return `<tr><td><b>${esc(s.opt || "-")}</b><small>${esc(s.sku)}</small></td><td>${num(s.stock)}</td><td>${s.price > 0 ? baht(s.price) : "-"}</td>
       <td><input class="pd-in" data-pdprice="${esc(s.sku)}" type="number" inputmode="decimal" min="0" placeholder="${s.price || ""}" value="${esc(v)}"></td>
       <td class="pd-cust" data-cust="${esc(s.sku)}">${eff > 0 ? baht(linePrice(eff, s.sku)) : "-"}</td>
+      <td><input class="pd-in" data-pdcost="${esc(s.sku)}" type="number" inputmode="decimal" min="0" placeholder="${s.cost || 0}" value="${esc(d.costs[s.sku] ?? "")}"></td>
       <td><label class="sw"><input type="checkbox" data-pdshow="${esc(s.sku)}" ${show ? "checked" : ""}><span>${show ? "แสดง" : "ซ่อน"}</span></label></td></tr>`;
   }).join("");
   const photos = pdPhotoGroups(g).map(gr => `<div class="ph-g"><div class="ph-h"><b>${esc(gr.label)}</b><small>ชื่อไฟล์ ${esc(gr.key)}</small></div>
@@ -1489,8 +1502,8 @@ function pdEditor(){
       <label class="fld">ชื่อภาษาอังกฤษ (ไม่บังคับ ใช้ตอนลูกค้าเปลี่ยนภาษา)<input data-pdname="en" value="${esc(d.en)}"></label>
       <p class="desc">ชื่อใน ZORT: ${esc(g.base)}</p></div>
     <div class="box"><h3>ราคาและการแสดงผล</h3>
-      <p class="desc">ช่อง "ราคาขายใน LINE" เว้นว่าง = ใช้ราคาจาก ZORT · ราคาที่ลูกค้าเห็นรวมส่วนลดทั้งร้าน ${SHOP.discountPercent || 0}% แล้ว · ไม่แก้ราคาใน ZORT</p>
-      <div class="tbl"><table><thead><tr><th>ตัวเลือก</th><th>สต็อก</th><th>ราคา ZORT</th><th>ราคาขายใน LINE</th><th>ลูกค้าเห็น</th><th>หน้าร้าน</th></tr></thead><tbody>${skuRows}</tbody></table></div>
+      <p class="desc">ช่อง "ราคาขายใน LINE" และ "ต้นทุน" เว้นว่าง = ใช้ค่าจาก ZORT (ต้นทุนใช้ทำรายงานกำไร ลูกค้าไม่เห็น) · ราคาที่ลูกค้าเห็นรวมส่วนลดทั้งร้าน ${SHOP.discountPercent || 0}% แล้ว · ไม่แก้ราคาใน ZORT</p>
+      <div class="tbl"><table><thead><tr><th>ตัวเลือก</th><th>สต็อก</th><th>ราคา ZORT</th><th>ราคาขายใน LINE</th><th>ลูกค้าเห็น</th><th>ต้นทุน/ชิ้น</th><th>หน้าร้าน</th></tr></thead><tbody>${skuRows}</tbody></table></div>
       <p class="warn" id="bo-err" style="margin:0" hidden></p>
       <button class="btn" type="button" data-act="ad-pdsave">บันทึกชื่อและราคา</button></div>
     <div class="box"><h3>รูปสินค้า</h3>
@@ -1498,18 +1511,18 @@ function pdEditor(){
       ${PD.data.github ? "" : `<p class="warn" style="margin:0">ยังไม่ได้เชื่อม GitHub จึงอัปโหลดรูปไม่ได้</p>`}${photos}</div>`;
 }
 function pdOpen(id){
-  const n = PD.data.names[id] || {}, prices = {}, hidden = {};
-  for (const r of PD.data.products) if (r.sku.slice(0, CONFIG.GROUP_LEN) === id){ if (PD.data.prices[r.sku] > 0) prices[r.sku] = PD.data.prices[r.sku]; hidden[r.sku] = PD.data.hidden.includes(r.sku); }
-  PD.sel = id; PD.draft = {th: n.th || "", en: n.en || "", prices, hidden};
+  const n = PD.data.names[id] || {}, prices = {}, hidden = {}, costs = {}, oc = PD.data.costs || {};
+  for (const r of PD.data.products) if (r.sku.slice(0, CONFIG.GROUP_LEN) === id){ if (PD.data.prices[r.sku] > 0) prices[r.sku] = PD.data.prices[r.sku]; if (oc[r.sku] !== undefined) costs[r.sku] = oc[r.sku]; hidden[r.sku] = PD.data.hidden.includes(r.sku); }
+  PD.sel = id; PD.draft = {th: n.th || "", en: n.en || "", prices, costs, hidden};
   render(); if (matchMedia("(max-width: 899px)").matches) scrollTo(0, 0);
 }
 async function pdSave(){
   if (PD.busy) return; PD.busy = true; toast("กำลังบันทึก...");
   try {
-    const d = PD.draft, prices = {};
-    for (const r of PD.data.products) if (r.sku.slice(0, CONFIG.GROUP_LEN) === PD.sel) prices[r.sku] = d.prices[r.sku] === undefined ? "" : d.prices[r.sku];
-    const res = await api("api/admin/product", {method: "POST", body: JSON.stringify({id: PD.sel, th: d.th.trim(), en: d.en.trim(), prices, hidden: d.hidden})}, await idToken());
-    PD.data.names = res.names; PD.data.prices = res.prices; PD.data.hidden = res.hidden;
+    const d = PD.draft, prices = {}, costs = {};
+    for (const r of PD.data.products) if (r.sku.slice(0, CONFIG.GROUP_LEN) === PD.sel){ prices[r.sku] = d.prices[r.sku] === undefined ? "" : d.prices[r.sku]; costs[r.sku] = d.costs[r.sku] === undefined ? "" : d.costs[r.sku]; }
+    const res = await api("api/admin/product", {method: "POST", body: JSON.stringify({id: PD.sel, th: d.th.trim(), en: d.en.trim(), prices, costs, hidden: d.hidden})}, await idToken());
+    PD.data.names = res.names; PD.data.prices = res.prices; PD.data.costs = res.costs; PD.data.hidden = res.hidden;
     PD.busy = false; shopStale = true; toast("บันทึกแล้ว หน้าร้านอัปเดตภายใน 1 นาที"); render();
   } catch (e) { $("toast").hidden = true; const el = $("bo-err"); if (el){ el.textContent = e.message; el.hidden = false; } else toast(e.message); }
   PD.busy = false;
@@ -1563,8 +1576,139 @@ function pdInput(t){
   if (t.dataset.pdname){ PD.draft[t.dataset.pdname] = t.value; return true; }
   if (t.dataset.pdprice){ const sku = t.dataset.pdprice; PD.draft.prices[sku] = t.value; const s = PD.data.products.find(r => r.sku === sku), eff = Number(t.value) > 0 ? Number(t.value) : s.price;
     const c = document.querySelector(`[data-cust="${sku}"]`); if (c) c.textContent = eff > 0 ? baht(linePrice(eff, sku)) : "-"; return true; }
+  if (t.dataset.pdcost){ PD.draft.costs[t.dataset.pdcost] = t.value; return true; }
   if (t.dataset.pdshow){ PD.draft.hidden[t.dataset.pdshow] = !t.checked; t.nextElementSibling.textContent = t.checked ? "แสดง" : "ซ่อน"; return true; }
   if (t.dataset.upkey && t.files && t.files.length && !t.dataset.busy){ t.dataset.busy = "1"; pdUpload(t.dataset.upkey, [...t.files]); return true; }
+  return false;
+}
+
+/* ----- หลังบ้าน: รายงานยอดขาย + ส่งออก Excel ----- */
+const RP = {from: "", to: "", preset: "7d", data: null, state: "", err: ""};
+const bkkDay = (ms = Date.now()) => new Date(ms + 7 * 3600e3).toISOString().slice(0, 10);
+const bkkTime = ms => ms ? new Date(ms + 7 * 3600e3).toISOString().slice(0, 16).replace("T", " ") : "";
+const addDays = (day, n) => bkkDay(Date.parse(day + "T12:00:00+07:00") + n * 86400e3);
+const RP_STATUS = {pending: "รอชำระเงิน", toship: "ชำระแล้ว รอจัดส่ง", shipping: "กำลังจัดส่ง", done: "สำเร็จ", cancelled: "ยกเลิก", refund: "ยกเลิก รอคืนเงิน"};
+const RP_PAID = ["toship", "shipping", "done"];
+function rpRange(p){
+  const t = bkkDay(), m = t.slice(0, 8);
+  if (p === "today") return [t, t];
+  if (p === "7d") return [addDays(t, -6), t];
+  if (p === "30d") return [addDays(t, -29), t];
+  if (p === "month") return [m + "01", t];
+  if (p === "lastmonth"){ const last = addDays(m + "01", -1); return [last.slice(0, 8) + "01", last]; }
+  return [RP.from || addDays(t, -6), RP.to || t];
+}
+async function rpLoad(){
+  if (RP.preset !== "custom") [RP.from, RP.to] = rpRange(RP.preset);
+  RP.state = "loading"; RP.err = ""; if (route().page === "admin") render();
+  try { RP.data = await api(`api/admin/report?from=${RP.from}&to=${RP.to}`, {method: "GET"}, await idToken()); RP.state = "ok"; }
+  catch (e) { RP.state = "error"; RP.err = e.message; }
+  if (route().page === "admin") render();
+}
+function rpCalc(orders){
+  const paid = orders.filter(o => RP_PAID.includes(o.status)), pend = orders.filter(o => o.status === "pending");
+  const sum = (a, f) => a.reduce((s, o) => s + (Number(f(o)) || 0), 0);
+  const byStatus = Object.keys(RP_STATUS).map(k => { const l = orders.filter(o => o.status === k); return {k, label: RP_STATUS[k], n: l.length, amount: sum(l, o => o.total)}; });
+  const days = new Map();
+  for (let d = RP.data.from; d <= RP.data.to; d = addDays(d, 1)) days.set(d, {day: d, orders: 0, paid: 0, sales: 0});
+  for (const o of orders){ const d = days.get(bkkDay(o.createdAt)); if (!d) continue; d.orders++; if (RP_PAID.includes(o.status)){ d.paid++; d.sales += o.total; } }
+  const prod = new Map(); let giftCost = 0, giftQty = 0;
+  for (const o of paid) for (const l of o.lines){
+    const c = Number(l.cost) || 0;
+    if (l.gift){ giftCost += l.qty * c; giftQty += l.qty; continue; }
+    const p = prod.get(l.sku) || {sku: l.sku, title: l.title, qty: 0, sales: 0, cost: 0}; p.qty += l.qty; p.sales += l.qty * l.price; p.cost += l.qty * c; prod.set(l.sku, p);
+  }
+  const items = [...prod.values()].map(p => ({...p, unit: p.qty ? Math.round(p.cost / p.qty * 100) / 100 : 0, profit: p.sales - p.cost})).sort((a, b) => b.qty - a.qty || b.sales - a.sales);
+  const cost = items.reduce((s, p) => s + p.cost, 0) + giftCost, net = sum(paid, o => o.total - (o.ship || 0));
+  // โค้ดส่วนลด
+  const codes = new Map();
+  const cp = code => { if (!codes.has(code)){ const meta = (RP.data.coupons || []).find(c => c.code === code) || {}; codes.set(code, {code, title: meta.title || "", type: meta.type || "", collected: (RP.data.collects || {})[code] || 0, collectedAll: (RP.data.collectsAll || {})[code] || 0, used: 0, pending: 0, cancelled: 0, discount: 0, sales: 0}); } return codes.get(code); };
+  for (const c of RP.data.coupons || []) cp(c.code);
+  for (const o of orders) for (const [code, amt] of [[o.coupon, o.discount], [o.shipCoupon, o.shipDiscount]]){
+    if (!code) continue; const x = cp(code);
+    if (RP_PAID.includes(o.status)){ x.used++; x.discount += Number(amt) || 0; x.sales += o.total; } else if (o.status === "pending") x.pending++; else x.cancelled++;
+  }
+  const coupons = [...codes.values()].sort((a, b) => b.used - a.used || b.collected - a.collected);
+  // โปรโมชั่น
+  const pm = new Map();
+  for (const o of paid) for (const p of o.promoList || []){ const x = pm.get(p.title) || {title: p.title, orders: 0, discount: 0, sales: 0}; x.orders++; x.discount += Number(p.amount) || 0; x.sales += o.total; pm.set(p.title, x); }
+  return {sales: sum(paid, o => o.total), paidN: paid.length, pendN: pend.length, pendAmt: sum(pend, o => o.total), total: orders.length,
+    avg: paid.length ? Math.round(sum(paid, o => o.total) / paid.length) : 0, pcs: items.reduce((s, p) => s + p.qty, 0),
+    disc: sum(paid, o => o.discount + o.promoDiscount + (o.shipDiscount || 0)), ship: sum(paid, o => o.ship || 0), byStatus, days: [...days.values()], items,
+    cost, giftCost, giftQty, net, profit: net - cost, coupons, promos: [...pm.values()].sort((a, b) => b.orders - a.orders)};
+}
+function adReport(){
+  if (!RP.state){ rpLoad(); return `<div class="state">กำลังโหลดรายงาน...</div>`; }
+  const presets = [["today", "วันนี้"], ["7d", "7 วัน"], ["30d", "30 วัน"], ["month", "เดือนนี้"], ["lastmonth", "เดือนก่อน"], ["custom", "เลือกวันเอง"]];
+  const head = `<div class="box" style="margin-top:0"><h3>ช่วงเวลา</h3>
+      <div class="seg">${presets.map(([k, t]) => `<button type="button" data-act="ad-rppreset" data-v="${k}" aria-pressed="${RP.preset === k}">${t}</button>`).join("")}</div>
+      <div class="two"><label class="fld">ตั้งแต่วันที่<input type="date" id="rp-from" value="${RP.from}"></label><label class="fld">ถึงวันที่<input type="date" id="rp-to" value="${RP.to}"></label></div>
+      <div class="cta"><button class="btn line" type="button" data-act="ad-rpgo">ดูรายงาน</button><button class="btn" type="button" data-act="ad-rpxlsx" ${RP.state === "ok" ? "" : "disabled"}>⬇ ส่งออก Excel</button></div>
+      <p class="desc">นับเฉพาะออเดอร์ที่สั่งผ่านร้านใน LINE · "ยอดขาย" = ออเดอร์ที่ชำระเงินแล้ว (ไม่รวมรอชำระและยกเลิก) · วันที่ตามเวลาไทย</p></div>`;
+  if (RP.state === "loading") return head + `<div class="state">กำลังโหลดรายงาน และอัปเดตสถานะจาก ZORT...</div>`;
+  if (RP.state === "error") return head + `<div class="state">${esc(RP.err)}</div>`;
+  const o = RP.data.orders, c = rpCalc(o), maxDay = Math.max(1, ...c.days.map(d => d.sales));
+  const kpi = (label, val, sub, neg) => `<div class="kpi"><small>${label}</small><b${neg ? ' style="color:var(--ink)"' : ""}>${val}</b>${sub ? `<span>${sub}</span>` : ""}</div>`;
+  const pct = c.net ? Math.round(c.profit / c.net * 100) : 0;
+  return head + `<div class="kpis">
+      ${kpi("ยอดขาย (ชำระแล้ว)", baht(c.sales), c.paidN + " ออเดอร์")}
+      ${kpi("ออเดอร์ทั้งหมด", num(c.total), "")}
+      ${kpi("รอชำระเงิน", num(c.pendN), baht(c.pendAmt))}
+      ${kpi("ยอดเฉลี่ยต่อออเดอร์", baht(c.avg), "")}
+      ${kpi("สินค้าที่ขายได้", num(c.pcs) + " ชิ้น", c.giftQty ? "+ ของแถม " + c.giftQty + " ชิ้น" : "")}
+      ${kpi("ส่วนลดที่ให้ไป", baht(c.disc), "โค้ด + โปร + ค่าส่ง")}
+      ${kpi("ต้นทุนสินค้า", baht(c.cost), c.giftCost ? "รวมของแถม " + baht(c.giftCost) : "", true)}
+      ${kpi("กำไรขั้นต้น", baht(c.profit), pct + "% ของยอดขายสินค้า")}
+      ${kpi("ค่าส่งที่เก็บ", baht(c.ship), "", true)}</div>
+    <p class="desc" style="margin-top:8px">กำไรขั้นต้น = ยอดขายหลังหักส่วนลด (ไม่รวมค่าส่ง) − ต้นทุนสินค้า (รวมของแถม) · ยังไม่หักค่าแพ็ก ค่าขนส่งจริง หรือค่าธรรมเนียมอื่น</p>
+    <div class="box"><h3>สถานะออเดอร์</h3>${c.byStatus.map(s => `<div class="rp-bar"><span>${s.label}</span><i style="--w:${c.total ? Math.round(s.n / c.total * 100) : 0}%"></i><b>${s.n}</b><small>${baht(s.amount)}</small></div>`).join("")}</div>
+    ${c.days.length > 1 && c.days.length <= 62 ? `<div class="box"><h3>ยอดขายรายวัน</h3><div class="rp-days">${c.days.map(d => `<div title="${d.day} ${baht(d.sales)} (${d.paid}/${d.orders} ออเดอร์)"><i style="height:${Math.round(d.sales / maxDay * 100)}%"></i><small>${d.day.slice(8)}</small></div>`).join("")}</div></div>` : ""}
+    <div class="box"><h3>สินค้าขายดี</h3>${c.items.length ? `<div class="tbl"><table><thead><tr><th>สินค้า</th><th>ชิ้น</th><th>ยอดขาย</th><th>ต้นทุน/ชิ้น</th><th>ต้นทุนรวม</th><th>กำไร</th></tr></thead><tbody>${c.items.slice(0, 20).map(p => `<tr><td>${esc(p.title)}<small>${esc(p.sku)}</small></td><td>${num(p.qty)}</td><td>${baht(p.sales)}</td><td>${p.unit ? baht(p.unit) : `<span class="desc">ไม่มีข้อมูล</span>`}</td><td>${baht(p.cost)}</td><td><b>${baht(p.profit)}</b></td></tr>`).join("")}</tbody></table></div>
+      <p class="desc">ยอดขายต่อสินค้าคิดจากราคาขายในออเดอร์ (ก่อนหักโค้ดส่วนลดท้ายบิล) · ต้นทุนตั้งได้ในแท็บ "สินค้าและรูป" ถ้าไม่ได้ตั้ง จะใช้ราคาทุนจาก ZORT</p>` : `<p class="desc">ยังไม่มีออเดอร์ที่ชำระเงินในช่วงนี้</p>`}</div>
+    <div class="box"><h3>โค้ดส่วนลด</h3>${c.coupons.length ? `<div class="tbl"><table><thead><tr><th>โค้ด</th><th>เก็บไป<small>ช่วงนี้ / ทั้งหมด</small></th><th>ใช้แล้ว<small>ชำระแล้ว</small></th><th>รอชำระ</th><th>ยกเลิก</th><th>ส่วนลดรวม</th><th>ยอดขายที่ใช้โค้ด</th></tr></thead><tbody>${c.coupons.map(x => `<tr><td><b>${esc(x.code)}</b><small>${esc(x.title)}</small></td><td>${num(x.collected)} / ${num(x.collectedAll)}</td><td>${num(x.used)}</td><td>${num(x.pending)}</td><td>${num(x.cancelled)}</td><td>${baht(x.discount)}</td><td>${baht(x.sales)}</td></tr>`).join("")}</tbody></table></div>
+      <p class="desc">"เก็บไป" นับคนที่กดเก็บหรือพิมพ์โค้ด (นับ 1 ครั้งต่อเครื่อง เริ่มนับตั้งแต่อัปเดตระบบนี้) · "ใช้แล้ว" นับออเดอร์ที่ชำระเงินแล้ว</p>` : `<p class="desc">ยังไม่มีโค้ดส่วนลด</p>`}</div>
+    ${c.promos.length ? `<div class="box"><h3>โปรโมชั่น</h3><div class="tbl"><table><thead><tr><th>โปร</th><th>ออเดอร์ที่ได้โปร</th><th>ส่วนลดรวม</th><th>ยอดขาย</th></tr></thead><tbody>${c.promos.map(x => `<tr><td>${esc(x.title)}</td><td>${num(x.orders)}</td><td>${baht(x.discount)}</td><td>${baht(x.sales)}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
+    <div class="box"><h3>ออเดอร์ (${o.length})</h3>${o.length ? `<div class="tbl"><table><thead><tr><th>วันที่</th><th>เลขที่</th><th>ลูกค้า</th><th>สถานะ</th><th>ยอด</th></tr></thead><tbody>${[...o].reverse().map(x => `<tr><td>${bkkTime(x.createdAt)}</td><td>${esc(x.number)}</td><td>${esc(x.customer.name || "")}</td><td><span class="bo-st ${RP_PAID.includes(x.status) ? "on" : x.status === "pending" ? "soon" : "off"}">${RP_STATUS[x.status] || x.status}</span></td><td>${baht(x.total)}</td></tr>`).join("")}</tbody></table></div>` : `<p class="desc">ไม่มีออเดอร์ในช่วงนี้</p>`}
+    ${RP.data.truncated ? `<p class="warn" style="margin:0">ออเดอร์เยอะเกิน 5,000 รายการ แสดงไม่ครบ ลองเลือกช่วงเวลาให้สั้นลง</p>` : ""}</div>`;
+}
+function loadScript(src){ return new Promise((ok, bad) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = () => bad(new Error("โหลดตัวสร้างไฟล์ Excel ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่")); document.head.appendChild(s); }); }
+async function rpExport(){
+  toast("กำลังสร้างไฟล์ Excel...");
+  try {
+    if (!window.XLSX) await loadScript("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js");
+    const o = RP.data.orders, c = rpCalc(o), wb = XLSX.utils.book_new();
+    const sheet = (rows, widths) => { const ws = XLSX.utils.aoa_to_sheet(rows); ws["!cols"] = widths.map(w => ({wch: w})); return ws; };
+    XLSX.utils.book_append_sheet(wb, sheet([
+      ["รายงานยอดขาย PonPon (ร้านใน LINE)"], ["ช่วงเวลา", RP.data.from + " ถึง " + RP.data.to], ["ออกรายงานเมื่อ", bkkTime(Date.now())], [],
+      ["ยอดขาย (ชำระแล้ว)", c.sales], ["ออเดอร์ที่ชำระแล้ว", c.paidN], ["ออเดอร์ทั้งหมด", c.total], ["รอชำระเงิน (ออเดอร์)", c.pendN], ["รอชำระเงิน (ยอด)", c.pendAmt],
+      ["ยอดเฉลี่ยต่อออเดอร์", c.avg], ["สินค้าที่ขายได้ (ชิ้น)", c.pcs], ["ของแถมที่ให้ไป (ชิ้น)", c.giftQty], ["ส่วนลดที่ให้ไป (โค้ด+โปร+ค่าส่ง)", c.disc], ["ค่าส่งที่เก็บ", c.ship], [],
+      ["ยอดขายสินค้าหลังส่วนลด (ไม่รวมค่าส่ง)", c.net], ["ต้นทุนสินค้า (รวมของแถม)", c.cost], ["ต้นทุนของแถม", c.giftCost], ["กำไรขั้นต้น", c.profit], ["กำไรขั้นต้น (%)", c.net ? Math.round(c.profit / c.net * 1000) / 10 : 0], [],
+      ["สถานะ", "จำนวนออเดอร์", "ยอดรวม"], ...c.byStatus.map(s => [s.label, s.n, s.amount]), [],
+      ["วันที่", "ออเดอร์ทั้งหมด", "ออเดอร์ชำระแล้ว", "ยอดขาย"], ...c.days.map(d => [d.day, d.orders, d.paid, d.sales])
+    ], [28, 18, 18, 14]), "สรุป");
+    XLSX.utils.book_append_sheet(wb, sheet([
+      ["วันที่สั่ง", "เลขที่ออเดอร์", "สถานะ", "ชื่อผู้รับ", "เบอร์โทร", "ที่อยู่", "ชื่อ LINE", "จำนวนชิ้น", "ค่าสินค้า", "ส่วนลดโปร", "โปร", "ส่วนลดโค้ด", "โค้ด", "โค้ดค่าส่ง", "ค่าส่ง", "ยอดรวม", "เวลาชำระ (ตรวจสลิป)", "เลขพัสดุ", "หมายเหตุ", "คืนเงินเข้าบัญชี"],
+      ...o.map(x => [bkkTime(x.createdAt), x.number, RP_STATUS[x.status] || x.status, x.customer.name || "", x.customer.phone || "", x.customer.address || "", x.lineName,
+        x.lines.filter(l => !l.gift).reduce((s, l) => s + l.qty, 0), x.goods, x.promoDiscount, x.promos, x.discount, x.coupon, x.shipCoupon, x.ship === null ? "แจ้งในแชต" : x.ship, x.total,
+        bkkTime(x.paidAt), x.tracking, x.customer.note || "", x.refund ? `${x.refund.bank} ${x.refund.account} ${x.refund.name}` : ""])
+    ], [17, 16, 18, 20, 13, 40, 16, 9, 10, 10, 22, 10, 10, 10, 8, 10, 17, 16, 20, 30]), "ออเดอร์");
+    XLSX.utils.book_append_sheet(wb, sheet([
+      ["วันที่สั่ง", "เลขที่ออเดอร์", "สถานะ", "SKU", "สินค้า", "จำนวน", "ราคาต่อชิ้น", "รวม", "ต้นทุนต่อชิ้น", "ต้นทุนรวม", "กำไร", "ของแถม"],
+      ...o.flatMap(x => x.lines.map(l => [bkkTime(x.createdAt), x.number, RP_STATUS[x.status] || x.status, l.sku, l.title, l.qty, l.price, l.qty * l.price, l.cost || 0, l.qty * (l.cost || 0), l.qty * l.price - l.qty * (l.cost || 0), l.gift ? "ใช่" : ""]))
+    ], [17, 16, 18, 18, 40, 8, 10, 10, 11, 11, 10, 8]), "รายการสินค้า");
+    XLSX.utils.book_append_sheet(wb, sheet([["SKU", "สินค้า", "จำนวนที่ขาย (ชิ้น)", "ยอดขาย", "ต้นทุนต่อชิ้น", "ต้นทุนรวม", "กำไร"], ...c.items.map(p => [p.sku, p.title, p.qty, p.sales, p.unit, p.cost, p.profit]),
+      [], ["ของแถมที่ให้ไป", "", c.giftQty, 0, "", c.giftCost, -c.giftCost]], [18, 44, 16, 12, 12, 12, 12]), "สินค้าขายดี");
+    XLSX.utils.book_append_sheet(wb, sheet([["โค้ด", "ชื่อโค้ด", "ประเภท", "เก็บไป (ช่วงนี้)", "เก็บไป (ทั้งหมด)", "ใช้แล้ว (ชำระแล้ว)", "รอชำระ", "ยกเลิก", "ส่วนลดรวม", "ยอดขายที่ใช้โค้ด"],
+      ...c.coupons.map(x => [x.code, x.title, {percent: "ลด %", amount: "ลดบาท", freeship: "ค่าส่ง"}[x.type] || "", x.collected, x.collectedAll, x.used, x.pending, x.cancelled, x.discount, x.sales])], [12, 28, 9, 14, 14, 16, 9, 9, 12, 16]), "โค้ดส่วนลด");
+    XLSX.utils.book_append_sheet(wb, sheet([["โปรโมชั่น", "ออเดอร์ที่ได้โปร (ชำระแล้ว)", "ส่วนลดรวม", "ยอดขาย"], ...c.promos.map(x => [x.title, x.orders, x.discount, x.sales])], [34, 24, 12, 12]), "โปรโมชั่น");
+    XLSX.writeFile(wb, `PonPon-report-${RP.data.from}_to_${RP.data.to}.xlsx`);
+    toast("ดาวน์โหลดไฟล์ Excel แล้ว");
+  } catch (e) { toast(e.message || "สร้างไฟล์ไม่สำเร็จ"); }
+}
+function rpClick(a, b){
+  if (a === "ad-rppreset"){ RP.preset = b.dataset.v; if (RP.preset !== "custom") return rpLoad(); return render(); }
+  if (a === "ad-rpgo"){ RP.preset = "custom"; RP.from = $("rp-from").value; RP.to = $("rp-to").value; return rpLoad(); }
+  if (a === "ad-rpxlsx") return rpExport();
   return false;
 }
 
@@ -1574,9 +1718,16 @@ function toggleFav(id){
   store.set("ponpon-fav", [...favs]);
   toast(favs.has(id) ? "เพิ่มในรายการถูกใจแล้ว" : "นำออกจากรายการถูกใจแล้ว");
 }
+/* นับจำนวนคนที่เก็บโค้ด (ไม่ส่งข้อมูลส่วนตัว ใช้รหัสสุ่มของเครื่อง) */
+function trackCollect(code){
+  let uid = store.get("ponpon-uid", "");
+  if (!uid){ uid = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)).replace(/[^A-Za-z0-9-]/g, ""); store.set("ponpon-uid", uid); }
+  fetch(CONFIG.API_URL + "api/coupon/collect", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({code, uid})}).catch(() => 0);
+}
 function setCoupon(code){
   const t0 = totals(), c = couponOf(code), problem = couponProblem(c, t0.base, t0.noCoupon);
   if (!c) return toast(problem);
+  if (!myCoupons.has(c.code)) trackCollect(c.code);
   myCoupons.add(c.code); store.set("ponpon-coupons", [...myCoupons]);
   if (isShip(c)){ usedShip = c.code; store.set("ponpon-used-ship", usedShip); }
   else { usedCoupon = c.code; store.set("ponpon-used-coupon", usedCoupon); }
@@ -1597,7 +1748,7 @@ document.addEventListener("click", e => {
   if (a === "banner"){ const bn = SHOP.banners[Number(b.dataset.i)] || {}; return bn.action === "coupons" ? showCoupons() : bn.action === "products" ? go("#products") : bn.link ? openExternal(bn.link) : null; }
   if (a === "coupons") return showCoupons();
   if (a === "closesheet") return closeSheet();
-  if (a === "collect"){ const c = couponOf(b.dataset.code); if (!c || (c.expires && today() > c.expires)) return; myCoupons.add(c.code); store.set("ponpon-coupons", [...myCoupons]); toast("เก็บโค้ดแล้ว ใช้ได้ที่หน้าตะกร้า"); if (!$("sheet").hidden) showCoupons(); return keep(); }
+  if (a === "collect"){ const c = couponOf(b.dataset.code); if (!c || (c.expires && today() > c.expires)) return; if (!myCoupons.has(c.code)) trackCollect(c.code); myCoupons.add(c.code); store.set("ponpon-coupons", [...myCoupons]); toast("เก็บโค้ดแล้ว ใช้ได้ที่หน้าตะกร้า"); if (!$("sheet").hidden) showCoupons(); return keep(); }
   if (a === "usecoupon"){ setCoupon(b.dataset.code); return keep(); }
   if (a === "applycode"){ const v = ($("code").value || "").trim(); if (!v) return toast("กรอกโค้ดส่วนลดก่อนนะคะ"); setCoupon(v); return keep(); }
   if (a === "clearcoupon"){ usedCoupon = ""; store.set("ponpon-used-coupon", ""); return keep(); }
