@@ -78,6 +78,52 @@ main{animation:rise .25s ease-out}
 .pick button{text-align:left;padding:8px 10px;border-radius:10px;background:var(--white);font-size:14px;color:var(--ink)}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .fld input[type=date]{min-height:44px}
+body.admin-mode .nav{display:none}
+body.admin-mode .app{max-width:1280px;padding-bottom:40px}
+.ad-side{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:4px -16px 12px;padding:2px 16px 5px}
+.ad-side::-webkit-scrollbar{display:none}
+.ad-shop{display:none;color:var(--muted);font-size:14px;text-decoration:none;padding:8px 4px}
+.ad-main{min-width:0}
+.pd-tools{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.pd-tools input{font-size:16px;border:var(--edge);border-radius:999px;padding:10px 16px;background:var(--card)}
+.pd-rows{display:flex;flex-direction:column;gap:8px}
+.pd-row{display:grid;grid-template-columns:56px 1fr auto;grid-template-areas:"img n p" "img t s";gap:2px 10px;align-items:center;text-align:left;background:var(--card);border:1.5px solid var(--ink);border-radius:16px;padding:8px 12px 8px 8px;width:100%}
+.pd-row.on{background:var(--red-tint);border-color:var(--red);box-shadow:0 3px 0 var(--red)}
+.pd-row img{grid-area:img;width:56px;height:56px;border-radius:12px;object-fit:cover;background:var(--white)}
+.pd-n{grid-area:n;min-width:0}.pd-n b{display:block;font-size:14px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pd-n small{color:var(--muted);font-size:12px}
+.pd-p{grid-area:p;font-family:var(--display);font-weight:700;color:var(--red);font-size:14px;text-align:right}
+.pd-s{grid-area:s;font-size:12px;color:var(--muted);text-align:right}
+.pd-t{grid-area:t;display:flex;gap:4px;flex-wrap:wrap}
+.pd-t i{font-style:normal;font-size:11px;border-radius:999px;padding:1px 8px;background:var(--white);border:1px solid var(--line)}
+.pd-t i.warn-t{color:var(--red);border-color:var(--red)}
+.pd-wrap.has-ed .pd-list{display:none}
+.tbl{overflow-x:auto;margin:0 -4px}
+.tbl table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:520px}
+.tbl th{text-align:left;font-weight:600;font-size:12px;color:var(--muted);padding:6px 6px;border-bottom:1.5px solid var(--line)}
+.tbl td{padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl td small{display:block;color:var(--muted);font-size:11px}
+.pd-in{width:96px;font-size:16px;border:1.5px solid var(--ink);border-radius:10px;padding:6px 8px}
+.pd-cust{font-family:var(--display);font-weight:700;color:var(--red)}
+.sw{display:flex;align-items:center;gap:6px;font-size:13px}.sw input{accent-color:var(--red);width:20px;height:20px}
+.ph-g{border-top:1.5px dashed var(--line);padding-top:10px}
+.ph-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-bottom:8px}.ph-h small{color:var(--muted);font-size:12px}
+.ph-list{display:flex;flex-wrap:wrap;gap:10px}
+.ph-list figure{position:relative;margin:0;width:96px}
+.ph-list figure img{width:96px;height:96px;object-fit:cover;border-radius:14px;border:1.5px solid var(--ink);background:var(--white)}
+.ph-list figcaption{font-size:11.5px;color:var(--muted);text-align:center}
+.ph-x{position:absolute;top:-6px;right:-6px;width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-size:13px;border:2px solid #fff}
+.ph-add{width:96px;height:96px;border:2px dashed var(--red);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--red);font-size:28px;cursor:pointer;background:var(--red-tint)}
+.ph-add span{font-size:12px;font-weight:600}
+@media (min-width:900px){
+  .ad-shell{display:grid;grid-template-columns:200px 1fr;gap:24px;align-items:start}
+  .ad-side{position:sticky;top:76px;flex-direction:column;margin:8px 0 0;padding:0;overflow:visible}
+  .ad-side .tab{text-align:left;border-radius:14px;padding:10px 14px}
+  .ad-shop{display:block}
+  .pd-wrap.has-ed{display:grid;grid-template-columns:minmax(300px,1fr) 1.35fr;gap:18px;align-items:start}
+  .pd-wrap.has-ed .pd-list{display:block;max-height:calc(100vh - 110px);overflow-y:auto;position:sticky;top:76px;padding:2px 4px 4px}
+  .pd-row{grid-template-columns:56px 1fr auto auto;grid-template-areas:"img n p s" "img t p s"}
+  .pd-wrap:not(.has-ed) .pd-rows{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr))}
+}
 .hello{display:flex;align-items:center;gap:8px;margin:2px 0 12px;font-family:var(--display);font-weight:600;font-size:15px}
 .hello .spark{color:var(--red);width:18px;height:18px;animation:spin 6s linear infinite}
 
@@ -501,6 +547,7 @@ function readShop(shop){
     promos: (Array.isArray(shop.promos) ? shop.promos : []).map(normPromo).filter(p => p.buy.length),
     categoryNames: shop.categoryNames || {},
     imageVersion: shop.imageVersion ? String(shop.imageVersion) : "",
+    names: shop.names && typeof shop.names === "object" ? shop.names : {},
     texts: shop.texts && typeof shop.texts === "object" ? shop.texts : {},
     saveUrl: String(shop.saveUrl || "")
   };
@@ -522,7 +569,7 @@ async function load(){
   PRODUCTS = buildProducts(data.products.map(r => ({...r, orig: r.price, price: linePrice(r.price, r.sku)})));
   byId = new Map(); bySku = new Map();
   for (const p of PRODUCTS){
-    p.title = names[p.id] || p.name;
+    p.title = (SHOP.names[p.id] && SHOP.names[p.id].th) || names[p.id] || p.name;
     p.search = (p.title + " " + p.name + " " + p.id + " " + p.variants.map(v => v.label).join(" ")).toLowerCase();
     byId.set(p.id, p);
     for (const v of p.variants) bySku.set(v.sku, {p, v});
@@ -548,6 +595,11 @@ async function loadPhotoIndex(){
   let names = cached && cached.ver === ver && Date.now() - cached.at < 10 * 60e3 ? cached.names : null;
   if (!names){
     try {
+      // อ่านรายชื่อรูปผ่านระบบหลังบ้านก่อน (เร็วและไม่ติดโควตา) ถ้าไม่ได้ค่อยอ่านจาก GitHub ตรง
+      const w = await fetch(CONFIG.API_URL + "api/photos", {cache: "no-store"}).then(r => r.ok ? r.json() : null).catch(() => null);
+      if (w && Array.isArray(w.names)) names = w.names;
+    } catch (e) {}
+    if (!names) try {
       const r = await fetch("https://api.github.com/repos/" + CONFIG.GH_REPO + "/contents/" + CONFIG.IMAGE_DIR.replace(/\/$/, ""), {cache: "no-store"});
       if (!r.ok) throw new Error("gh " + r.status);
       names = (await r.json()).map(f => f.name);
@@ -852,6 +904,8 @@ function render(){
   const views = {home: viewHome, products: viewProducts, product: () => viewProduct(r.arg), cart: viewCart, checkout: viewCheckout, me: viewMe, orders: viewOrders, order: () => viewOrder(r.arg), admin: viewAdmin};
   $("view").innerHTML = (views[r.page] || viewHome)();
   $("view").toggleAttribute("translate", false); if (r.page === "admin") $("view").setAttribute("translate", "no");
+  document.body.classList.toggle("admin-mode", r.page === "admin");
+  if (shopStale && r.page !== "admin"){ shopStale = false; load().then(render).catch(() => 0); }
   if ((r.page === "cart" || r.page === "checkout") && cart.size){
     const t = totals();
     pay.innerHTML = `<div><span><small>${t.ship === null ? "ยอดสินค้า" : "ยอดรวม"}</small><b>${baht(t.total)}</b></span><button type="button" data-act="${r.page === "cart" ? "checkout" : "order"}">${r.page === "cart" ? "ชำระเงิน" : "ยืนยันสั่งซื้อ"}</button></div>`;
@@ -1129,7 +1183,7 @@ function viewOrder(number){
 
 /* ---------- หลังบ้านสำหรับแอดมิน (#admin) ----------
    เข้าได้เฉพาะบัญชี LINE ที่เป็นแอดมิน ครั้งแรกต้องกรอกรหัสแอดมิน (ADMIN_CODE ที่ตั้งใน Cloudflare) */
-let AD = {state: "", data: null, tab: "coupons", edit: null, err: "", busy: false, isAdmin: false};
+let AD = {state: "", data: null, tab: "products", edit: null, err: "", busy: false, isAdmin: false};
 const adminLink = () => (CONFIG.LIFF_ID ? "https://miniapp.line.me/" + CONFIG.LIFF_ID : location.origin + location.pathname) + "?page=admin";
 async function adminCheck(){
   const token = await idToken(); if (!token) return false;
@@ -1176,9 +1230,10 @@ function viewAdmin(){
       <label class="fld">รหัสแอดมิน<input id="ad-code" type="password" autocomplete="off"></label>
       <p class="warn" id="ad-err" style="margin:0" hidden></p>
       <button class="btn" type="button" data-act="ad-login">เข้าสู่หลังบ้าน</button></div>`;
-  const tabs = [["coupons", "โค้ดส่วนลด"], ["promos", "โปรโมชั่น"], ["store", "ตั้งค่าร้าน"], ["team", "ทีมแอดมิน"]];
-  const body = {coupons: adCoupons, promos: adPromos, store: adStore, team: adTeam}[AD.tab]();
-  return `<div class="tabs" style="margin-top:4px">${tabs.map(([k, t]) => `<button class="tab" type="button" data-act="ad-tab" data-k="${k}" aria-pressed="${AD.tab === k}">${t}</button>`).join("")}</div>${body}`;
+  const tabs = [["products", "📦 สินค้าและรูป"], ["coupons", "🎟 โค้ดส่วนลด"], ["promos", "🎁 โปรโมชั่น"], ["store", "🏪 ตั้งค่าร้าน"], ["team", "👥 ทีมแอดมิน"]];
+  const body = {products: adProducts, coupons: adCoupons, promos: adPromos, store: adStore, team: adTeam}[AD.tab]();
+  return `<div class="ad-shell"><nav class="ad-side">${tabs.map(([k, t]) => `<button class="tab" type="button" data-act="ad-tab" data-k="${k}" aria-pressed="${AD.tab === k}">${t}</button>`).join("")}
+      <a class="ad-shop" href="#home">← กลับหน้าร้าน</a></nav><div class="ad-main">${body}</div></div>`;
 }
 function adCoupons(){
   const list = AD.data.coupons;
@@ -1292,8 +1347,9 @@ function adSaveEdit(){
   adminSaveKey(key, list, label).then(ok => { if (ok){ AD.edit = null; closeSheet(); } });
 }
 function adminClick(a, b){
+  if (a.startsWith("ad-pd") || a.startsWith("ad-ph")) return pdClick(a, b);
   if (a === "ad-reload") return adminLoad();
-  if (a === "ad-tab"){ AD.tab = b.dataset.k; return render(); }
+  if (a === "ad-tab"){ AD.tab = b.dataset.k; render(); return scrollTo(0, 0); }
   if (a === "ad-login"){
     const code = $("ad-code").value; if (!code.trim()) return;
     return idToken().then(t => api("api/admin/login", {method: "POST", body: JSON.stringify({code})}, t))
@@ -1330,10 +1386,185 @@ function adminClick(a, b){
   if (a === "ad-rmyes"){ closeSheet(); return idToken().then(t => api("api/admin/remove", {method: "POST", body: JSON.stringify({id: b.dataset.v})}, t)).then(() => { toast("ลบแอดมินแล้ว"); adminLoad(); }).catch(err => toast(err.message)); }
 }
 function adminInput(t){
+  if (route().page === "admin" && pdInput(t)) return true;
   if (!AD.edit) return false;
   if (t.id === "ad-q"){ AD.edit.q = t.value; $("ad-res").innerHTML = adPickList(); return true; }
   if (t.id === "ad-gq"){ AD.edit.gq = t.value; $("ad-gres").innerHTML = adGiftList(); return true; }
   if (t.dataset.e){ AD.edit.d[t.dataset.e] = t.type === "checkbox" ? t.checked : t.value; return true; }
+  return false;
+}
+
+/* ----- หลังบ้าน: สินค้า (ชื่อ ราคาขายใน LINE ซ่อน/แสดง รูป) ----- */
+let shopStale = false; // แก้สินค้าในหลังบ้านแล้ว โหลดข้อมูลหน้าร้านใหม่ตอนกลับไปหน้าร้าน
+const PD = {data: null, state: "", q: "", filter: "all", sel: "", draft: null, preview: new Map(), busy: false};
+async function pdLoad(){
+  PD.state = "loading"; if (route().page === "admin") render();
+  try { PD.data = await api("api/admin/products", {method: "GET"}, await idToken()); PD.state = "ok"; }
+  catch (e) { PD.state = "error"; PD.err = e.message; }
+  if (route().page === "admin") render();
+}
+const pdParen = name => { const m = String(name || "").match(/^(.*?)\s*\(([^()]*)\)\s*$/); return m ? [m[1].trim(), m[2].trim()] : [String(name || "").trim(), ""]; };
+function pdGroups(){
+  const map = new Map();
+  for (const r of PD.data.products){
+    const id = r.sku.slice(0, CONFIG.GROUP_LEN), [base, opt] = pdParen(r.name);
+    if (!map.has(id)) map.set(id, {id, base, cat: r.category, skus: []});
+    map.get(id).skus.push({...r, opt});
+  }
+  return [...map.values()].sort((a, b) => b.id.localeCompare(a.id));
+}
+const pdName = g => { const n = PD.data.names[g.id]; return (n && n.th) || (byId.get(g.id) && byId.get(g.id).title) || g.base; };
+const pdFiles = () => (PD.data.photos || []).filter(n => IMG_EXT.test(n)).map(name => { const m = name.replace(IMG_EXT, "").match(/^(.*?)(?:-(\d{1,2}))?$/); return {name, key: m[1].toUpperCase(), n: Number(m[2] || 1)}; });
+const pdSrc = name => PD.preview.get(name) || CONFIG.IMAGE_DIR + name + "?v=" + encodeURIComponent(PD.data.imageVersion || "0");
+const pdPrice = s => (PD.data.prices[s.sku] > 0 ? Number(PD.data.prices[s.sku]) : s.price);
+function pdCover(g, files){
+  const own = files.filter(f => f.key === g.id).sort((a, b) => a.n - b.n)[0];
+  if (own) return pdSrc(own.name);
+  const any = files.filter(f => g.skus.some(s => s.sku.toUpperCase().startsWith(f.key))).sort((a, b) => a.n - b.n)[0];
+  return any ? pdSrc(any.name) : (g.skus.find(s => s.image) || {}).image || PLACEHOLDER;
+}
+/* กลุ่มรูป: รูปรวม + รูปตามตัวเลือก (ชื่อไฟล์ = ต้นของ SKU) */
+function pdPhotoGroups(g){
+  const files = pdFiles().filter(f => f.key.startsWith(g.id));
+  const groups = [{key: g.id, label: "รูปรวม (ใช้กับทุกตัวเลือก)", files: files.filter(f => f.key === g.id)}];
+  const byKey = new Map();
+  for (const s of g.skus){
+    const own = files.filter(f => f.key !== g.id && s.sku.toUpperCase().startsWith(f.key)).sort((a, b) => b.key.length - a.key.length)[0];
+    const mid = s.sku.slice(CONFIG.GROUP_LEN).replace(/-?\d+$/, "").match(RE_MID);
+    const key = own ? own.key : (mid && mid[2] ? g.id + mid[2] : s.sku.toUpperCase());
+    if (!byKey.has(key)) byKey.set(key, {key, labels: [], files: files.filter(f => f.key === key)});
+    byKey.get(key).labels.push(s.opt || s.sku);
+  }
+  if (g.skus.length > 1) for (const x of byKey.values()) groups.push({key: x.key, label: "เฉพาะ " + [...new Set(x.labels)].join(", "), files: x.files});
+  for (const gr of groups) gr.files.sort((a, b) => a.n - b.n);
+  return groups;
+}
+function adProducts(){
+  if (!PD.state){ pdLoad(); return `<div class="state">กำลังโหลดสินค้า...</div>`; }
+  if (PD.state === "loading" && !PD.data) return `<div class="state">กำลังโหลดสินค้าจาก ZORT...</div>`;
+  if (PD.state === "error") return `<div class="state">${esc(PD.err)}<br><br><button class="btn" type="button" data-act="ad-pdreload">ลองใหม่</button></div>`;
+  const files = pdFiles(), q = PD.q.trim().toLowerCase();
+  const groups = pdGroups().filter(g => {
+    if (q && !(g.id.toLowerCase().includes(q) || pdName(g).toLowerCase().includes(q) || g.base.toLowerCase().includes(q))) return false;
+    const hasPic = files.some(f => f.key.startsWith(g.id));
+    if (PD.filter === "nophoto") return !hasPic;
+    if (PD.filter === "hidden") return g.skus.some(s => PD.data.hidden.includes(s.sku));
+    if (PD.filter === "price") return g.skus.some(s => PD.data.prices[s.sku] > 0);
+    return true;
+  });
+  const rows = groups.map(g => {
+    const prices = g.skus.map(pdPrice).filter(x => x > 0), lo = Math.min(...prices), hi = Math.max(...prices);
+    const stock = g.skus.reduce((a, s) => a + s.stock, 0), pics = files.filter(f => f.key.startsWith(g.id)).length;
+    const hid = g.skus.filter(s => PD.data.hidden.includes(s.sku)).length;
+    return `<button type="button" class="pd-row${PD.sel === g.id ? " on" : ""}" data-act="ad-pdopen" data-v="${esc(g.id)}">
+      <img src="${esc(pdCover(g, files))}" alt="" loading="lazy">
+      <span class="pd-n"><b>${esc(pdName(g))}</b><small>${esc(g.id)} · ${g.skus.length} ตัวเลือก</small></span>
+      <span class="pd-p">${prices.length ? (lo === hi ? baht(lo) : baht(lo) + "–" + baht(hi)) : "ไม่มีราคา"}</span>
+      <span class="pd-s">เหลือ ${num(stock)}</span>
+      <span class="pd-t">${pics ? `<i>รูป ${pics}</i>` : `<i class="warn-t">ไม่มีรูป</i>`}${hid ? `<i class="warn-t">ซ่อน ${hid}</i>` : ""}${g.skus.some(s => PD.data.prices[s.sku] > 0) ? `<i>ราคา LINE</i>` : ""}</span></button>`;
+  }).join("");
+  const list = `<div class="pd-list"><div class="pd-tools"><input id="pd-q" placeholder="ค้นหาชื่อหรือรหัสสินค้า" value="${esc(PD.q)}" autocomplete="off">
+      <div class="seg">${[["all", "ทั้งหมด"], ["nophoto", "ไม่มีรูป"], ["hidden", "ซ่อนอยู่"], ["price", "ตั้งราคา LINE"]].map(([k, t]) => `<button type="button" data-act="ad-pdfilter" data-v="${k}" aria-pressed="${PD.filter === k}">${t}</button>`).join("")}</div></div>
+    ${!PD.data.github ? `<p class="warn" style="margin:0 0 10px">ยังไม่ได้เชื่อม GitHub จึงยังอัปโหลดรูปไม่ได้ (ตั้ง GITHUB_TOKEN ใน Cloudflare) ส่วนชื่อและราคาแก้ได้ตามปกติ</p>` : PD.data.photoError ? `<p class="warn" style="margin:0 0 10px">${esc(PD.data.photoError)}</p>` : ""}
+    <p class="desc" style="margin:0 0 8px">${groups.length} สินค้า</p><div class="pd-rows">${rows || `<div class="state">ไม่พบสินค้า</div>`}</div></div>`;
+  return `<div class="pd-wrap${PD.sel ? " has-ed" : ""}">${list}${PD.sel ? `<div class="pd-ed">${pdEditor()}</div>` : ""}</div>`;
+}
+function pdEditor(){
+  const g = pdGroups().find(x => x.id === PD.sel); if (!g) return "";
+  const d = PD.draft;
+  const skuRows = g.skus.map(s => {
+    const v = d.prices[s.sku] ?? "", eff = Number(v) > 0 ? Number(v) : s.price, show = !d.hidden[s.sku];
+    return `<tr><td><b>${esc(s.opt || "-")}</b><small>${esc(s.sku)}</small></td><td>${num(s.stock)}</td><td>${s.price > 0 ? baht(s.price) : "-"}</td>
+      <td><input class="pd-in" data-pdprice="${esc(s.sku)}" type="number" inputmode="decimal" min="0" placeholder="${s.price || ""}" value="${esc(v)}"></td>
+      <td class="pd-cust" data-cust="${esc(s.sku)}">${eff > 0 ? baht(linePrice(eff, s.sku)) : "-"}</td>
+      <td><label class="sw"><input type="checkbox" data-pdshow="${esc(s.sku)}" ${show ? "checked" : ""}><span>${show ? "แสดง" : "ซ่อน"}</span></label></td></tr>`;
+  }).join("");
+  const photos = pdPhotoGroups(g).map(gr => `<div class="ph-g"><div class="ph-h"><b>${esc(gr.label)}</b><small>ชื่อไฟล์ ${esc(gr.key)}</small></div>
+      <div class="ph-list">${gr.files.map(f => `<figure><img src="${esc(pdSrc(f.name))}" alt="" loading="lazy"><figcaption>${f.n === 1 ? "รูปแรก" : "รูปที่ " + f.n}</figcaption>
+        <button type="button" class="ph-x" data-act="ad-phdel" data-v="${esc(f.name)}" aria-label="ลบรูป">✕</button></figure>`).join("")}
+        ${PD.data.github ? `<label class="ph-add">+<span>เพิ่มรูป</span><input type="file" accept="image/*" multiple hidden data-upkey="${esc(gr.key)}"></label>` : ""}</div></div>`).join("");
+  return `<div class="box" style="margin-top:0"><div class="acc"><button type="button" class="mini line" data-act="ad-pdclose">← กลับ</button><small class="desc">${esc(g.id)}</small></div>
+      <h3>ชื่อที่แสดงในร้าน</h3>
+      <label class="fld">ชื่อภาษาไทย<input data-pdname="th" value="${esc(d.th)}" placeholder="${esc(pdName(g))}"></label>
+      <label class="fld">ชื่อภาษาอังกฤษ (ไม่บังคับ ใช้ตอนลูกค้าเปลี่ยนภาษา)<input data-pdname="en" value="${esc(d.en)}"></label>
+      <p class="desc">ชื่อใน ZORT: ${esc(g.base)}</p></div>
+    <div class="box"><h3>ราคาและการแสดงผล</h3>
+      <p class="desc">ช่อง "ราคาขายใน LINE" เว้นว่าง = ใช้ราคาจาก ZORT · ราคาที่ลูกค้าเห็นรวมส่วนลดทั้งร้าน ${SHOP.discountPercent || 0}% แล้ว · ไม่แก้ราคาใน ZORT</p>
+      <div class="tbl"><table><thead><tr><th>ตัวเลือก</th><th>สต็อก</th><th>ราคา ZORT</th><th>ราคาขายใน LINE</th><th>ลูกค้าเห็น</th><th>หน้าร้าน</th></tr></thead><tbody>${skuRows}</tbody></table></div>
+      <p class="warn" id="ad-err" style="margin:0" hidden></p>
+      <button class="btn" type="button" data-act="ad-pdsave">บันทึกชื่อและราคา</button></div>
+    <div class="box"><h3>รูปสินค้า</h3>
+      <p class="desc">รูปรวมขึ้นทุกตัวเลือก · รูปเฉพาะตัวเลือกขึ้นก่อนเมื่อลูกค้าเลือกตัวเลือกนั้น · ระบบย่อรูปให้อัตโนมัติ · หน้าร้านเห็นรูปใหม่ในประมาณ 1 นาที</p>
+      ${PD.data.github ? "" : `<p class="warn" style="margin:0">ยังไม่ได้เชื่อม GitHub จึงอัปโหลดรูปไม่ได้</p>`}${photos}</div>`;
+}
+function pdOpen(id){
+  const n = PD.data.names[id] || {}, prices = {}, hidden = {};
+  for (const r of PD.data.products) if (r.sku.slice(0, CONFIG.GROUP_LEN) === id){ if (PD.data.prices[r.sku] > 0) prices[r.sku] = PD.data.prices[r.sku]; hidden[r.sku] = PD.data.hidden.includes(r.sku); }
+  PD.sel = id; PD.draft = {th: n.th || "", en: n.en || "", prices, hidden};
+  render(); if (matchMedia("(max-width: 899px)").matches) scrollTo(0, 0);
+}
+async function pdSave(){
+  if (PD.busy) return; PD.busy = true; toast("กำลังบันทึก...");
+  try {
+    const d = PD.draft, prices = {};
+    for (const r of PD.data.products) if (r.sku.slice(0, CONFIG.GROUP_LEN) === PD.sel) prices[r.sku] = d.prices[r.sku] === undefined ? "" : d.prices[r.sku];
+    const res = await api("api/admin/product", {method: "POST", body: JSON.stringify({id: PD.sel, th: d.th.trim(), en: d.en.trim(), prices, hidden: d.hidden})}, await idToken());
+    PD.data.names = res.names; PD.data.prices = res.prices; PD.data.hidden = res.hidden;
+    PD.busy = false; shopStale = true; toast("บันทึกแล้ว หน้าร้านอัปเดตภายใน 1 นาที"); render();
+  } catch (e) { $("toast").hidden = true; const el = $("ad-err"); if (el){ el.textContent = e.message; el.hidden = false; } else toast(e.message); }
+  PD.busy = false;
+}
+const shrink = (file, max = 1600) => new Promise((ok, bad) => {
+  const fr = new FileReader(); fr.onerror = () => bad(new Error("อ่านไฟล์ไม่ได้"));
+  fr.onload = () => { const im = new Image(); im.onerror = () => bad(new Error("ไฟล์ " + file.name + " ไม่ใช่รูปภาพ"));
+    im.onload = () => { const k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement("canvas");
+      c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL("image/jpeg", .86)); };
+    im.src = fr.result; };
+  fr.readAsDataURL(file);
+});
+async function pdUpload(key, files){
+  if (!files.length) return;
+  if (PD.busy){ toast("รอให้บันทึกครั้งก่อนเสร็จก่อน แล้วเลือกรูปอีกครั้งนะคะ"); return render(); }
+  PD.busy = true;
+  let done = 0;
+  try {
+    for (const f of files){
+      toast(`กำลังอัปโหลดรูป ${done + 1}/${files.length}...`);
+      const image = await shrink(f);
+      const res = await api("api/admin/photo", {method: "POST", body: JSON.stringify({key, image})}, await idToken());
+      PD.preview.set(res.name, image); PD.data.photos = res.photos; done++;
+      render();
+    }
+    toast(`อัปโหลดแล้ว ${done} รูป หน้าร้านเห็นในประมาณ 1 นาที`);
+    shopStale = true;
+  } catch (e) { toast((done ? `อัปโหลดได้ ${done} รูป · ` : "") + e.message); }
+  PD.busy = false; render();
+}
+async function pdDelete(name){
+  closeSheet(); if (PD.busy) return; PD.busy = true; toast("กำลังลบรูป...");
+  try { const res = await api("api/admin/photo/delete", {method: "POST", body: JSON.stringify({name})}, await idToken()); PD.data.photos = res.photos; PD.preview.delete(name); toast("ลบรูปแล้ว"); shopStale = true; }
+  catch (e) { toast(e.message); }
+  PD.busy = false; render();
+}
+function pdClick(a, b){
+  if (a === "ad-pdreload") return pdLoad();
+  if (a === "ad-pdopen") return pdOpen(b.dataset.v);
+  if (a === "ad-pdclose"){ PD.sel = ""; return render(); }
+  if (a === "ad-pdfilter"){ PD.filter = b.dataset.v; return render(); }
+  if (a === "ad-pdsave") return pdSave();
+  if (a === "ad-phdel") return openSheet(`<h2>ลบรูปนี้?</h2><img src="${esc(pdSrc(b.dataset.v))}" alt="" style="max-height:240px;object-fit:contain;border-radius:14px"><p class="desc">${esc(b.dataset.v)}</p>
+      <button class="btn" type="button" data-act="ad-phdelyes" data-v="${esc(b.dataset.v)}">ยืนยันลบ</button><button class="btn line" type="button" data-act="closesheet">ไม่ลบ</button>`);
+  if (a === "ad-phdelyes") return pdDelete(b.dataset.v);
+  return false;
+}
+function pdInput(t){
+  if (t.id === "pd-q"){ PD.q = t.value; const y = t.selectionStart; render(); const el = $("pd-q"); if (el){ el.focus(); el.setSelectionRange(y, y); } return true; }
+  if (!PD.draft) return false;
+  if (t.dataset.pdname){ PD.draft[t.dataset.pdname] = t.value; return true; }
+  if (t.dataset.pdprice){ const sku = t.dataset.pdprice; PD.draft.prices[sku] = t.value; const s = PD.data.products.find(r => r.sku === sku), eff = Number(t.value) > 0 ? Number(t.value) : s.price;
+    const c = document.querySelector(`[data-cust="${sku}"]`); if (c) c.textContent = eff > 0 ? baht(linePrice(eff, sku)) : "-"; return true; }
+  if (t.dataset.pdshow){ PD.draft.hidden[t.dataset.pdshow] = !t.checked; t.nextElementSibling.textContent = t.checked ? "แสดง" : "ซ่อน"; return true; }
+  if (t.dataset.upkey && t.files && t.files.length && !t.dataset.busy){ t.dataset.busy = "1"; pdUpload(t.dataset.upkey, [...t.files]); return true; }
   return false;
 }
 
@@ -1427,7 +1658,7 @@ document.addEventListener("input", e => {
   if (t.id === "q"){ listQ = t.value; $("plist").innerHTML = productList(); }
   if (t.id === "only"){ listOnly = t.checked; $("plist").innerHTML = productList(); }
 });
-document.addEventListener("change", e => { const t = e.target; if (t.dataset && t.dataset.e && adminInput(t)) return; if (t.dataset && t.dataset.slip && t.files && t.files[0]) uploadSlip(t.dataset.slip, t.files[0]); });
+document.addEventListener("change", e => { const t = e.target; if (t.dataset && (t.dataset.e || t.dataset.upkey || t.dataset.pdshow) && adminInput(t)) return; if (t.dataset && t.dataset.slip && t.files && t.files[0]) uploadSlip(t.dataset.slip, t.files[0]); });
 document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.classList && e.target.classList.contains("ocard")) e.target.click(); if (e.key === "Escape") closeSheet(); if (e.key === "Enter" && e.target.id === "code"){ e.preventDefault(); setCoupon(e.target.value.trim()); render(); } });
 let holdSheet = false; // ให้หน้าต่างแจ้งผลสั่งซื้อค้างไว้ตอนเปลี่ยนหน้า
 window.addEventListener("hashchange", () => { if (holdSheet) holdSheet = false; else closeSheet(); render(); });
@@ -1459,7 +1690,7 @@ const applyLang = () => {
   setTexts(map);
 };
 /* ชื่อสินค้าและตัวเลือก (สี/ไซซ์) ตามภาษาที่เลือก: ชื่ออยู่ใน lang.json > names, คำในตัวเลือกอยู่ใน options */
-const tName = p => (LANG !== "th" && LANGDATA && LANGDATA.names && LANGDATA.names[LANG] && LANGDATA.names[LANG][p.id]) || p.title;
+const tName = p => LANG === "th" ? p.title : (SHOP.names && SHOP.names[p.id] && SHOP.names[p.id].en) || (LANGDATA && LANGDATA.names && LANGDATA.names[LANG] && LANGDATA.names[LANG][p.id]) || p.title;
 let optPairs = null;
 function tOpt(t){
   if (LANG === "th" || !t || !LANGDATA || !LANGDATA.options) return t;
