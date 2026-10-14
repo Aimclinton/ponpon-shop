@@ -64,12 +64,12 @@ main{animation:rise .25s ease-out}
 .item.gift{background:var(--red-tint);border-style:dashed}
 .item.gift img{width:64px;height:64px}
 .item .badge,.oline .badge{align-self:flex-start;font-size:10.5px;padding:1px 8px}
-.adm,.ad-item{gap:8px}
-.ad-code{font-family:var(--display);font-size:16px;letter-spacing:.04em}
-.ad-st{font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 10px;border:1.5px solid var(--ink)}
-.ad-st.on{background:var(--red);color:#fff}.ad-st.off{background:var(--line);color:var(--muted);border-color:var(--line)}.ad-st.soon{background:var(--card)}
+.adm,.bo-item{gap:8px}
+.bo-code{font-family:var(--display);font-size:16px;letter-spacing:.04em}
+.bo-st{font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 10px;border:1.5px solid var(--ink)}
+.bo-st.on{background:var(--red);color:#fff}.bo-st.off{background:var(--line);color:var(--muted);border-color:var(--line)}.bo-st.soon{background:var(--card)}
 .box > .acc{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.ad-btns{display:flex;flex-wrap:wrap;gap:6px}
+.bo-btns{display:flex;flex-wrap:wrap;gap:6px}
 .mini.line{background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
 .seg{display:flex;gap:6px;flex-wrap:wrap}
 .seg button{flex:1;min-width:90px;border:1.5px solid var(--ink);border-radius:12px;padding:9px 8px;background:var(--card);font-size:14px;color:var(--ink)}
@@ -80,10 +80,10 @@ main{animation:rise .25s ease-out}
 .fld input[type=date]{min-height:44px}
 body.admin-mode .nav{display:none}
 body.admin-mode .app{max-width:1280px;padding-bottom:40px}
-.ad-side{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:4px -16px 12px;padding:2px 16px 5px}
-.ad-side::-webkit-scrollbar{display:none}
-.ad-shop{display:none;color:var(--muted);font-size:14px;text-decoration:none;padding:8px 4px}
-.ad-main{min-width:0}
+.bo-side{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:4px -16px 12px;padding:2px 16px 5px}
+.bo-side::-webkit-scrollbar{display:none}
+.bo-shop{display:none;color:var(--muted);font-size:14px;text-decoration:none;padding:8px 4px}
+.bo-main{min-width:0}
 .pd-tools{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
 .pd-tools input{font-size:16px;border:var(--edge);border-radius:999px;padding:10px 16px;background:var(--card)}
 .pd-rows{display:flex;flex-direction:column;gap:8px}
@@ -115,10 +115,10 @@ body.admin-mode .app{max-width:1280px;padding-bottom:40px}
 .ph-add{width:96px;height:96px;border:2px dashed var(--red);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--red);font-size:28px;cursor:pointer;background:var(--red-tint)}
 .ph-add span{font-size:12px;font-weight:600}
 @media (min-width:900px){
-  .ad-shell{display:grid;grid-template-columns:200px 1fr;gap:24px;align-items:start}
-  .ad-side{position:sticky;top:76px;flex-direction:column;margin:8px 0 0;padding:0;overflow:visible}
-  .ad-side .tab{text-align:left;border-radius:14px;padding:10px 14px}
-  .ad-shop{display:block}
+  .bo-shell{display:grid;grid-template-columns:200px 1fr;gap:24px;align-items:start}
+  .bo-side{position:sticky;top:76px;flex-direction:column;margin:8px 0 0;padding:0;overflow:visible}
+  .bo-side .tab{text-align:left;border-radius:14px;padding:10px 14px}
+  .bo-shop{display:block}
   .pd-wrap.has-ed{display:grid;grid-template-columns:minmax(300px,1fr) 1.35fr;gap:18px;align-items:start}
   .pd-wrap.has-ed .pd-list{display:block;max-height:calc(100vh - 110px);overflow-y:auto;position:sticky;top:76px;padding:2px 4px 4px}
   .pd-row{grid-template-columns:56px 1fr auto auto;grid-template-areas:"img n p s" "img t p s"}
@@ -1209,7 +1209,7 @@ async function adminSaveKey(key, value, note){
     try { await load(); } catch (e) {}
     adminLoad();
     return true;
-  } catch (e) { AD.busy = false; $("toast").hidden = true; AD.err = e.message; const el = $("ad-err"); if (el){ el.textContent = e.message; el.hidden = false; } else toast(e.message); return false; }
+  } catch (e) { AD.busy = false; $("toast").hidden = true; AD.err = e.message; const el = $("bo-err"); if (el){ el.textContent = e.message; el.hidden = false; } else toast(e.message); return false; }
 }
 const adStatus = x => { const t = today();
   if (x.active === false) return ["ปิดอยู่", "off"];
@@ -1227,22 +1227,22 @@ function viewAdmin(){
   if (AD.state === "code") return `<div class="box"><h3>เข้าสู่หลังบ้าน</h3>
       <p class="desc">กรอกรหัสแอดมินครั้งแรกครั้งเดียว ระบบจะจำบัญชี LINE นี้ไว้ ครั้งต่อไปเข้าได้เลย</p>
       ${AD.codeSet === false ? `<p class="warn" style="margin:0">ยังไม่ได้ตั้งรหัสแอดมินใน Cloudflare (ADMIN_CODE)</p>` : ""}
-      <label class="fld">รหัสแอดมิน<input id="ad-code" type="password" autocomplete="off"></label>
-      <p class="warn" id="ad-err" style="margin:0" hidden></p>
+      <label class="fld">รหัสแอดมิน<input id="bo-code" type="password" autocomplete="off"></label>
+      <p class="warn" id="bo-err" style="margin:0" hidden></p>
       <button class="btn" type="button" data-act="ad-login">เข้าสู่หลังบ้าน</button></div>`;
   const tabs = [["products", "📦 สินค้าและรูป"], ["coupons", "🎟 โค้ดส่วนลด"], ["promos", "🎁 โปรโมชั่น"], ["store", "🏪 ตั้งค่าร้าน"], ["team", "👥 ทีมแอดมิน"]];
   const body = {products: adProducts, coupons: adCoupons, promos: adPromos, store: adStore, team: adTeam}[AD.tab]();
-  return `<div class="ad-shell"><nav class="ad-side">${tabs.map(([k, t]) => `<button class="tab" type="button" data-act="ad-tab" data-k="${k}" aria-pressed="${AD.tab === k}">${t}</button>`).join("")}
-      <a class="ad-shop" href="#home">← กลับหน้าร้าน</a></nav><div class="ad-main">${body}</div></div>`;
+  return `<div class="bo-shell"><nav class="bo-side">${tabs.map(([k, t]) => `<button class="tab" type="button" data-act="ad-tab" data-k="${k}" aria-pressed="${AD.tab === k}">${t}</button>`).join("")}
+      <a class="bo-shop" href="#home">← กลับหน้าร้าน</a></nav><div class="bo-main">${body}</div></div>`;
 }
 function adCoupons(){
   const list = AD.data.coupons;
   return `<button class="btn" type="button" data-act="ad-new" data-k="coupon">+ เพิ่มโค้ดส่วนลด</button>
     ${AD.data.managed && !AD.data.managed.includes("coupons") ? `<p class="desc" style="margin-top:10px">ตอนนี้โค้ดยังมาจาก shop.json พอบันทึกครั้งแรก ระบบจะใช้รายการในหลังบ้านแทน</p>` : ""}
     <div class="items" style="margin-top:12px">${list.length ? list.map((c, i) => { const [st, cls] = adStatus(c);
-      return `<div class="box ad-item" style="margin:0"><div class="acc"><b class="ad-code">${esc(c.code)}</b><span class="ad-st ${cls}">${st}</span></div>
+      return `<div class="box bo-item" style="margin:0"><div class="acc"><b class="bo-code">${esc(c.code)}</b><span class="bo-st ${cls}">${st}</span></div>
         <span>${esc(c.title)}</span><span class="desc">${esc(couponFace(c))} · ${esc(couponNote(c))}${c.starts ? " · เริ่ม " + c.starts : ""}</span>
-        <div class="ad-btns"><button class="mini" type="button" data-act="ad-edit" data-k="coupon" data-i="${i}">แก้ไข</button>
+        <div class="bo-btns"><button class="mini" type="button" data-act="ad-edit" data-k="coupon" data-i="${i}">แก้ไข</button>
         <button class="mini line" type="button" data-act="ad-toggle" data-k="coupon" data-i="${i}">${c.active === false ? "เปิดใช้" : "ปิดชั่วคราว"}</button>
         <button class="mini line" type="button" data-act="ad-del" data-k="coupon" data-i="${i}">ลบ</button></div></div>`; }).join("") : `<div class="state">ยังไม่มีโค้ดส่วนลด</div>`}</div>`;
 }
@@ -1251,11 +1251,11 @@ function adPromos(){
   return `<button class="btn" type="button" data-act="ad-new" data-k="promo">+ เพิ่มโปรโมชั่น</button>
     <p class="desc" style="margin-top:10px">สินค้า 1 ชิ้นเข้าได้แค่โปรเดียว ถ้าสินค้าอยู่หลายโปร ระบบใช้โปรที่อยู่บนสุด</p>
     <div class="items" style="margin-top:12px">${list.length ? list.map((p, i) => { const [st, cls] = adStatus(p);
-      return `<div class="box ad-item" style="margin:0"><div class="acc"><b>${esc(p.title)}</b><span class="ad-st ${cls}">${st}</span></div>
+      return `<div class="box bo-item" style="margin:0"><div class="acc"><b>${esc(p.title)}</b><span class="bo-st ${cls}">${st}</span></div>
         <span class="desc">${p.type === "bxgy" ? `ซื้อ ${p.x} แถม ${p.y}` : `ซื้อครบ ${p.min} แถม ${esc(skuName(p.gift))} x${p.qty}${p.maxGift ? " (สูงสุด " + p.maxGift + ")" : ""}`}</span>
         <span class="desc">สินค้า: ${p.buy.map(id => esc(pName(id))).join(", ")}</span>
         <span class="desc">${[p.noShop ? "ไม่รวมส่วนลดทั้งร้าน" : "", p.noCoupon ? "ใช้โค้ดสินค้าร่วมไม่ได้" : "", p.expires ? "ถึง " + p.expires : ""].filter(Boolean).join(" · ")}</span>
-        <div class="ad-btns"><button class="mini" type="button" data-act="ad-edit" data-k="promo" data-i="${i}">แก้ไข</button>
+        <div class="bo-btns"><button class="mini" type="button" data-act="ad-edit" data-k="promo" data-i="${i}">แก้ไข</button>
         <button class="mini line" type="button" data-act="ad-toggle" data-k="promo" data-i="${i}">${p.active === false ? "เปิดใช้" : "ปิดชั่วคราว"}</button>
         ${i ? `<button class="mini line" type="button" data-act="ad-up" data-i="${i}">ย้ายขึ้น</button>` : ""}
         <button class="mini line" type="button" data-act="ad-del" data-k="promo" data-i="${i}">ลบ</button></div></div>`; }).join("") : `<div class="state">ยังไม่มีโปรโมชั่น</div>`}</div>`;
@@ -1267,7 +1267,7 @@ function adStore(){
     <label class="check" style="margin:0"><input type="checkbox" id="st-chat" ${s.shippingFee === null ? "checked" : ""}> ไม่คิดค่าส่งในระบบ (แอดมินแจ้งค่าส่งในแชต)</label>
     <label class="fld">ค่าส่ง (บาท)<input id="st-ship" type="number" inputmode="numeric" min="0" value="${s.shippingFee === null ? "" : s.shippingFee}"></label>
     <label class="fld">ส่งฟรีเมื่อซื้อครบ (บาท) — ใส่ 0 ถ้าไม่มี<input id="st-free" type="number" inputmode="numeric" min="0" value="${s.freeShippingOver}"></label>
-    <p class="warn" id="ad-err" style="margin:0" hidden></p>
+    <p class="warn" id="bo-err" style="margin:0" hidden></p>
     <button class="btn" type="button" data-act="ad-savestore">บันทึก</button></div>`;
 }
 function adTeam(){
@@ -1310,12 +1310,12 @@ function adRenderEdit(){
       ${fv("titleEn", "ชื่อภาษาอังกฤษ (ไม่บังคับ)")}
       <div class="fld">ประเภทโปร<div class="seg">${[["bxgy", "ซื้อครบ X แถม Y"], ["gift", "ซื้อสินค้า แถมของแถม"]].map(([k, t]) => `<button type="button" data-act="ad-set" data-k="type" data-v="${k}" aria-pressed="${d.type === k}">${t}</button>`).join("")}</div></div>
       <div class="fld">สินค้าที่ร่วมโปร (เลือกได้หลายตัว นับรวมกัน คละสีได้)<div class="chips">${picked || `<span class="desc">ยังไม่ได้เลือก</span>`}</div>
-        <input id="ad-q" placeholder="พิมพ์ชื่อหรือรหัสสินค้าเพื่อเพิ่ม" value="${esc(e.q)}" autocomplete="off"><div id="ad-res" class="pick">${adPickList()}</div></div>
+        <input id="bo-q" placeholder="พิมพ์ชื่อหรือรหัสสินค้าเพื่อเพิ่ม" value="${esc(e.q)}" autocomplete="off"><div id="bo-res" class="pick">${adPickList()}</div></div>
       ${d.type === "bxgy" ? `<div class="two">${fv("x", "ซื้อ (ชิ้น)", "number", 'inputmode="numeric" min="1"')}${fv("y", "แถมฟรี (ชิ้น)", "number", 'inputmode="numeric" min="1"')}</div>
         <p class="desc">ลูกค้าหยิบใส่ตะกร้าเองครบ ${Number(d.x) + Number(d.y) || "?"} ชิ้น ระบบลดชิ้นที่ถูกที่สุดให้ ${d.y || "?"} ชิ้น</p>`
       : `${fv("min", "ซื้อครบกี่ชิ้น ถึงได้ของแถม", "number", 'inputmode="numeric" min="1"')}
         <div class="fld">ของแถม (เลือกเป็นตัวเลือก/สีที่จะแถม)<b>${d.gift ? esc(skuName(d.gift)) + ` <span class="desc">(${esc(d.gift)})</span>` : `<span class="desc">ยังไม่ได้เลือก</span>`}</b>
-          <input id="ad-gq" placeholder="พิมพ์ชื่อหรือรหัสของแถม" value="${esc(e.gq)}" autocomplete="off"><div id="ad-gres" class="pick">${adGiftList()}</div></div>
+          <input id="bo-gq" placeholder="พิมพ์ชื่อหรือรหัสของแถม" value="${esc(e.gq)}" autocomplete="off"><div id="bo-gres" class="pick">${adGiftList()}</div></div>
         <div class="two">${fv("qty", "แถมกี่ชิ้น", "number", 'inputmode="numeric" min="1"')}${fv("maxGift", "แถมสูงสุดต่อออเดอร์ (0 = ไม่จำกัด)", "number", 'inputmode="numeric" min="0"')}</div>`}
       ${fc("noShop", "สินค้าในโปรนี้ไม่รวมส่วนลดทั้งร้าน (ขายราคาเต็ม)")}
       ${fc("noCoupon", "ถ้าได้โปรนี้ ใช้โค้ดส่วนลดสินค้าร่วมไม่ได้ (โค้ดค่าส่งยังใช้ได้)")}
@@ -1324,7 +1324,7 @@ function adRenderEdit(){
       ${fc("active", "เปิดใช้งาน")}`;
   }
   const y = $("sheet").hidden ? 0 : $("sheet").scrollTop;
-  openSheet(`<div class="adm" translate="no">${html}<p class="warn" id="ad-err" style="margin:0" ${AD.err ? "" : "hidden"}>${esc(AD.err)}</p>
+  openSheet(`<div class="adm" translate="no">${html}<p class="warn" id="bo-err" style="margin:0" ${AD.err ? "" : "hidden"}>${esc(AD.err)}</p>
     <button class="btn" type="button" data-act="ad-saveedit">บันทึก</button><button class="btn line" type="button" data-act="closesheet">ยกเลิก</button></div>`);
   $("sheet").scrollTop = y;
 }
@@ -1351,10 +1351,10 @@ function adminClick(a, b){
   if (a === "ad-reload") return adminLoad();
   if (a === "ad-tab"){ AD.tab = b.dataset.k; render(); return scrollTo(0, 0); }
   if (a === "ad-login"){
-    const code = $("ad-code").value; if (!code.trim()) return;
+    const code = $("bo-code").value; if (!code.trim()) return;
     return idToken().then(t => api("api/admin/login", {method: "POST", body: JSON.stringify({code})}, t))
       .then(() => { toast("เข้าสู่หลังบ้านแล้ว"); adminLoad(); })
-      .catch(err => { const el = $("ad-err"); el.textContent = err.message; el.hidden = false; });
+      .catch(err => { const el = $("bo-err"); el.textContent = err.message; el.hidden = false; });
   }
   if (a === "ad-new") return adOpenEdit(b.dataset.k, -1);
   if (a === "ad-edit") return adOpenEdit(b.dataset.k, Number(b.dataset.i));
@@ -1388,8 +1388,8 @@ function adminClick(a, b){
 function adminInput(t){
   if (route().page === "admin" && pdInput(t)) return true;
   if (!AD.edit) return false;
-  if (t.id === "ad-q"){ AD.edit.q = t.value; $("ad-res").innerHTML = adPickList(); return true; }
-  if (t.id === "ad-gq"){ AD.edit.gq = t.value; $("ad-gres").innerHTML = adGiftList(); return true; }
+  if (t.id === "bo-q"){ AD.edit.q = t.value; $("bo-res").innerHTML = adPickList(); return true; }
+  if (t.id === "bo-gq"){ AD.edit.gq = t.value; $("bo-gres").innerHTML = adGiftList(); return true; }
   if (t.dataset.e){ AD.edit.d[t.dataset.e] = t.type === "checkbox" ? t.checked : t.value; return true; }
   return false;
 }
@@ -1491,7 +1491,7 @@ function pdEditor(){
     <div class="box"><h3>ราคาและการแสดงผล</h3>
       <p class="desc">ช่อง "ราคาขายใน LINE" เว้นว่าง = ใช้ราคาจาก ZORT · ราคาที่ลูกค้าเห็นรวมส่วนลดทั้งร้าน ${SHOP.discountPercent || 0}% แล้ว · ไม่แก้ราคาใน ZORT</p>
       <div class="tbl"><table><thead><tr><th>ตัวเลือก</th><th>สต็อก</th><th>ราคา ZORT</th><th>ราคาขายใน LINE</th><th>ลูกค้าเห็น</th><th>หน้าร้าน</th></tr></thead><tbody>${skuRows}</tbody></table></div>
-      <p class="warn" id="ad-err" style="margin:0" hidden></p>
+      <p class="warn" id="bo-err" style="margin:0" hidden></p>
       <button class="btn" type="button" data-act="ad-pdsave">บันทึกชื่อและราคา</button></div>
     <div class="box"><h3>รูปสินค้า</h3>
       <p class="desc">รูปรวมขึ้นทุกตัวเลือก · รูปเฉพาะตัวเลือกขึ้นก่อนเมื่อลูกค้าเลือกตัวเลือกนั้น · ระบบย่อรูปให้อัตโนมัติ · หน้าร้านเห็นรูปใหม่ในประมาณ 1 นาที</p>
@@ -1511,7 +1511,7 @@ async function pdSave(){
     const res = await api("api/admin/product", {method: "POST", body: JSON.stringify({id: PD.sel, th: d.th.trim(), en: d.en.trim(), prices, hidden: d.hidden})}, await idToken());
     PD.data.names = res.names; PD.data.prices = res.prices; PD.data.hidden = res.hidden;
     PD.busy = false; shopStale = true; toast("บันทึกแล้ว หน้าร้านอัปเดตภายใน 1 นาที"); render();
-  } catch (e) { $("toast").hidden = true; const el = $("ad-err"); if (el){ el.textContent = e.message; el.hidden = false; } else toast(e.message); }
+  } catch (e) { $("toast").hidden = true; const el = $("bo-err"); if (el){ el.textContent = e.message; el.hidden = false; } else toast(e.message); }
   PD.busy = false;
 }
 const shrink = (file, max = 1600) => new Promise((ok, bad) => {
