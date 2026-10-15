@@ -565,7 +565,7 @@ function readShop(shop){
     payment: {bank: String(pay.bank || ""), accountNumber: String(pay.accountNumber || ""), accountName: String(pay.accountName || ""), text: String(pay.text || ""), promptpayId: String(pay.promptpayId || "").replace(/\D/g, "")},
     banners: Array.isArray(shop.banners) && shop.banners.length ? shop.banners : [
       {title: "กดรับโค้ดส่วนลดสุดพิเศษ", button: "คลิกเลย!", color: "orange", action: "coupons"},
-      {title: "ลดพิเศษ 20% ส่งฟรีทุกออเดอร์", button: "ช้อปเลย!", color: "red", action: "products"}
+      {title: "ส่งฟรีทุกออเดอร์!", button: "ช้อปเลย!", color: "red", action: "products"}
     ],
     coupons: (Array.isArray(shop.coupons) ? shop.coupons : []).filter(c => c && c.code).map(normCoupon).filter(c => c.active),
     promos: (Array.isArray(shop.promos) ? shop.promos : []).map(normPromo).filter(p => p.buy.length),
@@ -861,7 +861,7 @@ function viewCart(){
   return `<div class="items">${items}${gifts}</div>${short || hints ? `<div class="box">${short}${hints}</div>` : ""}
     <div class="box"><h3>โค้ดส่วนลด</h3>
       <div class="code"><input id="code" placeholder="กรอกโค้ดส่วนลด" aria-label="กรอกโค้ดส่วนลด" autocapitalize="characters" autocomplete="off"><button type="button" data-act="applycode">ใช้โค้ด</button></div>
-      <p class="desc">ใช้ได้ออเดอร์ละ 1 โค้ดส่วนลดสินค้า และ 1 โค้ดส่วนลดค่าจัดส่ง <button type="button" data-act="coupons" style="color:var(--red);font-weight:500">ดูโค้ดทั้งหมด</button></p>
+      <p class="desc">สามารถใช้ได้ทั้งโค้ดส่วนลดสินค้าและส่วนลดค่าจัดส่งนะคะ <button type="button" data-act="coupons" style="color:var(--red);font-weight:500">ดูโค้ดทั้งหมด</button></p>
       ${group("โค้ดส่วนลดสินค้า", mine.filter(c => !isShip(c)), usedCoupon, t.coupon, "clearcoupon")}
       ${group("โค้ดส่วนลดค่าจัดส่ง", mine.filter(isShip), usedShip, t.shipCoupon, "clearship")}</div>
     <div class="box">${summaryRows(t)}</div>`;
@@ -878,15 +878,15 @@ function viewCheckout(){
         ${pay.accountName ? `<span>ชื่อบัญชี <span translate="no">${esc(pay.accountName)}</span></span>` : ""}
         ${t.ship === null ? "" : `<div class="acc"><span>ยอดโอน <b style="font-size:17px">${baht(t.total)}</b></span><button class="mini" type="button" data-act="copyamt">คัดลอกยอด</button></div>`}</div>` : ""}
       ${pay.text ? `<p style="white-space:pre-wrap">${esc(pay.text)}</p>` : ""}
-      <p class="desc">โอนแล้วส่งสลิปในแชต PonPon ได้เลยค่ะ</p></div>` : "";
+      <p class="desc">โอนแล้วส่งสลิปในแชท PonPon ได้เลยนะคะ</p></div>` : "";
   return `${formError ? `<p class="warn">${esc(formError)}</p>` : ""}
-    ${profile ? "" : `<div class="box"><h3>เข้าสู่ระบบก่อนสั่งซื้อ</h3><p class="desc">ใช้บัญชี LINE ของคุณเพื่อยืนยันคำสั่งซื้อและติดตามสถานะได้</p><button class="btn" type="button" data-act="login">เข้าสู่ระบบด้วย LINE</button></div>`}
+    ${profile ? "" : `<div class="box"><h3>เข้าสู่ระบบก่อนสั่งซื้อ</h3><p class="desc">ใช้บัญชี LINE ของคุณเพื่อยืนยันคำสั่งซื้อและติดตามสถานะ</p><button class="btn" type="button" data-act="login">เข้าสู่ระบบด้วย LINE</button></div>`}
     <div class="box"><h3>ที่อยู่จัดส่ง</h3>
       <label class="fld">ชื่อผู้รับ<input id="c-name" data-f="name" autocomplete="name" value="${esc(draft.name)}"></label>
       <label class="fld">เบอร์โทร<input id="c-phone" data-f="phone" type="tel" inputmode="tel" autocomplete="tel" value="${esc(draft.phone)}"></label>
       <label class="fld">ที่อยู่จัดส่ง (รวมรหัสไปรษณีย์)<textarea id="c-address" data-f="address" rows="3" autocomplete="street-address">${esc(draft.address)}</textarea></label>
       <label class="fld">หมายเหตุถึงร้าน (ไม่บังคับ)<input id="c-note" data-f="note" value="${esc(draft.note)}"></label>
-      <label class="check" style="margin:0"><input type="checkbox" id="c-remember" data-f="remember" ${draft.remember ? "checked" : ""}> จำข้อมูลนี้ไว้ในเครื่องสำหรับครั้งหน้า</label></div>
+      <label class="check" style="margin:0"><input type="checkbox" id="c-remember" data-f="remember" ${draft.remember ? "checked" : ""}> บันทึกข้อมูลไว้สำหรับใช้ครั้งหน้า</label></div>
     ${bank}
     <div class="box"><h3>สรุปคำสั่งซื้อ ${t.n} ชิ้น</h3>${summaryRows(t)}</div>
     <p class="desc" style="margin-top:12px">ข้อมูลนี้ใช้เพื่อจัดส่งสินค้าและติดต่อเรื่องคำสั่งซื้อเท่านั้น</p>`;
