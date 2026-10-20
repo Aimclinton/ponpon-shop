@@ -333,6 +333,73 @@ body.admin-mode .app{max-width:1280px;padding-bottom:40px}
 .share svg{width:52px;height:52px;display:block}
 .toast{position:fixed;left:50%;bottom:calc(160px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:20;background:var(--ink);color:#fff;padding:10px 20px;border-radius:999px;font-size:14px;max-width:88%;text-align:center;border:2px solid var(--red);animation:rise .2s ease-out}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* ---------- สมาชิก & แต้ม ---------- */
+.mcard{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:8px;width:100%;text-align:left;margin-top:14px;padding:16px 16px 14px;border-radius:24px;border:var(--edge);box-shadow:0 4px 0 var(--ink);background:var(--ink);color:#fff}
+.mcard::after{content:"";position:absolute;right:-26px;top:-18px;width:130px;height:90px;background:var(--red);opacity:.9;-webkit-mask:var(--bow) center/contain no-repeat;mask:var(--bow) center/contain no-repeat;transform:rotate(12deg)}
+.mcard.t1{background:var(--red)}.mcard.t1::after{background:#fff;opacity:.22}
+.mcard.t2{background:var(--card);color:var(--ink)}.mcard.t2::after{opacity:.18}
+.mcard.t3{background:linear-gradient(135deg,#1E1E22 0%,#1E1E22 55%,#E40019 140%)}.mcard.t3::after{background:#FFD24A;opacity:.35}
+.mc-top{display:flex;justify-content:space-between;align-items:center;gap:8px;position:relative;z-index:1}
+.mc-tier{display:flex;align-items:center;gap:6px;font-family:var(--display);font-weight:700;font-size:16px}
+.mc-tier i{font-style:normal;font-size:22px}
+.mc-x{font-family:var(--display);font-weight:700;font-size:12px;border-radius:999px;padding:3px 10px;background:#fff;color:var(--ink);border:1.5px solid var(--ink)}
+.mc-pts{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px;position:relative;z-index:1}
+.mc-pts b{font-family:var(--display);font-weight:700;font-size:38px;line-height:1.05;font-variant-numeric:tabular-nums}
+.mc-pts small{font-size:12.5px;opacity:.85}
+.mc-pts small:first-child{flex-basis:100%;font-family:var(--display);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:11px}
+.mc-bar{height:10px;border-radius:6px;background:rgba(255,255,255,.25);border:1.5px solid currentColor;overflow:hidden;position:relative;z-index:1}
+.mcard.t2 .mc-bar{background:var(--red-soft)}
+.mc-bar i{display:block;height:100%;background:#fff;border-radius:4px}
+.mcard.t1 .mc-bar i{background:var(--ink)}.mcard.t2 .mc-bar i{background:var(--red)}.mcard.t3 .mc-bar i{background:#FFD24A}
+.mc-next,.mc-exp{font-size:13px;position:relative;z-index:1}
+.mc-exp{background:rgba(255,255,255,.16);border-radius:10px;padding:4px 10px;align-self:flex-start}
+.mcard.t2 .mc-exp{background:var(--red-soft)}
+.mtiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+.mtile{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px 10px;border-radius:18px;background:var(--card);border:var(--edge);box-shadow:var(--pop);font-size:12.5px;font-weight:500;text-align:center;line-height:1.25;transition:transform .12s}
+.mtile:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.mtile i{font-style:normal;font-size:26px;line-height:1}
+.mtile em{position:absolute;top:-7px;right:-5px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:var(--red);color:#fff;font-style:normal;font-family:var(--display);font-weight:700;font-size:11px;display:grid;place-items:center;border:1.5px solid var(--ink)}
+.mstrip{display:flex;gap:8px;margin:0 0 10px}
+.mstrip > button{display:flex;align-items:center;gap:8px;flex:1;min-width:0;background:var(--card);border:var(--edge);border-radius:999px;padding:5px 14px 5px 6px;box-shadow:var(--pop);text-align:left}
+.mstrip > button i{font-style:normal;font-size:20px;width:32px;height:32px;display:grid;place-items:center;background:var(--red-soft);border-radius:50%;flex:none}
+.mstrip > button span{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+.mstrip small{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mstrip b{font-family:var(--display);font-size:15px;color:var(--red)}
+.mstrip .spinbtn{flex:none;justify-content:center;background:var(--red);color:#fff;font-family:var(--display);font-weight:700;font-size:14px;padding:5px 14px}
+.cele{font-size:46px;text-align:center;line-height:1;animation:pop .5s}
+.gl{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.tierbox.cur{border-color:var(--red);box-shadow:0 4px 0 var(--red);background:var(--red-tint)}
+.tb-n{display:flex;align-items:center;gap:6px;font-family:var(--display);font-size:17px}.tb-n i{font-style:normal;font-size:22px}
+.redeem{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.redeem > i{font-style:normal;font-size:24px;flex:none}
+.redeem > span{flex:1;min-width:0;display:flex;flex-direction:column}.redeem small{color:var(--muted);font-size:12.5px}
+.hrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.hrow > i{font-style:normal;font-size:20px;flex:none;width:30px;text-align:center}
+.hrow > span{flex:1;min-width:0;display:flex;flex-direction:column}.hrow > span b{font-size:14px;font-weight:500}.hrow small{color:var(--muted);font-size:12px}
+.hrow .plus{color:#1b7a3a;font-family:var(--display);white-space:nowrap}.hrow .neg{font-family:var(--display);white-space:nowrap}
+.invite{margin-top:4px;background:var(--red);color:#fff;border-radius:24px;padding:18px 16px;border:var(--edge);box-shadow:0 4px 0 var(--ink);text-align:center;display:flex;flex-direction:column;gap:10px}
+.invite h2{font-family:var(--display);font-weight:700;font-size:20px;line-height:1.3}
+.invite .desc{color:#fff;opacity:.9}
+.invite .gl{background:#fff;color:var(--ink);border-radius:16px;padding:10px 14px;border:var(--edge)}
+.steps3{display:grid;gap:8px;text-align:left}
+.steps3 div{display:flex;gap:10px;align-items:center;background:#fff;color:var(--ink);border-radius:16px;padding:8px 12px;border:var(--edge);font-size:14px}
+.steps3 b{flex:none;width:28px;height:28px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;font-family:var(--display);border:1.5px solid var(--ink)}
+.steps3 em{font-style:normal;color:var(--red);font-weight:600}
+.spinwrap{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:4px}
+.spin-h{font-family:var(--display);font-weight:700;font-size:21px}
+.wheel{position:relative;width:min(88vw,340px);aspect-ratio:1}
+.wheel-rot{width:100%;height:100%;border-radius:50%;box-shadow:0 6px 0 var(--ink);background:#fff}
+.wheel-svg{width:100%;height:100%;display:block}
+.wheel-pin{position:absolute;left:50%;top:-14px;transform:translateX(-50%);width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-top:30px solid var(--ink);filter:drop-shadow(0 2px 0 #fff)}
+.wheel-pin::after{content:"";position:absolute;left:-10px;top:-27px;border-left:10px solid transparent;border-right:10px solid transparent;border-top:19px solid var(--red)}
+.wheel-hub{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:74px;height:74px;border-radius:50%;background:var(--red);color:#fff;font-family:var(--display);font-weight:700;font-size:17px;border:3px solid var(--ink);box-shadow:0 3px 0 var(--ink)}
+.wheel-hub:disabled{background:var(--muted)}
+.spin-cost{margin:0;font-size:14px}
+.spinwrap .btn{width:100%}
+.fld select{font-size:16px;color:var(--ink);background:var(--card);border:1.5px solid var(--ink);border-radius:14px;padding:10px 12px;width:100%}
+.prize{display:flex;flex-direction:column;gap:8px;padding:12px 0;border-bottom:1px dashed var(--line)}
+.prize.off{opacity:.55}
 </style>
 </head>
 <body>
@@ -477,6 +544,7 @@ function normCoupon(c) {
     type: c.type === "amount" || c.type === "freeship" ? c.type : "percent",
     value: toNum(c.value, 0, 100000, 0), min: toNum(c.min, 0, 1000000, 0), max: toNum(c.max, 0, 1000000, 0),
     starts: ymd(c.starts), expires: ymd(c.expires), active: c.active !== false,
+    perUser: Math.floor(toNum(c.perUser, 0, 1000, 0)), limit: Math.floor(toNum(c.limit, 0, 1000000, 0)),
   };
 }
 function normPromo(p, i) {
@@ -573,7 +641,8 @@ function readShop(shop){
     imageVersion: shop.imageVersion ? String(shop.imageVersion) : "",
     names: shop.names && typeof shop.names === "object" ? shop.names : {},
     texts: shop.texts && typeof shop.texts === "object" ? shop.texts : {},
-    saveUrl: String(shop.saveUrl || "")
+    saveUrl: String(shop.saveUrl || ""),
+    loyalty: shop.loyalty && typeof shop.loyalty === "object" && Array.isArray(shop.loyalty.tiers) ? shop.loyalty : null
   };
 }
 async function load(){
@@ -692,7 +761,7 @@ const card = p => `<div class="cell"><button class="card${p.stock ? "" : " sold"
 const left = v => v.stock - (cart.get(v.sku) || 0);
 function toast(t){ const el = $("toast"); el.textContent = t; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, 2200); }
 function openSheet(html){ $("sheet").innerHTML = `<div>${html}</div>`; $("sheet").hidden = false; $("backdrop").hidden = false; $("sheet").scrollTop = 0; }
-function closeSheet(){ $("sheet").hidden = true; $("backdrop").hidden = true; }
+function closeSheet(){ $("sheet").hidden = true; $("backdrop").hidden = true; if (celeLater){ const r = celeLater; celeLater = null; setTimeout(() => memberCelebrate(r), 250); } }
 async function copyText(text, ok){
   try { await navigator.clipboard.writeText(text); toast(ok); }
   catch (e) { toast("คัดลอกไม่สำเร็จ ลองกดค้างที่ข้อความเพื่อคัดลอกนะคะ"); }
@@ -700,14 +769,15 @@ async function copyText(text, ok){
 
 /* ---------- โค้ดส่วนลด ---------- */
 const today = () => new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10); // วันที่ตามเวลาไทย
-const couponOf = code => SHOP.coupons.find(c => c.code === String(code || "").toUpperCase());
+const couponOf = code => [...SHOP.coupons, ...memberCoupons()].find(c => c.code === String(code || "").toUpperCase());
 const couponFace = c => c.type === "freeship" ? (c.value > 0 ? "ค่าส่งลด " + baht(c.value) : "ส่งฟรี") : c.type === "amount" ? "ลด " + baht(c.value) : "ลด " + c.value + "%";
-const couponNote = c => [c.min ? "ขั้นต่ำ " + baht(c.min) : "ไม่มีขั้นต่ำ", c.type === "percent" && c.max ? "ลดสูงสุด " + baht(c.max) : "", c.expires ? "ถึง " + c.expires : ""].filter(Boolean).join(" · ");
+const couponNote = c => [c.min ? "ขั้นต่ำ " + baht(c.min) : "ไม่มีขั้นต่ำ", c.type === "percent" && c.max ? "ลดสูงสุด " + baht(c.max) : "", c.perUser ? (c.perUser === 1 ? "ใช้ได้คนละครั้ง" : `คนละ ${c.perUser} ครั้ง`) : "", c.expires ? "ถึง " + c.expires : ""].filter(Boolean).join(" · ");
 function couponProblem(c, goods, noCoupon){
   if (!c) return "ไม่พบโค้ดนี้ค่ะ ลองตรวจตัวสะกดอีกครั้ง";
   if (c.expires && today() > c.expires) return "โค้ดนี้หมดอายุแล้วค่ะ";
   if (c.starts && today() < c.starts) return "โค้ดนี้ยังไม่เริ่มใช้ค่ะ";
   if (noCoupon && !isShip(c)) return "โค้ดส่วนลดสินค้าใช้ร่วมกับโปรในตะกร้าไม่ได้ค่ะ";
+  if (c.perUser > 0 && MEMBER && (MEMBER.couponUses[c.code] || 0) >= c.perUser) return c.perUser === 1 ? "โค้ดนี้ใช้ได้คนละครั้ง และคุณใช้ไปแล้วค่ะ" : `โค้ดนี้ใช้ได้คนละ ${c.perUser} ครั้ง และคุณใช้ครบแล้วค่ะ`;
   if (goods < c.min) return `โค้ดนี้ใช้ได้เมื่อซื้อครบ ${baht(c.min)} ค่ะ (ขาดอีก ${baht(c.min - goods)})`;
   return "";
 }
@@ -729,16 +799,25 @@ function totals(){
     if (!(sc.value > 0)){ shipDiscount = baseShip || 0; ship = 0; }
     else if (baseShip !== null){ shipDiscount = Math.min(baseShip, sc.value); ship = baseShip - shipDiscount; }
   }
-  return {goods, n, base, promoDiscount: pr.discount, promos: pr.applied, gifts: pr.gifts, hints: pr.hints, noCoupon: pr.noCoupon, discount, ship, baseShip, shipDiscount, coupon: c, shipCoupon: sc, total: base - discount + (ship || 0)};
+  // แต้ม: ใช้ได้ทีละ burnPoints แต้ม ลดได้ไม่เกินค่าสินค้าหลังหักส่วนลด
+  const L = LOY(); let usePoints = 0, pointsDiscount = 0, maxPoints = 0, earn = 0;
+  if (L && MEMBER && profile){
+    maxPoints = Math.min(Math.floor(MEMBER.points / L.burnPoints), Math.floor(Math.max(0, base - discount) / L.burnBaht)) * L.burnPoints;
+    usePoints = Math.min(Math.floor(usePts / L.burnPoints) * L.burnPoints, maxPoints);
+    pointsDiscount = usePoints / L.burnPoints * L.burnBaht;
+  }
+  const total = base - discount - pointsDiscount + (ship || 0);
+  if (L) earn = Math.floor(Math.floor((total - (ship || 0)) / L.earnPer) * (MEMBER ? MEMBER.earnMult || MEMBER.mult : L.base.mult));
+  return {goods, n, base, promoDiscount: pr.discount, promos: pr.applied, gifts: pr.gifts, hints: pr.hints, noCoupon: pr.noCoupon, discount, ship, baseShip, shipDiscount, coupon: c, shipCoupon: sc, usePoints, pointsDiscount, maxPoints, earn, total};
 }
 const shipLabel = ship => ship === null ? "แอดมินแจ้งในแชต" : ship === 0 ? "ฟรี" : baht(ship);
 function couponCard(c, mode){
-  const have = myCoupons.has(c.code), expired = c.expires && today() > c.expires;
+  const have = myCoupons.has(c.code) || c.personal, expired = c.expires && today() > c.expires;
   const action = mode === "pick"
     ? `<span class="a${isUsed(c.code) ? " done" : ""}">${isUsed(c.code) ? "ใช้อยู่" : "ใช้"}</span>`
     : `<span class="a${have || expired ? " done" : ""}">${expired ? "หมดอายุ" : have ? "เก็บแล้ว" : "เก็บ"}</span>`;
   return `<button class="cp${mode === "pick" && isUsed(c.code) ? " sel" : ""}" type="button" data-act="${mode === "pick" ? "usecoupon" : "collect"}" data-code="${esc(c.code)}">
-    <span class="l">${esc(couponFace(c))}</span><span class="m"><b>${esc(c.title || c.code)}</b><small>โค้ด ${esc(c.code)} · ${esc(couponNote(c))}</small></span>${action}</button>`;
+    <span class="l">${esc(couponFace(c))}</span><span class="m"><b>${esc(c.title || c.code)}</b><small>${c.personal ? "คูปองของฉัน" : "โค้ด " + esc(c.code)} · ${esc(couponNote(c))}</small></span>${action}</button>`;
 }
 function showCoupons(){
   openSheet(`<h2>โค้ดส่วนลด</h2>${SHOP.coupons.length ? SHOP.coupons.map(c => couponCard(c, "collect")).join("") : `<p class="desc">ตอนนี้ยังไม่มีโค้ดส่วนลด แวะมาดูใหม่เร็ว ๆ นี้นะคะ</p>`}
@@ -749,7 +828,7 @@ function showCoupons(){
 function route(){ const h = location.hash.replace(/^#\/?/, ""); const [page, arg] = h.split("/"); return {page: page || "home", arg: arg ? decodeURIComponent(arg) : ""}; }
 function go(hash){ if (location.hash === hash) render(); else location.hash = hash; }
 function topBar(r){
-  const titles = {product: "รายละเอียดสินค้า", cart: `ตะกร้าของฉัน (${[...cart.values()].reduce((a, b) => a + b, 0)})`, checkout: "ที่อยู่และการชำระเงิน", me: "ข้อมูลของฉัน", products: "สินค้าทั้งหมด", orders: "คำสั่งซื้อของฉัน", order: "รายละเอียดคำสั่งซื้อ", admin: "หลังบ้าน"};
+  const titles = {product: "รายละเอียดสินค้า", cart: `ตะกร้าของฉัน (${[...cart.values()].reduce((a, b) => a + b, 0)})`, checkout: "ที่อยู่และการชำระเงิน", me: "ข้อมูลของฉัน", products: "สินค้าทั้งหมด", orders: "คำสั่งซื้อของฉัน", order: "รายละเอียดคำสั่งซื้อ", admin: "หลังบ้าน", points: "PonPoints ของฉัน", spin: "วงล้อนำโชค", invite: "ชวนเพื่อน", profile: "ข้อมูลสมาชิก", tiers: "ระดับสมาชิก", rewards: "คูปอง & ของขวัญ"};
   if (r.page === "home") return `<div class="brand"><img src="${esc(CONFIG.LOGO_URL)}" data-logo alt=""><b>PonPon<small>SHOPPING CENTER</small></b></div>
     <button class="round lang" type="button" data-act="lang" aria-label="ภาษา / Language">${ic("globe")}<i translate="no">${esc(LANG.toUpperCase())}</i></button>
     <button class="round" type="button" data-act="nav" data-to="#products" aria-label="ค้นหาสินค้า">${ic("search")}</button>`;
@@ -760,7 +839,7 @@ function topBar(r){
 function navBar(r){
   const n = [...cart.values()].reduce((a, b) => a + b, 0);
   const items = [["home", "#home", "หน้าแรก", "home"], ["products", "#products", "สินค้า", "grid"], ["cart", "#cart", "ตะกร้า", "cart"], ["orders", "#orders", "ออเดอร์", "box"], ["me", "#me", "ของฉัน", "user"]];
-  const cur = r.page === "product" ? "products" : r.page === "checkout" ? "cart" : r.page === "order" ? "orders" : r.page === "admin" ? "me" : r.page;
+  const cur = r.page === "product" ? "products" : r.page === "checkout" ? "cart" : r.page === "order" ? "orders" : ["admin", "points", "spin", "invite", "profile", "tiers", "rewards"].includes(r.page) ? "me" : r.page;
   return items.map(([k, to, label, icon]) => `<button type="button" data-act="nav" data-to="${to}" ${cur === k ? 'aria-current="page"' : ""}>${ic(icon)}<span>${label}</span>${k === "cart" && n ? `<em>${n}</em>` : ""}</button>`).join("");
 }
 function viewHome(){
@@ -773,7 +852,7 @@ function viewHome(){
   const banners = SHOP.banners.map((b, i) => `<button class="banner b-${["red", "orange", "green"].includes(b.color) ? b.color : "red"}" type="button" data-act="banner" data-i="${i}">
       ${MOTIF[i % MOTIF.length]}<h2>${esc(b.title || "")}</h2>${b.button ? `<span class="pill">${esc(b.button)}</span>` : ""}</button>`).join("");
   const hi = profile && profile.displayName ? `สวัสดีค่า <span translate="no">${esc(profile.displayName)}</span> ✿` : "สวัสดีค่า วันนี้ช้อปอะไรดีน้า~";
-  return `<p class="hello"><svg class="spark" viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor" d="M50 4c3 28 18 43 46 46-28 3-43 18-46 46-3-28-18-43-46-46 28-3 43-18 46-46z"/></svg>${hi}</p>
+  return `${homeMember()}<p class="hello"><svg class="spark" viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor" d="M50 4c3 28 18 43 46 46-28 3-43 18-46 46-3-28-18-43-46-46 28-3 43-18 46-46z"/></svg>${hi}</p>
     <div class="banners" id="banners">${banners}</div>
     <div class="dots" id="dots">${SHOP.banners.map((b, i) => `<i class="${i ? "" : "on"}"></i>`).join("")}</div>
     <div class="tabs">${tabs.map(([k, t]) => `<button class="tab" type="button" data-act="hometab" data-k="${esc(k)}" aria-pressed="${homeTab === k}">${esc(t)}</button>`).join("")}</div>
@@ -835,7 +914,9 @@ function summaryRows(t){
   return `<div class="rows"><div><span>ค่าสินค้า</span><span>${baht(t.goods)}</span></div>
     ${t.promos.filter(p => p.amount > 0).map(p => `<div><span>โปร ${esc(p.title)}</span><span class="neg">−${baht(p.amount)}</span></div>`).join("")}
     ${t.gifts.map(g => `<div><span>🎁 ของแถม <span translate="no">${esc(giftName(g.sku))}</span> x${g.qty}</span><span class="neg">ฟรี</span></div>`).join("")}
-    <div><span>ส่วนลด${t.coupon ? " (" + esc(t.coupon.code) + ")" : ""}</span><span class="${t.discount ? "neg" : ""}">${t.discount ? "−" + baht(t.discount) : baht(0)}</span></div>
+    <div><span>ส่วนลด${t.coupon ? " (" + esc(t.coupon.personal ? "คูปองของฉัน" : t.coupon.code) + ")" : ""}</span><span class="${t.discount ? "neg" : ""}">${t.discount ? "−" + baht(t.discount) : baht(0)}</span></div>
+    ${t.pointsDiscount ? `<div><span>ใช้ ${pts(t.usePoints)} แต้ม</span><span class="neg">−${baht(t.pointsDiscount)}</span></div>` : ""}
+    ${MEMBER ? MEMBER.gifts.filter(g => g.status === "ready").map(g => `<div><span>🎁 ของขวัญสมาชิก: ${esc(g.title)}</span><span class="neg">ฟรี</span></div>`).join("") : ""}
     <div><span>ค่าจัดส่ง${t.shipCoupon ? " (" + esc(t.shipCoupon.code) + ")" : ""}</span><span class="${t.shipCoupon ? "neg" : ""}">${t.shipDiscount > 0 && t.ship > 0 ? `<s style="color:var(--muted);font-size:12px;margin-right:6px">${baht(t.baseShip)}</s>` : ""}${shipLabel(t.ship)}</span></div></div>`;
 }
 function viewCart(){
@@ -847,7 +928,7 @@ function viewCart(){
       <div class="r"><button class="trash" type="button" data-act="remove" data-sku="${esc(sku)}" aria-label="ลบออกจากตะกร้า">${ic("trash")}</button>
         <div class="step"><button type="button" data-act="dec" data-sku="${esc(sku)}" aria-label="ลดจำนวน">−</button><b>${k}</b>
         <button class="plus" type="button" data-act="inc" data-sku="${esc(sku)}" aria-label="เพิ่มจำนวน" ${k >= v.stock ? "disabled" : ""}>+</button></div></div></div>`; }).join("");
-  const mine = SHOP.coupons.filter(c => myCoupons.has(c.code));
+  const mine = [...memberCoupons(), ...SHOP.coupons.filter(c => myCoupons.has(c.code))];
   const group = (title, list, used, okCoupon, clearAct) => {
     const bad = used && !okCoupon ? couponProblem(couponOf(used), t.base, t.noCoupon) : "";
     return `<div class="lbl" style="margin:6px 0 0">${title}</div>
@@ -864,7 +945,7 @@ function viewCart(){
       <p class="desc">ใช้ได้ออเดอร์ละ 1 โค้ดส่วนลดสินค้า และ 1 โค้ดส่วนลดค่าจัดส่ง <button type="button" data-act="coupons" style="color:var(--red);font-weight:500">ดูโค้ดทั้งหมด</button></p>
       ${group("โค้ดส่วนลดสินค้า", mine.filter(c => !isShip(c)), usedCoupon, t.coupon, "clearcoupon")}
       ${group("โค้ดส่วนลดค่าจัดส่ง", mine.filter(isShip), usedShip, t.shipCoupon, "clearship")}</div>
-    <div class="box">${summaryRows(t)}</div>`;
+    <div class="box">${summaryRows(t)}${t.earn && MEMBER ? `<p class="hint" style="margin:8px 0 0">✦ ออเดอร์นี้จะได้ +${pts(t.earn)} แต้ม PonPoints</p>` : ""}</div>`;
 }
 function viewCheckout(){
   if (!cart.size) return viewCart();
@@ -887,6 +968,7 @@ function viewCheckout(){
       <label class="fld">ที่อยู่จัดส่ง (รวมรหัสไปรษณีย์)<textarea id="c-address" data-f="address" rows="3" autocomplete="street-address">${esc(draft.address)}</textarea></label>
       <label class="fld">หมายเหตุถึงร้าน (ไม่บังคับ)<input id="c-note" data-f="note" value="${esc(draft.note)}"></label>
       <label class="check" style="margin:0"><input type="checkbox" id="c-remember" data-f="remember" ${draft.remember ? "checked" : ""}> จำข้อมูลนี้ไว้ในเครื่องสำหรับครั้งหน้า</label></div>
+    ${pointsBox(t)}
     ${bank}
     <div class="box"><h3>สรุปคำสั่งซื้อ ${t.n} ชิ้น</h3>${summaryRows(t)}</div>
     <p class="desc" style="margin-top:12px">ข้อมูลนี้ใช้เพื่อจัดส่งสินค้าและติดต่อเรื่องคำสั่งซื้อเท่านั้น</p>`;
@@ -897,7 +979,8 @@ function viewMe(){
     : `<div class="me"><div style="flex:1;min-width:0"><b>ยินดีต้อนรับค่ะ</b><small>เข้าสู่ระบบเพื่อสั่งซื้อได้สะดวกขึ้น</small></div><button class="btn" type="button" data-act="login">เข้าสู่ระบบด้วย LINE</button></div>`;
   const favList = [...favs].map(id => byId.get(id)).filter(Boolean);
   const mine = SHOP.coupons.filter(c => myCoupons.has(c.code));
-  return `${head}
+  const L = LOY(), mem = L && profile ? (MEMBER ? memberCard() + memberTiles() : memberGate()) : L ? `<div class="box"><h3>PonPon Membership</h3><p class="desc" style="margin:0">เข้าสู่ระบบเพื่อสะสมแต้ม ช้อปทุก ${baht(L.earnPer)} ได้ 1 แต้ม พร้อมสิทธิ์ระดับสมาชิกและของขวัญวันเกิด</p></div>` : "";
+  return `${head}${mem}
     <div class="box"><h3>ชื่อและที่อยู่จัดส่ง</h3>
       <label class="fld">ชื่อผู้รับ<input id="m-name" data-f="name" autocomplete="name" value="${esc(draft.name)}"></label>
       <label class="fld">เบอร์โทร<input id="m-phone" data-f="phone" type="tel" inputmode="tel" autocomplete="tel" value="${esc(draft.phone)}"></label>
@@ -925,7 +1008,7 @@ function render(){
     $("view").innerHTML = loadError ? `<div class="state" style="margin-top:20px">โหลดสินค้าไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่อีกครั้ง<br><br><button class="btn" type="button" data-act="retry">ลองใหม่</button></div>` : `<div class="state" style="margin-top:20px">แป๊บนึงนะคะ กำลังจัดของให้อยู่~</div>`;
     return;
   }
-  const views = {home: viewHome, products: viewProducts, product: () => viewProduct(r.arg), cart: viewCart, checkout: viewCheckout, me: viewMe, orders: viewOrders, order: () => viewOrder(r.arg), admin: viewAdmin};
+  const views = {home: viewHome, products: viewProducts, product: () => viewProduct(r.arg), cart: viewCart, checkout: viewCheckout, me: viewMe, orders: viewOrders, order: () => viewOrder(r.arg), admin: viewAdmin, points: viewPoints, spin: viewSpin, invite: viewInvite, profile: viewProfile, tiers: viewTiers, rewards: viewRewards};
   $("view").innerHTML = (views[r.page] || viewHome)();
   $("view").toggleAttribute("translate", false); if (r.page === "admin") $("view").setAttribute("translate", "no");
   document.body.classList.toggle("admin-mode", r.page === "admin");
@@ -1072,14 +1155,15 @@ async function placeOrder(){
     res = await api("api/order", {method: "POST", body: JSON.stringify({
       items: [...cart].map(([sku, qty]) => ({sku, qty})), titles,
       customer: {name: draft.name.trim(), phone: draft.phone.trim(), address: draft.address.trim(), note: draft.note.trim()},
-      coupon: t.coupon ? t.coupon.code : "", shipCoupon: t.shipCoupon ? t.shipCoupon.code : "", expectedTotal: t.total
+      coupon: t.coupon ? t.coupon.code : "", shipCoupon: t.shipCoupon ? t.shipCoupon.code : "", usePoints: t.usePoints, expectedTotal: t.total
     })}, token);
   } catch (e) {
     if (e.status === 409){ try { await load(); saveCart(); } catch (x) {} }
     return fail(e.message);
   }
   if (draft.remember) store.set("ponpon-customer", draft); else { try { localStorage.removeItem("ponpon-customer"); } catch (e) {} }
-  cart.clear(); saveCart(); usedCoupon = ""; usedShip = ""; store.set("ponpon-used-coupon", ""); store.set("ponpon-used-ship", "");
+  cart.clear(); saveCart(); usedCoupon = ""; usedShip = ""; usePts = 0; store.set("ponpon-used-coupon", ""); store.set("ponpon-used-ship", "");
+  memberLoad(true);
   orders = null; ordersState = ""; orderTab = "all"; sending = false; formError = "";
   $("toast").hidden = true;
   try { if (liff.isInClient()) await liff.sendMessages([{type: "text", text: `${CONFIG.CONFIRM_TEXT} #${res.number}`}]); } catch (e) {}
@@ -1116,6 +1200,7 @@ async function cancelOrder(number, refund){
     openSheet(`<h2>ยกเลิกคำสั่งซื้อแล้ว</h2><p>แอดมินจะตรวจสอบและโอนเงินคืน <b>${baht(done.total)}</b> ตามบัญชีที่แจ้งไว้ แล้วจะแจ้งกลับในแชต PonPon นะคะ</p>
       <button class="btn" type="button" data-act="closesheet">ตกลง</button>`);
   } else toast("ยกเลิกคำสั่งซื้อแล้ว");
+  memberLoad(true);
   await loadOrders();
   try { await load(); } catch (e) {}
 }
@@ -1140,6 +1225,7 @@ async function uploadSlip(number, file){
     const res = await api("api/order/slip", {method: "POST", body: JSON.stringify({number, image})}, await idToken());
     $("toast").hidden = true;
     openSheet(`<h2>ได้รับเงินแล้ว ขอบคุณค่า!</h2><p>สลิปถูกต้อง ยอด <b>${baht(res.slip.amount)}</b> สำหรับคำสั่งซื้อ <b>${esc(number)}</b></p>
+      ${res.slip.earned ? `<p class="hint" style="margin:0">🎉 ได้รับ +${pts(res.slip.earned)} แต้ม PonPoints${res.slip.tierUp ? " และเลื่อนระดับสมาชิกด้วย!" : ""}</p>` : ""}
       <p class="desc">ร้านกำลังเตรียมจัดส่งสินค้าให้นะคะ ติดตามสถานะได้ที่หน้านี้เลย</p><button class="btn" type="button" data-act="closesheet">ตกลง</button>`);
   } catch (e) {
     $("toast").hidden = true;
@@ -1148,6 +1234,7 @@ async function uploadSlip(number, file){
       <button class="btn line" type="button" data-act="tochat">ส่งสลิปในแชตให้แอดมินตรวจ</button>`);
   }
   sending = false;
+  memberLoad(true);
   await loadOrders();
 }
 const lineImg = l => { const hit = bySku.get(l.sku); return img(hit ? quickPics(hit.p, hit.v) : [l.sku ? picUrl(l.sku, 1) : ""], l.title); };
@@ -1196,7 +1283,9 @@ function viewOrder(number){
       ${o.lines.map(l => `<div class="oline">${lineImg(l)}<div class="t">${l.gift ? `<span class="badge">ของแถม</span> ` : ""}<span translate="no">${esc(lineTitle(l))}</span><small>${l.gift ? "x" + l.qty : baht(l.price) + " x " + l.qty}</small></div><b>${l.gift ? "ฟรี" : baht(l.price * l.qty)}</b></div>`).join("")}
       <div class="rows">${o.goods ? `<div><span>ค่าสินค้า</span><span>${baht(o.goods)}</span></div>` : ""}
         ${(o.promos || []).filter(p => p.amount > 0).map(p => `<div><span>โปร ${esc(p.title)}</span><span class="neg">−${baht(p.amount)}</span></div>`).join("")}
-        ${o.discount ? `<div><span>ส่วนลด${o.coupon ? " (" + esc(o.coupon) + ")" : ""}</span><span class="neg">−${baht(o.discount)}</span></div>` : ""}
+        ${o.discount ? `<div><span>ส่วนลด${o.coupon ? " (" + esc(/^M[A-Z0-9]{7}$/.test(o.coupon) ? "คูปองของฉัน" : o.coupon) + ")" : ""}</span><span class="neg">−${baht(o.discount)}</span></div>` : ""}
+        ${o.pointsDiscount ? `<div><span>ใช้ ${pts(o.pointsUsed)} แต้ม</span><span class="neg">−${baht(o.pointsDiscount)}</span></div>` : ""}
+        ${(o.memberGifts || []).map(g => `<div><span>🎁 ของขวัญสมาชิก: ${esc(g)}</span><span class="neg">ฟรี</span></div>`).join("")}
         <div><span>ค่าจัดส่ง${o.shipCoupon ? " (" + esc(o.shipCoupon) + ")" : ""}</span><span>${shipLabel(o.ship)}</span></div>
         <div><b>${o.status === "pending" ? "ยอดที่ต้องชำระ" : "ยอดรวม"}</b><b style="color:var(--red);font-size:18px">${baht(o.total)}</b></div></div></div>
     ${o.canCancel ? `<button class="btn line" type="button" data-act="${o.status === "pending" ? "cancelask" : "refundask"}" data-v="${esc(o.number)}" style="margin-top:14px;width:100%">ยกเลิกคำสั่งซื้อ</button>
@@ -1254,8 +1343,8 @@ function viewAdmin(){
       <label class="fld">รหัสแอดมิน<input id="bo-code" type="password" autocomplete="off"></label>
       <p class="warn" id="bo-err" style="margin:0" hidden></p>
       <button class="btn" type="button" data-act="ad-login">เข้าสู่หลังบ้าน</button></div>`;
-  const tabs = [["dash", "🏠 ภาพรวม"], ["report", "📊 รายงานยอดขาย"], ["products", "📦 สินค้าและรูป"], ["coupons", "🎟 โค้ดส่วนลด"], ["promos", "🎁 โปรโมชั่น"], ["store", "🏪 ตั้งค่าร้าน"], ["team", "👥 ทีมแอดมิน"]];
-  const body = {dash: adDash, report: adReport, products: adProducts, coupons: adCoupons, promos: adPromos, store: adStore, team: adTeam}[AD.tab]();
+  const tabs = [["dash", "🏠 ภาพรวม"], ["report", "📊 รายงานยอดขาย"], ["products", "📦 สินค้าและรูป"], ["loyalty", "🌟 สมาชิก & แต้ม"], ["coupons", "🎟 โค้ดส่วนลด"], ["promos", "🎁 โปรโมชั่น"], ["store", "🏪 ตั้งค่าร้าน"], ["team", "👥 ทีมแอดมิน"]];
+  const body = {dash: adDash, report: adReport, products: adProducts, loyalty: adLoyalty, coupons: adCoupons, promos: adPromos, store: adStore, team: adTeam}[AD.tab]();
   return `<div class="bo-shell"><nav class="bo-side">${tabs.map(([k, t]) => `<button class="tab" type="button" data-act="ad-tab" data-k="${k}" aria-pressed="${AD.tab === k}">${t}</button>`).join("")}
       <a class="bo-shop" href="#home">← กลับหน้าร้าน</a></nav><div class="bo-main">${body}</div></div>`;
 }
@@ -1265,7 +1354,7 @@ function adCoupons(){
     ${AD.data.managed && !AD.data.managed.includes("coupons") ? `<p class="desc" style="margin-top:10px">ตอนนี้โค้ดยังมาจาก shop.json พอบันทึกครั้งแรก ระบบจะใช้รายการในหลังบ้านแทน</p>` : ""}
     <div class="items" style="margin-top:12px">${list.length ? list.map((c, i) => { const [st, cls] = adStatus(c);
       return `<div class="box bo-item" style="margin:0"><div class="acc"><b class="bo-code">${esc(c.code)}</b><span class="bo-st ${cls}">${st}</span></div>
-        <span>${esc(c.title)}</span><span class="desc">${esc(couponFace(c))} · ${esc(couponNote(c))}${c.starts ? " · เริ่ม " + c.starts : ""}</span>
+        <span>${esc(c.title)}</span><span class="desc">${esc(couponFace(c))} · ${esc(couponNote(c))}${c.limit ? " · ทั้งหมด " + c.limit + " ครั้ง" : ""}${c.starts ? " · เริ่ม " + c.starts : ""}</span>
         <div class="bo-btns"><button class="mini" type="button" data-act="ad-edit" data-k="coupon" data-i="${i}">แก้ไข</button>
         <button class="mini line" type="button" data-act="ad-toggle" data-k="coupon" data-i="${i}">${c.active === false ? "เปิดใช้" : "ปิดชั่วคราว"}</button>
         <button class="mini line" type="button" data-act="ad-del" data-k="coupon" data-i="${i}">ลบ</button></div></div>`; }).join("") : `<div class="state">ยังไม่มีโค้ดส่วนลด</div>`}</div>`;
@@ -1302,7 +1391,7 @@ function adTeam(){
 }
 
 /* ----- ฟอร์มเพิ่ม/แก้ไข ----- */
-const blankCoupon = () => ({code: "", title: "", titleEn: "", type: "amount", value: "", min: 0, max: 0, starts: "", expires: "", active: true});
+const blankCoupon = () => ({code: "", title: "", titleEn: "", type: "amount", value: "", min: 0, max: 0, perUser: 0, limit: 0, starts: "", expires: "", active: true});
 const blankPromo = () => ({id: "", title: "", titleEn: "", type: "bxgy", buy: [], x: 2, y: 1, min: 1, gift: "", qty: 1, maxGift: 0, noShop: false, noCoupon: false, starts: "", expires: "", active: true});
 function adOpenEdit(kind, i){
   const list = kind === "coupon" ? AD.data.coupons : AD.data.promos;
@@ -1324,6 +1413,8 @@ function adRenderEdit(){
         : d.type === "amount" ? fv("value", "ลดกี่บาท", "number", 'inputmode="numeric"')
         : fv("value", "ลดค่าส่งกี่บาท (เว้นว่างหรือ 0 = ส่งฟรีทั้งหมด)", "number", 'inputmode="numeric"')}
       ${fv("min", "ยอดซื้อขั้นต่ำ (บาท, 0 = ไม่มี)", "number", 'inputmode="numeric"')}
+      <div class="two">${fv("perUser", "ใช้ได้กี่ครั้งต่อคน (0 = ไม่จำกัด)", "number", 'inputmode="numeric" min="0"')}${fv("limit", "ใช้ได้ทั้งหมดกี่ครั้ง (0 = ไม่จำกัด)", "number", 'inputmode="numeric" min="0"')}</div>
+      <p class="desc" style="margin:0">นับจากออเดอร์ที่ไม่ถูกยกเลิก เช่น ใส่ 1 ในช่องแรก = ลูกค้า 1 คนใช้ได้ครั้งเดียว</p>
       ${fv("starts", "วันเริ่มใช้ (ไม่บังคับ)", "date")}
       ${fv("expires", "ใช้ได้ถึงวันที่ (ไม่บังคับ)", "date")}
       ${fc("active", "เปิดใช้งาน")}`;
@@ -1374,6 +1465,7 @@ function adminClick(a, b){
   if (a.startsWith("ad-pd") || a.startsWith("ad-ph")) return pdClick(a, b);
   if (a.startsWith("ad-rp")) return rpClick(a, b);
   if (a.startsWith("ad-db")) return dbClick(a, b);
+  if (a.startsWith("ad-ly")) return lyClick(a, b);
   if (a === "ad-reload") return adminLoad();
   if (a === "ad-tab"){ AD.tab = b.dataset.k; render(); return scrollTo(0, 0); }
   if (a === "ad-login"){
@@ -1413,6 +1505,7 @@ function adminClick(a, b){
 }
 function adminInput(t){
   if (route().page === "admin" && pdInput(t)) return true;
+  if (route().page === "admin" && lyInput(t)) return true;
   if (!AD.edit) return false;
   if (t.id === "bo-q"){ AD.edit.q = t.value; $("bo-res").innerHTML = adPickList(); return true; }
   if (t.id === "bo-gq"){ AD.edit.gq = t.value; $("bo-gres").innerHTML = adGiftList(); return true; }
@@ -1648,7 +1741,7 @@ function rpCalc(orders){
   for (const o of paid) for (const p of o.promoList || []){ const x = pm.get(p.title) || {title: p.title, orders: 0, discount: 0, sales: 0}; x.orders++; x.discount += Number(p.amount) || 0; x.sales += o.total; pm.set(p.title, x); }
   return {sales: sum(paid, o => o.total), paidN: paid.length, pendN: pend.length, pendAmt: sum(pend, o => o.total), total: orders.length,
     avg: paid.length ? Math.round(sum(paid, o => o.total) / paid.length) : 0, pcs: items.reduce((s, p) => s + p.qty, 0),
-    disc: sum(paid, o => o.discount + o.promoDiscount + (o.shipDiscount || 0)), ship: sum(paid, o => o.ship || 0), byStatus, days: [...days.values()], items,
+    disc: sum(paid, o => o.discount + o.promoDiscount + (o.shipDiscount || 0) + (o.pointsDiscount || 0)), ship: sum(paid, o => o.ship || 0), byStatus, days: [...days.values()], items,
     cost, giftCost, giftQty, net, profit: net - cost, coupons, promos: [...pm.values()].sort((a, b) => b.orders - a.orders)};
 }
 function adReport(){
@@ -1701,11 +1794,11 @@ async function rpExport(){
       ["วันที่", "ออเดอร์ทั้งหมด", "ออเดอร์ชำระแล้ว", "ยอดขาย"], ...c.days.map(d => [d.day, d.orders, d.paid, d.sales])
     ], [28, 18, 18, 14]), "สรุป");
     XLSX.utils.book_append_sheet(wb, sheet([
-      ["วันที่สั่ง", "เลขที่ออเดอร์", "สถานะ", "ชื่อผู้รับ", "เบอร์โทร", "ที่อยู่", "ชื่อ LINE", "จำนวนชิ้น", "ค่าสินค้า", "ส่วนลดโปร", "โปร", "ส่วนลดโค้ด", "โค้ด", "โค้ดค่าส่ง", "ค่าส่ง", "ยอดรวม", "เวลาชำระ (ตรวจสลิป)", "เลขพัสดุ", "หมายเหตุ", "คืนเงินเข้าบัญชี"],
+      ["วันที่สั่ง", "เลขที่ออเดอร์", "สถานะ", "ชื่อผู้รับ", "เบอร์โทร", "ที่อยู่", "ชื่อ LINE", "จำนวนชิ้น", "ค่าสินค้า", "ส่วนลดโปร", "โปร", "ส่วนลดโค้ด", "โค้ด", "โค้ดค่าส่ง", "ส่วนลดจากแต้ม", "ค่าส่ง", "ยอดรวม", "เวลาชำระ (ตรวจสลิป)", "เลขพัสดุ", "หมายเหตุ", "คืนเงินเข้าบัญชี"],
       ...o.map(x => [bkkTime(x.createdAt), x.number, RP_STATUS[x.status] || x.status, x.customer.name || "", x.customer.phone || "", x.customer.address || "", x.lineName,
-        x.lines.filter(l => !l.gift).reduce((s, l) => s + l.qty, 0), x.goods, x.promoDiscount, x.promos, x.discount, x.coupon, x.shipCoupon, x.ship === null ? "แจ้งในแชต" : x.ship, x.total,
+        x.lines.filter(l => !l.gift).reduce((s, l) => s + l.qty, 0), x.goods, x.promoDiscount, x.promos, x.discount, x.coupon, x.shipCoupon, x.pointsDiscount || 0, x.ship === null ? "แจ้งในแชต" : x.ship, x.total,
         bkkTime(x.paidAt), x.tracking, x.customer.note || "", x.refund ? `${x.refund.bank} ${x.refund.account} ${x.refund.name}` : ""])
-    ], [17, 16, 18, 20, 13, 40, 16, 9, 10, 10, 22, 10, 10, 10, 8, 10, 17, 16, 20, 30]), "ออเดอร์");
+    ], [17, 16, 18, 20, 13, 40, 16, 9, 10, 10, 22, 10, 10, 10, 10, 8, 10, 17, 16, 20, 30]), "ออเดอร์");
     XLSX.utils.book_append_sheet(wb, sheet([
       ["วันที่สั่ง", "เลขที่ออเดอร์", "สถานะ", "SKU", "สินค้า", "จำนวน", "ราคาต่อชิ้น", "รวม", "ต้นทุนต่อชิ้น", "ต้นทุนรวม", "กำไร", "ของแถม"],
       ...o.flatMap(x => x.lines.map(l => [bkkTime(x.createdAt), x.number, RP_STATUS[x.status] || x.status, l.sku, l.title, l.qty, l.price, l.qty * l.price, l.cost || 0, l.qty * (l.cost || 0), l.qty * l.price - l.qty * (l.cost || 0), l.gift ? "ใช่" : ""]))
@@ -1724,6 +1817,173 @@ function rpClick(a, b){
   if (a === "ad-rpgo"){ RP.preset = "custom"; RP.from = $("rp-from").value; RP.to = $("rp-to").value; return rpLoad(); }
   if (a === "ad-rpxlsx") return rpExport();
   return false;
+}
+
+/* ----- หลังบ้าน: สมาชิก & แต้ม (ตั้งค่าระดับ แต้ม วงล้อ ดูสมาชิก ของขวัญรอส่ง) ----- */
+const LY = {data: null, state: "", err: "", sub: "home", draft: null, list: null, lstate: "", q: "", dirty: false};
+async function lyLoad(){
+  LY.state = LY.data ? "refresh" : "loading"; if (route().page === "admin" && AD.tab === "loyalty") keepRender();
+  try { LY.data = await api("api/admin/loyalty", {method: "GET"}, await idToken()); if (!LY.dirty) LY.draft = JSON.parse(JSON.stringify(LY.data.settings)); LY.state = "ok"; }
+  catch (e) { LY.state = "error"; LY.err = e.message; }
+  if (route().page === "admin" && AD.tab === "loyalty") keepRender();
+}
+async function lyMembers(){
+  LY.lstate = "loading"; keepRender();
+  try { LY.list = (await api("api/admin/members?q=" + encodeURIComponent(LY.q), {method: "GET"}, await idToken())).members; LY.lstate = "ok"; }
+  catch (e) { LY.lstate = "error"; LY.err = e.message; }
+  keepRender();
+}
+const lyGet = path => path.split(".").reduce((o, k) => o == null ? o : o[k], LY.draft);
+function lySet(path, v){ const ks = path.split("."), last = ks.pop(); const o = ks.reduce((x, k) => x[k], LY.draft); o[last] = v; LY.dirty = true; }
+const lyF = (path, label, type = "text", extra = "") => `<label class="fld">${label}<input data-ly="${path}" type="${type}" ${type === "number" ? 'inputmode="decimal"' : ""} value="${esc(lyGet(path) ?? "")}" ${extra}></label>`;
+const lyC = (path, label) => `<label class="check" style="margin:0"><input data-ly="${path}" type="checkbox" ${lyGet(path) ? "checked" : ""}> ${label}</label>`;
+const LY_SRC = s => /^tier(\d)/.test(s) ? "เลื่อนระดับ " + s.replace(/\D/g, "") : /^bday/.test(s) ? "วันเกิด" : s === "spin" ? "วงล้อ" : s === "reg" ? "สมัครสมาชิก" : s;
+function adLoyalty(){
+  if (!LY.state){ lyLoad(); return `<div class="state">กำลังโหลด...</div>`; }
+  if (LY.state === "loading") return `<div class="state">กำลังโหลดข้อมูลสมาชิก...</div>`;
+  if (LY.state === "error" && !LY.data) return `<div class="state">${esc(LY.err)}<br><br><button class="btn" type="button" data-act="ad-lyreload">ลองใหม่</button></div>`;
+  const subs = [["home", "สรุป & ของขวัญรอส่ง"], ["members", "รายชื่อสมาชิก"], ["settings", "ตั้งค่าแต้ม & ระดับ"], ["spin", "วงล้อ"]];
+  const body = {home: lyHome, members: lyMembersView, settings: lySettings, spin: lySpin}[LY.sub]();
+  return `<div class="seg" style="margin-bottom:12px">${subs.map(([k, t]) => `<button type="button" data-act="ad-lysub" data-k="${k}" aria-pressed="${LY.sub === k}">${t}</button>`).join("")}</div>${body}`;
+}
+function lyHome(){
+  const s = LY.data.stats, L = LY.data.settings, kpi = (label, val, sub) => `<div class="kpi"><small>${label}</small><b>${val}</b><span>${sub}</span></div>`;
+  const tiers = [L.base, ...L.tiers].map((t, i) => `${t.emoji} ${esc(t.name)} ${num(s.byTier[i] || 0)}`).join(" · ");
+  const ready = LY.data.gifts.filter(g => g.status === "ready"), inOrder = LY.data.gifts.filter(g => g.status === "order");
+  const row = g => `<div class="db-row"><span><b>🎁 ${esc(g.title)}</b><small>${esc(g.name || "-")} · ${esc(LY_SRC(g.source))}${g.sku ? " · " + esc(g.sku) : " · ไม่มีรหัสสินค้า (ดูในหมายเหตุออเดอร์)"}</small></span>
+    ${g.status === "order" ? `<span class="db-tag">${esc(g.number)}</span>` : `<span class="db-tag">หมด ${esc(bkkTime(g.expiresAt).slice(0, 10))}</span>`}
+    <button class="mini" type="button" data-act="ad-lygift" data-v="${g.id}" data-k="done">ส่งแล้ว</button><button class="mini line" type="button" data-act="ad-lygift" data-v="${g.id}" data-k="cancel">ยกเลิก</button></div>`;
+  return `<div class="db-head"><span class="desc">${L.enabled ? "ระบบสมาชิกเปิดอยู่" : "⚠ ระบบสมาชิกปิดอยู่ (ตั้งค่าได้ที่แท็บ ตั้งค่าแต้ม & ระดับ)"}</span><button class="mini line" type="button" data-act="ad-lyreload">↻ อัปเดต</button></div>
+    <div class="kpis">${kpi("สมาชิกทั้งหมด", num(s.members), `ลงทะเบียนข้อมูลแล้ว ${num(s.registered)} คน`)}
+      ${kpi("แต้มคงค้างในระบบ", num(s.outstanding), `มูลค่าประมาณ ${baht(Math.floor(s.outstanding / L.burnPoints) * L.burnBaht)}`)}
+      ${kpi("แต้มเดือนนี้", "+" + num(s.earnedMonth), `ใช้เป็นส่วนลด ${num(s.usedMonth)} แต้ม`)}
+      ${kpi("ยอดบริจาค (สายบุญ)", baht(s.donatedBaht), `เดือนนี้ ${baht(s.donatedMonthBaht)}`)}
+      ${kpi("หมุนวงล้อ", num(s.spins), `เดือนนี้ ${num(s.spinsMonth)} ครั้ง`)}
+      ${kpi("ของขวัญรอส่ง", num(ready.length + inOrder.length), `อยู่ในออเดอร์แล้ว ${num(inOrder.length)}`)}</div>
+    <div class="box"><h3>สมาชิกแต่ละระดับ</h3><p style="margin:0">${tiers}</p></div>
+    <div class="box"><h3>ของขวัญที่อยู่ในออเดอร์ (แพ็กใส่กล่องด้วย)</h3>${inOrder.length ? inOrder.map(row).join("") : `<p class="desc">ไม่มี</p>`}
+      <p class="desc" style="margin:0">ของขวัญที่มีรหัสสินค้าจะอยู่ในรายการสินค้าของออเดอร์ใน ZORT เป็น 0 บาท ที่ไม่มีรหัสจะเขียนไว้ในหมายเหตุออเดอร์ กด "ส่งแล้ว" เมื่อแพ็กเรียบร้อย (ระบบจะปิดให้เองเมื่อออเดอร์ชำระเงิน)</p></div>
+    <div class="box"><h3>ของขวัญที่รอลูกค้าสั่งซื้อ</h3>${ready.length ? ready.map(row).join("") : `<p class="desc">ไม่มี</p>`}</div>
+    ${Object.keys(s.prizes).length ? `<div class="box"><h3>รางวัลวงล้อที่ออกไปแล้ว</h3>${Object.entries(s.prizes).map(([k, n]) => `<div class="acc"><span>${esc(k)}</span><b>${num(n)} ครั้ง</b></div>`).join("")}</div>` : ""}`;
+}
+function lyMembersView(){
+  if (!LY.list && LY.lstate !== "loading") lyMembers();
+  const list = LY.list || [];
+  return `<div class="code"><input id="ly-q" placeholder="ค้นหาชื่อ ชื่อเล่น เบอร์ หรือรหัสชวนเพื่อน" value="${esc(LY.q)}" autocomplete="off"><button type="button" data-act="ad-lyfind">ค้นหา</button></div>
+    ${LY.lstate === "loading" ? `<p class="desc">กำลังโหลด...</p>` : ""}
+    <div class="box"><h3>สมาชิก ${list.length >= 100 ? "(แสดง 100 คนแรก เรียงตามยอดสะสม)" : list.length + " คน"}</h3>${list.length ? list.map(m => `<button class="db-row" type="button" data-act="ad-lymember" data-v="${esc(m.uid)}" style="width:100%;text-align:left">
+      <span><b>${esc(m.nick || m.name || "(ไม่มีชื่อ)")}${m.nick && m.name ? ` <small style="display:inline">(${esc(m.name)})</small>` : ""}</b><small>${esc(m.tierName)} · ยอดสะสม ${baht(m.spent)}${m.phone ? " · " + esc(m.phone) : ""}${m.birthday ? " · 🎂 " + esc(m.birthday.slice(5)) : ""}${m.referred ? " · มาจากคำชวน" : ""}</small></span>
+      <b class="db-amt">${num(m.points)} แต้ม</b></button>`).join("") : `<p class="desc">ยังไม่มีสมาชิก</p>`}</div>`;
+}
+async function lyOpenMember(uid){
+  toast("กำลังโหลด...");
+  try {
+    const r = await api("api/admin/member?uid=" + encodeURIComponent(uid), {method: "GET"}, await idToken()); $("toast").hidden = true;
+    const m = r.member, v = r.view;
+    openSheet(`<div class="adm" translate="no"><h2>${esc(m.nick || m.name || "สมาชิก")}</h2>
+      <p class="desc" style="margin:0">${esc(m.name)} · ${esc(v.tierName)} (x${v.mult}) · ยอดสะสม ${baht(v.spent)} · สมัคร ${esc(bkkTime(m.createdAt).slice(0, 10))}${m.registeredAt ? " · ลงทะเบียนข้อมูลแล้ว" : ""}</p>
+      ${m.phone ? `<p style="margin:0">📞 ${esc(m.phone)}</p>` : ""}
+      <div class="acc"><span>แต้มคงเหลือ</span><b style="font-size:20px;color:var(--red)">${num(v.points)}</b></div>
+      <div class="box" style="margin:0"><b>ปรับแต้ม</b>
+        <label class="fld">จำนวน (ใส่ − เพื่อหัก เช่น -100)<input id="ly-delta" type="number" inputmode="numeric"></label>
+        <label class="fld">เหตุผล (ลูกค้าเห็นในประวัติแต้ม)<input id="ly-note" maxlength="100" placeholder="เช่น ชดเชยสินค้าเสียหาย"></label>
+        <button class="btn" type="button" data-act="ad-lypts" data-v="${esc(uid)}">บันทึกแต้ม</button></div>
+      <div class="box" style="margin:0"><b>วันเกิด</b><label class="fld">วันเกิด (ลูกค้าแก้เองไม่ได้)<input id="ly-bday" type="date" value="${esc(m.birthday)}"></label>
+        <button class="btn line" type="button" data-act="ad-lybday" data-v="${esc(uid)}">บันทึกวันเกิด</button></div>
+      <div class="box" style="margin:0"><b>คูปอง/ของขวัญที่มี</b>${[...v.coupons.map(c => "🎟 " + c.title), ...v.gifts.map(g => "🎁 " + g.title + (g.status === "order" ? " (ใน " + g.number + ")" : ""))].map(x => `<span class="desc">${esc(x)}</span>`).join("") || `<span class="desc">ไม่มี</span>`}</div>
+      <div class="box" style="margin:0"><b>ประวัติแต้มล่าสุด</b>${v.history.slice(0, 15).map(h => `<div class="acc"><span class="desc">${esc(bkkTime(h.at))} ${esc(h.note)}</span><b>${h.delta > 0 ? "+" : ""}${num(h.delta)}</b></div>`).join("") || `<span class="desc">ไม่มี</span>`}</div>
+      <div class="box" style="margin:0"><b>ออเดอร์ล่าสุด</b>${r.orders.map(o => `<div class="acc"><span class="desc">${esc(o.number)} · ${esc(RP_STATUS[o.status] || o.status)}</span><b>${baht(o.total)}</b></div>`).join("") || `<span class="desc">ไม่มี</span>`}</div>
+      <p class="warn" id="bo-err" style="margin:0" hidden></p>
+      <button class="btn line" type="button" data-act="closesheet">ปิด</button></div>`);
+  } catch (e) { $("toast").hidden = true; toast(e.message); }
+}
+function lySettings(){
+  const L = LY.draft, tier = (t, i) => `<div class="box"><h3>${esc(t.emoji)} ระดับ ${i + 1}: ${esc(t.name)}</h3>
+      <div class="two">${lyF(`tiers.${i}.name`, "ชื่อระดับ")}${lyF(`tiers.${i}.emoji`, "อีโมจิ")}</div>
+      <div class="two">${lyF(`tiers.${i}.min`, "ยอดสะสมขั้นต่ำ (บาท)", "number")}${lyF(`tiers.${i}.mult`, "ตัวคูณแต้ม (เช่น 1.5)", "number", 'step="0.1"')}</div>
+      <label class="fld">คำนิยาม (ลูกค้าเห็นตอนเลื่อนระดับ)<textarea data-ly="tiers.${i}.desc" rows="2">${esc(t.desc)}</textarea></label>
+      <b style="font-size:14px">ของขวัญต้อนรับ (ให้ครั้งเดียวต่อระดับ)</b>
+      ${lyF(`tiers.${i}.bonus`, "โบนัสแต้ม", "number")}
+      <div class="two">${lyF(`tiers.${i}.coupon.value`, "คูปองลด (บาท, 0 = ไม่มี)", "number")}${lyF(`tiers.${i}.coupon.min`, "ขั้นต่ำของคูปอง (บาท)", "number")}</div>
+      ${lyF(`tiers.${i}.coupon.days`, "คูปองใช้ได้กี่วัน", "number")}
+      <div class="two">${lyF(`tiers.${i}.gift.title`, "ของขวัญ (เว้นว่าง = ไม่มี)")}${lyF(`tiers.${i}.gift.sku`, "รหัสสินค้าใน ZORT (ไม่บังคับ)")}</div>
+      ${L.tiers.length > 1 ? `<button class="mini line" type="button" data-act="ad-lytierdel" data-i="${i}" style="align-self:flex-start">ลบระดับนี้</button>` : ""}</div>`;
+  return `<div class="box"><h3>ระบบสมาชิก</h3>${lyC("enabled", "เปิดใช้ระบบสมาชิกและแต้ม")}
+      <div class="two">${lyF("earnPer", "ช้อปทุกกี่บาท ได้ 1 แต้ม", "number")}${lyF("expiryDays", "แต้มหมดอายุ (วัน หลังได้รับ)", "number")}</div>
+      <div class="two">${lyF("burnPoints", "ใช้กี่แต้ม", "number")}${lyF("burnBaht", "= ส่วนลดกี่บาท", "number")}</div>
+      <p class="desc" style="margin:0">ตอนนี้: ช้อป ${baht(L.earnPer)} = 1 แต้ม · ${num(L.burnPoints)} แต้ม = ${baht(L.burnBaht)} (คืนเงินประมาณ ${(L.burnBaht / L.burnPoints / L.earnPer * 100).toFixed(1)}% ที่ x1)</p></div>
+    <div class="box"><h3>${esc(L.base.emoji)} สมาชิกทั่วไป (ยังไม่ถึงระดับ 1)</h3><div class="two">${lyF("base.name", "ชื่อ")}${lyF("base.emoji", "อีโมจิ")}</div>${lyF("base.mult", "ตัวคูณแต้ม", "number", 'step="0.1"')}</div>
+    ${L.tiers.map(tier).join("")}
+    ${L.tiers.length < 6 ? `<button class="btn line" type="button" data-act="ad-lytieradd">+ เพิ่มระดับ</button>` : ""}
+    <div class="box"><h3>💌 ชวนเพื่อน</h3>
+      <div class="two">${lyF("ref.joinReferrer", "คนชวนได้ (เมื่อเพื่อนเข้าสู่ระบบ)", "number")}${lyF("ref.joinFriend", "เพื่อนได้ (ครั้งแรก)", "number")}</div>
+      <div class="two">${lyF("ref.firstOrder", "คนชวนได้เพิ่ม (เพื่อนชำระเงินครั้งแรก)", "number")}${lyF("ref.monthlyMax", "จำกัดแต้มชวน/คน/30 วัน (0 = ไม่จำกัด)", "number")}</div>
+      <p class="desc" style="margin:0">นับเฉพาะเพื่อนใหม่ที่ไม่เคยสั่งซื้อในร้าน ชวนตัวเองไม่ได้ ถ้าออเดอร์แรกของเพื่อนถูกคืนเงิน แต้มส่วนนั้นจะถูกหักคืน</p></div>
+    <div class="box"><h3>📝 สมัครสมาชิก (บันทึกข้อมูล)</h3>${lyF("reg.points", "แต้มต้อนรับ", "number")}
+      <div class="two">${lyF("reg.coupon.value", "คูปองลด (บาท, 0 = ไม่มี)", "number")}${lyF("reg.coupon.min", "ขั้นต่ำ (บาท)", "number")}</div>${lyF("reg.coupon.days", "คูปองใช้ได้กี่วัน", "number")}</div>
+    <div class="box"><h3>🎂 ของขวัญวันเกิด (ใช้ได้ภายในเดือนเกิด)</h3>${lyF("bday.points", "แต้มวันเกิด", "number")}
+      <div class="two">${lyF("bday.coupon.value", "คูปองลด (บาท, 0 = ไม่มี)", "number")}${lyF("bday.coupon.min", "ขั้นต่ำ (บาท)", "number")}</div>
+      <div class="two">${lyF("bday.gift.title", "ของขวัญ (ส่งไปกับออเดอร์ในเดือนเกิด)")}${lyF("bday.gift.sku", "รหัสสินค้าใน ZORT (ไม่บังคับ)")}</div>
+      ${lyF("bday.doubleTier", "แต้ม x2 ทั้งเดือนเกิด ตั้งแต่ระดับที่ (1 = Gang, 0 = ปิด)", "number")}
+      <p class="desc" style="margin:0">ลูกค้าต้องลงทะเบียนก่อนถึงเดือนเกิด ได้ปีละครั้ง</p></div>
+    <div class="box"><h3>💝 สายบุญ (แลกแต้มบริจาค)</h3>${lyC("donate.enabled", "เปิดให้แลกแต้มบริจาค")}${lyF("donate.org", "ชื่อองค์กรที่ส่งมอบ")}</div>
+    <p class="warn" id="bo-err" style="margin:0" hidden></p>
+    <button class="btn" type="button" data-act="ad-lysave" style="margin-top:14px;width:100%">บันทึกการตั้งค่า</button>
+    ${LY.dirty ? `<button class="btn line" type="button" data-act="ad-lyreset" style="width:100%">ยกเลิกที่แก้</button>` : ""}`;
+}
+const PRIZE_T = [["amount", "คูปองลดบาท"], ["freeship", "คูปองส่งฟรี"], ["points", "แต้ม"], ["gift", "ของรางวัล"], ["none", "ไม่ได้รางวัล"]];
+function lySpin(){
+  const S = LY.draft.spin, L = LY.draft, act = S.prizes.filter(p => p.active && Number(p.weight) > 0), tot = act.reduce((a, p) => a + Number(p.weight), 0);
+  const pct = p => p.active && tot ? (Number(p.weight) / tot * 100) : 0;
+  const ev = act.reduce((a, p) => a + pct(p) / 100 * (p.type === "amount" ? Number(p.value) : p.type === "points" ? Number(p.value) / L.burnPoints * L.burnBaht : 0), 0);
+  return `<div class="box"><h3>🎡 วงล้อ</h3>${lyC("spin.enabled", "เปิดวงล้อ")}
+      <div class="two">${lyF("spin.cost", "ใช้กี่แต้มต่อการหมุน", "number")}${lyF("spin.couponDays", "คูปองจากวงล้อใช้ได้กี่วัน", "number")}</div>${lyF("spin.giftDays", "ของรางวัล: ลูกค้าต้องสั่งซื้อภายในกี่วัน", "number")}${lyF("spin.freeTier", "หมุนฟรีเดือนละครั้ง ตั้งแต่ระดับที่ (3 = PonPrime, 0 = ปิด)", "number")}
+      <p class="desc" style="margin:0">มูลค่าเฉลี่ยต่อการหมุน ≈ ${baht(Math.round(ev))} (ไม่รวมส่งฟรีและของรางวัล) เทียบกับแต้มที่ใช้ ${num(S.cost)} แต้ม ≈ ${baht(S.cost / L.burnPoints * L.burnBaht)}</p></div>
+    <div class="box"><h3>รางวัล (ใส่ "น้ำหนัก" ยิ่งมากยิ่งออกบ่อย)</h3>
+      ${S.prizes.map((p, i) => `<div class="prize${p.active ? "" : " off"}"><div class="acc"><b>${i + 1}. ${esc(p.label)}</b><span class="bo-st ${p.active ? "on" : "off"}">${p.active ? "โอกาส " + pct(p).toFixed(1) + "%" : "ปิด"}</span></div>
+        <div class="two">${lyF(`spin.prizes.${i}.label`, "ชื่อบนวงล้อ")}<label class="fld">ประเภท<select data-ly="spin.prizes.${i}.type">${PRIZE_T.map(([k, t]) => `<option value="${k}" ${p.type === k ? "selected" : ""}>${t}</option>`).join("")}</select></label></div>
+        <div class="two">${p.type === "amount" || p.type === "points" ? lyF(`spin.prizes.${i}.value`, p.type === "points" ? "จำนวนแต้ม" : "ลดกี่บาท", "number") : p.type === "gift" ? lyF(`spin.prizes.${i}.sku`, "รหัสสินค้าของรางวัล (ไม่บังคับ)") : `<span></span>`}
+          ${p.type === "amount" || p.type === "freeship" ? lyF(`spin.prizes.${i}.min`, "ขั้นต่ำ (บาท)", "number") : ""}${lyF(`spin.prizes.${i}.weight`, "น้ำหนัก", "number")}</div>
+        <div class="bo-btns">${lyC(`spin.prizes.${i}.active`, "เปิด")}${i ? `<button class="mini line" type="button" data-act="ad-lyprizeup" data-i="${i}">ย้ายขึ้น</button>` : ""}<button class="mini line" type="button" data-act="ad-lyprizedel" data-i="${i}">ลบ</button></div></div>`).join("")}
+      ${S.prizes.length < 12 ? `<button class="btn line" type="button" data-act="ad-lyprizeadd">+ เพิ่มรางวัล</button>` : ""}
+      <p class="desc" style="margin:0">ลูกค้าไม่เห็นเปอร์เซ็นต์โอกาส · วงล้อที่สุ่มรางวัลอาจเข้าข่ายการชิงโชคตามกฎหมาย ควรตรวจสอบก่อนเปิดใช้</p></div>
+    <p class="warn" id="bo-err" style="margin:0" hidden></p>
+    <button class="btn" type="button" data-act="ad-lysave" style="margin-top:14px;width:100%">บันทึกวงล้อ</button>`;
+}
+async function lySave(){
+  const ok = await adminSaveKey("loyalty", LY.draft, "ตั้งค่าสมาชิก/แต้ม/วงล้อ");
+  if (ok){ LY.dirty = false; LY.data = null; LY.state = ""; lyLoad(); }
+}
+function lyClick(a, b){
+  if (a === "ad-lyreload") return lyLoad();
+  if (a === "ad-lysub"){ LY.sub = b.dataset.k; return keepRender(); }
+  if (a === "ad-lysave") return lySave();
+  if (a === "ad-lyreset"){ LY.draft = JSON.parse(JSON.stringify(LY.data.settings)); LY.dirty = false; return keepRender(); }
+  if (a === "ad-lytieradd"){ const last = LY.draft.tiers[LY.draft.tiers.length - 1]; LY.draft.tiers.push({name: "ระดับใหม่", emoji: "⭐", min: (last ? last.min : 0) * 2 || 1000, mult: (last ? last.mult : 1) + .5, desc: "", bonus: 0, coupon: {value: 0, min: 0, days: 60}, gift: {title: "", sku: ""}}); LY.dirty = true; return keepRender(); }
+  if (a === "ad-lytierdel"){ LY.draft.tiers.splice(Number(b.dataset.i), 1); LY.dirty = true; return keepRender(); }
+  if (a === "ad-lyprizeadd"){ LY.draft.spin.prizes.push({label: "รางวัลใหม่", type: "amount", value: 10, min: 0, sku: "", weight: 10, active: true}); LY.dirty = true; return keepRender(); }
+  if (a === "ad-lyprizedel"){ LY.draft.spin.prizes.splice(Number(b.dataset.i), 1); LY.dirty = true; return keepRender(); }
+  if (a === "ad-lyprizeup"){ const l = LY.draft.spin.prizes, i = Number(b.dataset.i); [l[i - 1], l[i]] = [l[i], l[i - 1]]; LY.dirty = true; return keepRender(); }
+  if (a === "ad-lyfind"){ LY.q = ($("ly-q").value || "").trim(); return lyMembers(); }
+  if (a === "ad-lymember") return lyOpenMember(b.dataset.v);
+  if (a === "ad-lypts"){
+    const delta = Number($("ly-delta").value), note = $("ly-note").value.trim(), err = $("bo-err");
+    if (!delta || !note){ err.textContent = "กรุณาใส่จำนวนแต้มและเหตุผล"; err.hidden = false; return; }
+    return idToken().then(t => api("api/admin/points", {method: "POST", body: JSON.stringify({uid: b.dataset.v, delta, note})}, t))
+      .then(() => { toast("ปรับแต้มแล้ว"); lyOpenMember(b.dataset.v); LY.list = null; }).catch(e => { err.textContent = e.message; err.hidden = false; });
+  }
+  if (a === "ad-lybday") return idToken().then(t => api("api/admin/birthday", {method: "POST", body: JSON.stringify({uid: b.dataset.v, birthday: $("ly-bday").value})}, t)).then(() => { toast("บันทึกวันเกิดแล้ว"); LY.list = null; }).catch(e => toast(e.message));
+  if (a === "ad-lygift"){ const done = b.dataset.k === "done";
+    return openSheet(`<h2>${done ? "ยืนยันว่าส่งของขวัญแล้ว?" : "ยกเลิกของขวัญนี้?"}</h2><p>${done ? "รายการนี้จะออกจากรายการรอส่ง" : "ลูกค้าจะไม่ได้รับของขวัญชิ้นนี้"}</p>
+      <button class="btn" type="button" data-act="ad-lygiftyes" data-v="${b.dataset.v}" data-k="${b.dataset.k}">ยืนยัน</button><button class="btn line" type="button" data-act="closesheet">ไม่ใช่</button>`); }
+  if (a === "ad-lygiftyes"){ closeSheet(); return idToken().then(t => api("api/admin/gift", {method: "POST", body: JSON.stringify({id: Number(b.dataset.v), act: b.dataset.k})}, t)).then(() => { toast("บันทึกแล้ว"); lyLoad(); }).catch(e => toast(e.message)); }
+  return false;
+}
+function lyInput(t){
+  if (!t.dataset || !t.dataset.ly || !LY.draft) return false;
+  const v = t.type === "checkbox" ? t.checked : t.type === "number" ? (t.value === "" ? "" : Number(t.value)) : t.value;
+  lySet(t.dataset.ly, v);
+  return true;
 }
 
 /* ----- หลังบ้าน: ภาพรวม (Dashboard) ----- */
@@ -1791,6 +2051,265 @@ function dbClick(a, b){
       <p class="desc">กดแล้วรายการนี้จะออกจาก "ต้องทำ" และลูกค้าจะเห็นสถานะเป็น "ยกเลิก"</p>
       <button class="btn" type="button" data-act="ad-dbrefundyes" data-v="${esc(b.dataset.v)}">โอนคืนเรียบร้อยแล้ว</button><button class="btn line" type="button" data-act="closesheet">ยังไม่ได้โอน</button>`); }
   if (a === "ad-dbrefundyes"){ closeSheet(); return idToken().then(t => api("api/admin/refund-done", {method: "POST", body: JSON.stringify({number: b.dataset.v})}, t)).then(() => { toast("บันทึกแล้ว"); dbLoad(); }).catch(e => toast(e.message)); }
+  return false;
+}
+
+/* ---------- PonPon Membership: แต้ม ระดับ ชวนเพื่อน วันเกิด วงล้อ (ลูกค้า) ---------- */
+let MEMBER = null, celeLater = null, memberState = "", memberAt = 0, usePts = 0, spinBusy = false, spinRot = 0, giveN = 0;
+const LOY = () => SHOP.loyalty && SHOP.loyalty.enabled ? SHOP.loyalty : null;
+const pts = n => Number(n || 0).toLocaleString("en-US");
+const memberCoupons = () => (MEMBER && MEMBER.coupons) || [];
+const tierOfMe = () => { const L = LOY(), t = MEMBER ? MEMBER.tier : 0; return t > 0 && L ? L.tiers[t - 1] : (L ? L.base : {name: "", emoji: "🎀", mult: 1}); };
+const mySeen = () => "ponpon-seen-" + ((profile && profile.userId) || "x");
+async function memberLoad(force){
+  if (!LOY()) return;
+  if (!force && memberState === "loading") return;
+  const token = await idToken(); if (!token){ memberState = "login"; return; }
+  memberState = "loading";
+  const ref = store.get("ponpon-ref", "");
+  try {
+    const res = await api("api/member", {method: "POST", body: JSON.stringify({ref})}, token);
+    MEMBER = res.member; memberState = "ok"; memberAt = Date.now();
+    if (res.loyalty) SHOP.loyalty = res.loyalty;
+    if (ref) store.set("ponpon-ref", "");
+    if ($("sheet").hidden) memberCelebrate(res); else celeLater = res;
+  } catch (e) { memberState = "error"; }
+  const pg = route().page;
+  if (["home", "me", "points", "spin", "invite", "profile", "tiers", "rewards", "cart", "checkout"].includes(pg) && $("sheet").hidden) keepRender();
+}
+function keepRender(){ const y = scrollY; render(); scrollTo(0, y); }
+/* ป๊อปอัปฉลอง: ได้แต้มจากคำชวน / วันเกิด / เลื่อนระดับ (แสดงครั้งเดียว) */
+function memberCelebrate(res){
+  const L = LOY(); if (!L || !MEMBER) return;
+  const seen = store.get(mySeen(), {tier: null, bday: ""});
+  if (res.welcome) return openSheet(`<div class="cele">🎉</div><h2>ยินดีต้อนรับเข้าแก๊ง PonPon!</h2><p>เพื่อนชวนคุณมา รับไปเลย <b>${pts(res.welcome.points)} แต้ม</b> PonPoints ใช้แทนเงินสด หรือหมุนวงล้อลุ้นรางวัลได้นะคะ</p>
+    <button class="btn" type="button" data-act="nav" data-to="#home">ไปช้อปเลย</button><button class="btn line" type="button" data-act="nav" data-to="#me">ดูแต้มของฉัน</button>`);
+  if (seen.tier === null){ seen.tier = MEMBER.tier; store.set(mySeen(), seen); }
+  else if (MEMBER.tier > seen.tier){
+    seen.tier = MEMBER.tier; store.set(mySeen(), seen);
+    const t = L.tiers[MEMBER.tier - 1];
+    return openSheet(`<div class="cele">${esc(t.emoji)}</div><h2>เลื่อนเป็น ${esc(t.name)} แล้ว!</h2><p>${esc(t.desc)}</p>
+      <div class="box" style="margin:0"><b>ของขวัญต้อนรับ</b>${tierGifts(t, MEMBER.tier)}</div>
+      <p class="desc">รับแต้ม x${t.mult} ทุกการช้อปตั้งแต่ตอนนี้</p>
+      <button class="btn" type="button" data-act="nav" data-to="#rewards">ดูของขวัญของฉัน</button><button class="btn line" type="button" data-act="closesheet">เย้!</button>`);
+  } else if (MEMBER.tier < seen.tier){ seen.tier = MEMBER.tier; store.set(mySeen(), seen); }
+  const ym = today().slice(0, 7);
+  if (MEMBER.bdayMonth && seen.bday !== ym){
+    seen.bday = ym; store.set(mySeen(), seen);
+    return openSheet(`<div class="cele">🎂</div><h2>สุขสันต์เดือนเกิดนะคะ!</h2><p>PonPon เตรียมของขวัญไว้ให้แล้ว ${L.bday.coupon ? `คูปองลด <b>${baht(L.bday.coupon.value)}</b>${L.bday.coupon.min ? " (ขั้นต่ำ " + baht(L.bday.coupon.min) + ")" : ""}` : ""}${L.bday.gift ? ` และ <b>${esc(L.bday.gift)}</b> ส่งไปพร้อมออเดอร์` : ""}</p>
+      <p class="warn" style="margin:0">ใช้สิทธิ์ได้ภายในเดือนนี้ สั่งซื้อก่อนสิ้นเดือนนะคะ</p>
+      <button class="btn" type="button" data-act="nav" data-to="#home">ไปช้อปรับของขวัญ</button><button class="btn line" type="button" data-act="closesheet">ปิด</button>`);
+  }
+}
+const tierGifts = (t, i) => { const L = LOY(), x = []; if (L && i && L.bday.doubleTier > 0 && i >= L.bday.doubleTier) x.push("🎂 แต้ม x2 ทั้งเดือนเกิด"); if (L && i && L.spin.enabled && L.spin.freeTier > 0 && i >= L.spin.freeTier) x.push("🎡 หมุนวงล้อฟรีเดือนละครั้ง");
+  return `<ul class="gl">${x.map(y => `<li>${y}</li>`).join("")}${t.bonus ? `<li>🪙 โบนัส ${pts(t.bonus)} แต้ม</li>` : ""}${t.coupon ? `<li>🎟 คูปองลด ${baht(t.coupon.value)}${t.coupon.min ? " ขั้นต่ำ " + baht(t.coupon.min) : " ไม่มีขั้นต่ำ"}</li>` : ""}${t.gift ? `<li>🎁 ${esc(t.gift)}</li>` : ""}<li>✨ รับแต้ม x${t.mult}</li></ul>`; };
+/* ประตูหน้าสมาชิก: ต้องล็อกอินก่อน */
+function memberGate(){
+  if (!LOY()) return `<div class="state" style="margin-top:20px">ระบบสมาชิกยังไม่เปิดใช้งานค่ะ</div>`;
+  if (!profile) return `<div class="state" style="margin-top:20px">เข้าสู่ระบบด้วย LINE เพื่อสะสมแต้มและรับสิทธิพิเศษ<br><br><button class="btn" type="button" data-act="login">เข้าสู่ระบบด้วย LINE</button></div>`;
+  if (!MEMBER){ if (memberState !== "loading") memberLoad(); return memberState === "error" ? `<div class="state" style="margin-top:20px">โหลดข้อมูลสมาชิกไม่สำเร็จ<br><br><button class="btn" type="button" data-act="mreload">ลองใหม่</button></div>` : `<div class="state" style="margin-top:20px">กำลังโหลดข้อมูลสมาชิก...</div>`; }
+  if (Date.now() - memberAt > 60000 && memberState !== "loading") memberLoad();
+  return "";
+}
+/* การ์ดสมาชิก */
+function memberCard(){
+  const L = LOY(), m = MEMBER, t = tierOfMe();
+  const nx = m.next, pct = nx ? Math.min(100, Math.round((m.spent / nx.min) * 100)) : 100;
+  return `<button class="mcard t${m.tier}" type="button" data-act="nav" data-to="#tiers">
+    <span class="mc-top"><span class="mc-tier"><i>${esc(t.emoji)}</i>${esc(t.name)}</span><span class="mc-x">${m.bdayDouble ? "🎂 " : ""}แต้ม x${m.earnMult || t.mult}</span></span>
+    <span class="mc-pts"><small>PonPoints</small><b>${pts(m.points)}</b><small>แต้ม · มูลค่า ${baht(Math.floor(m.points / L.burnPoints) * L.burnBaht)}</small></span>
+    <span class="mc-bar"><i style="width:${pct}%"></i></span>
+    <span class="mc-next">${nx ? `ช้อปอีก <b>${baht(nx.need)}</b> เป็น ${esc(nx.emoji)} ${esc(nx.name)}` : "คุณอยู่ระดับสูงสุดแล้ว 👑"}</span>
+    ${m.expiring.points ? `<span class="mc-exp">⏳ ${pts(m.expiring.points)} แต้มจะหมดอายุ ${esc(dateOnly(m.expiring.at))}</span>` : ""}
+  </button>`;
+}
+const dateOnly = ms => new Date(ms).toLocaleDateString(LOCALE[LANG] || "th-TH", {day: "numeric", month: "short", year: "numeric"});
+function memberTiles(){
+  const L = LOY(), m = MEMBER, nC = m.coupons.length, nG = m.gifts.filter(g => g.status === "ready").length;
+  const tile = (to, emo, label, badge) => `<button class="mtile" type="button" data-act="nav" data-to="${to}"><i>${emo}</i><span>${label}</span>${badge ? `<em>${badge}</em>` : ""}</button>`;
+  return `<div class="mtiles">${L.spin.enabled ? tile("#spin", "🎡", "หมุนวงล้อ") : ""}${tile("#rewards", "🎁", "คูปอง & ของขวัญ", nC + nG || "")}${tile("#invite", "💌", "ชวนเพื่อน")}
+    ${tile("#points", "🪙", "แต้ม & แลกแต้ม")}${tile("#profile", "🎂", m.profile.registered ? "ข้อมูลสมาชิก" : "สมัครรับของขวัญ", m.profile.registered ? "" : "ใหม่")}${tile("#tiers", "👑", "สิทธิ์ระดับสมาชิก")}</div>`;
+}
+/* แถบสมาชิกบนหน้าแรก */
+function homeMember(){
+  const L = LOY(); if (!L) return "";
+  if (!profile || !MEMBER) return "";
+  const t = tierOfMe();
+  return `<div class="mstrip"><button type="button" data-act="nav" data-to="#me"><i>${esc(t.emoji)}</i><span><small>${esc(t.name)}</small><b>${pts(MEMBER.points)} แต้ม</b></span></button>
+    ${L.spin.enabled ? `<button class="spinbtn" type="button" data-act="nav" data-to="#spin">🎡 หมุนวงล้อ</button>` : ""}</div>`;
+}
+/* หน้า: สิทธิ์ระดับสมาชิก */
+function viewTiers(){
+  const L = LOY(); if (!L) return memberGate();
+  const cur = MEMBER ? MEMBER.tier : -1;
+  const all = [{...L.base, min: 0, bonus: 0, coupon: null, gift: ""}, ...L.tiers];
+  return `<p class="desc" style="margin:0 0 10px">ยอดสะสมนับจากทุกออเดอร์ที่ชำระแล้วตลอดชีพ (ไม่รวมค่าส่ง) ขึ้นระดับแล้วอยู่ตลอดไป</p>
+    ${all.map((t, i) => `<div class="box tierbox${i === cur ? " cur" : ""}"><div class="acc"><b class="tb-n"><i>${esc(t.emoji)}</i>${esc(t.name)}</b>${i === cur ? `<span class="badge">ระดับของคุณ</span>` : ""}</div>
+      <span class="desc">${i ? `ยอดสะสม ${baht(t.min)} ขึ้นไป` : "สมาชิกทุกคน"} · รับแต้ม x${t.mult}</span>
+      ${t.desc ? `<p style="margin:0">"${esc(t.desc)}"</p>` : ""}${i ? `<b style="font-size:13.5px">ของขวัญและสิทธิ์</b>${tierGifts(t, i)}` : ""}</div>`).join("")}
+    <div class="box"><h3>PonPoints ทำงานยังไง</h3><ul class="gl">
+      <li>🛍 ช้อปทุก ${baht(L.earnPer)} = 1 แต้ม (คูณตามระดับ)</li><li>🎟 ทุก ${pts(L.burnPoints)} แต้ม = ส่วนลด ${baht(L.burnBaht)} ไม่มีขั้นต่ำ</li>
+      ${L.donate.enabled ? `<li>💝 ทุก ${pts(L.burnPoints)} แต้ม = ร่วมบริจาค ${baht(L.burnBaht)}</li>` : ""}<li>⏳ แต้มมีอายุ ${Math.round(L.expiryDays / 30.4)} เดือนนับจากวันที่ได้รับ</li></ul></div>`;
+}
+/* หน้า: แต้ม ประวัติ แลกแต้ม */
+function viewPoints(){
+  const g = memberGate(); if (g) return g;
+  const L = LOY(), m = MEMBER, max = Math.floor(m.points / L.burnPoints) * L.burnPoints;
+  giveN = Math.min(Math.max(L.burnPoints, giveN || L.burnPoints), Math.max(L.burnPoints, max));
+  const kindIcon = {earn: "🛍", use: "🎟", spin: "🎡", spin_win: "🎡", donate: "💝", ref_join: "💌", ref_welcome: "💌", ref_order: "💌", tier: "👑", bday: "🎂", reg: "📝", refund: "↩️", reverse: "↩️", admin: "✏️"};
+  return `${memberCard()}
+    <div class="box"><h3>แลกแต้ม</h3>
+      <div class="redeem"><i>🎟</i><span><b>ใช้เป็นส่วนลดตอนชำระเงิน</b><small>ทุก ${pts(L.burnPoints)} แต้ม ลด ${baht(L.burnBaht)} ไม่มีขั้นต่ำ ใช้ร่วมกับโค้ดได้</small></span><button class="mini" type="button" data-act="nav" data-to="#cart">ไปตะกร้า</button></div>
+      ${L.spin.enabled ? `<div class="redeem"><i>🎡</i><span><b>หมุนวงล้อลุ้นรางวัล</b><small>ครั้งละ ${pts(L.spin.cost)} แต้ม</small></span><button class="mini" type="button" data-act="nav" data-to="#spin">หมุนเลย</button></div>` : ""}
+      ${L.donate.enabled ? `<div class="redeem"><i>💝</i><span><b>สายบุญ: ร่วมบริจาค</b><small>ทุก ${pts(L.burnPoints)} แต้ม = ${baht(L.burnBaht)} ให้ ${esc(L.donate.org)} โดย PonPon เป็นตัวแทนส่งมอบ</small></span></div>
+        <div class="qrow" style="margin:0"><div class="step"><button type="button" data-act="giveminus" ${giveN <= L.burnPoints ? "disabled" : ""}>−</button><b>${pts(giveN)}</b><button class="plus" type="button" data-act="giveplus" ${giveN + L.burnPoints > max ? "disabled" : ""}>+</button></div>
+        <button class="btn soft" type="button" data-act="giveask" ${max < L.burnPoints ? "disabled" : ""} style="flex:1">บริจาค ${baht(giveN / L.burnPoints * L.burnBaht)}</button></div>` : ""}</div>
+    <div class="box"><h3>ประวัติแต้ม</h3>${m.history.length ? m.history.map(h => `<div class="hrow"><i>${kindIcon[h.kind] || "✦"}</i><span><b>${esc(h.note || h.kind)}</b><small>${esc(dateText(h.at))}${h.delta > 0 && h.expiresAt ? " · หมดอายุ " + esc(dateOnly(h.expiresAt)) : ""}</small></span><b class="${h.delta > 0 ? "plus" : "neg"}">${h.delta > 0 ? "+" : "−"}${pts(Math.abs(h.delta))}</b></div>`).join("") : `<p class="desc">ยังไม่มีประวัติแต้ม ช้อปครั้งแรกรับแต้มเลย!</p>`}</div>`;
+}
+/* หน้า: คูปองและของขวัญของฉัน */
+function viewRewards(){
+  const g = memberGate(); if (g) return g;
+  const m = MEMBER, src = s => /^tier/.test(s) ? "ของขวัญเลื่อนระดับ" : /^bday/.test(s) ? "ของขวัญวันเกิด" : s === "spin" ? "รางวัลวงล้อ" : s === "reg" ? "ของขวัญสมาชิกใหม่" : "";
+  return `<div class="box"><h3>คูปองของฉัน</h3>${m.coupons.length ? m.coupons.map(c => `<button class="cp" type="button" data-act="usemine" data-code="${esc(c.code)}">
+      <span class="l">${esc(couponFace(c))}</span><span class="m"><b>${esc(c.title)}</b><small>${esc(couponNote(c))}</small></span><span class="a">ใช้</span></button>`).join("")
+      : `<p class="desc">ยังไม่มีคูปองส่วนตัว ลองหมุนวงล้อหรือสมัครสมาชิกรับคูปองได้นะคะ</p>`}</div>
+    <div class="box"><h3>ของขวัญรอส่ง</h3>${m.gifts.length ? m.gifts.map(x => `<div class="hrow"><i>🎁</i><span><b>${esc(x.title)}</b><small>${esc(src(x.source))}${x.status === "order" ? " · อยู่ในออเดอร์ " + esc(x.number) : " · ส่งไปพร้อมออเดอร์ถัดไป สั่งภายใน " + esc(dateOnly(x.expiresAt))}</small></span></div>`).join("")
+      : `<p class="desc">ยังไม่มีของขวัญรอส่ง</p>`}
+      <p class="desc" style="margin:0">ของขวัญจะถูกแพ็กส่งไปพร้อมออเดอร์ถัดไปของคุณอัตโนมัติ ไม่ต้องกดรับ</p></div>`;
+}
+/* หน้า: ชวนเพื่อน */
+const refLink = () => (CONFIG.LIFF_ID ? "https://miniapp.line.me/" + CONFIG.LIFF_ID : location.origin + location.pathname) + "?ref=" + encodeURIComponent(MEMBER.refCode);
+function viewInvite(){
+  const g = memberGate(); if (g) return g;
+  const L = LOY(), m = MEMBER;
+  return `<div class="invite"><div class="cele">💌</div><h2>ชวนเพื่อนมาเข้าแก๊ง ได้แต้มทั้งคู่!</h2>
+      <div class="steps3"><div><b>1</b><span>ส่งลิงก์ให้เพื่อน</span></div><div><b>2</b><span>เพื่อนเปิดลิงก์และเข้าสู่ระบบ LINE<br><em>คุณได้ +${pts(L.ref.joinReferrer)} · เพื่อนได้ +${pts(L.ref.joinFriend)}</em></span></div><div><b>3</b><span>เพื่อนช้อปครั้งแรก<br><em>คุณได้อีก +${pts(L.ref.firstOrder)}</em></span></div></div></div>
+    <div class="box"><h3>ลิงก์ชวนเพื่อนของคุณ</h3><p class="msg" style="word-break:break-all">${esc(refLink())}</p>
+      <div class="acc"><span>รหัสของคุณ <b class="bo-code">${esc(m.refCode)}</b></span><button class="mini" type="button" data-act="copynum" data-v="${esc(refLink())}">คัดลอกลิงก์</button></div>
+      <button class="btn" type="button" data-act="refshare">ส่งคำชวนทาง LINE</button></div>
+    <div class="box"><div class="acc"><span>เพื่อนที่ชวนมาแล้ว</span><b>${pts(m.refCount)} คน</b></div><div class="acc"><span>ช้อปแล้ว</span><b>${pts(m.refPaid)} คน</b></div>
+      <p class="desc" style="margin:0">นับเฉพาะเพื่อนใหม่ที่ยังไม่เคยสั่งซื้อในร้าน และเปิดลิงก์ของคุณเป็นครั้งแรก</p></div>`;
+}
+async function refShare(){
+  const L = LOY(), text = `มาช้อป PonPon ใน LINE กัน! เปิดลิงก์นี้รับ ${pts(L.ref.joinFriend)} แต้มฟรี 🎀\n${refLink()}`;
+  if (await liffReady && liff.isLoggedIn() && liff.isApiAvailable("shareTargetPicker")){
+    try { const r = await liff.shareTargetPicker([{type: "text", text}]); if (r) toast("ส่งคำชวนแล้ว"); return; } catch (e) {}
+  }
+  openApp("line://msg/text/" + encodeURIComponent(text), "https://line.me/R/share?text=" + encodeURIComponent(text));
+}
+/* หน้า: ข้อมูลสมาชิก + วันเกิด (ไม่บังคับ) */
+let pf = null;
+function viewProfile(){
+  const g = memberGate(); if (g) return g;
+  const L = LOY(), p = MEMBER.profile;
+  if (!pf) pf = {nick: p.nick || (profile && profile.displayName) || "", phone: p.phone || draft.phone || "", birthday: p.birthday || "", consent: !!p.consentAt};
+  const gifts = [L.reg.coupon ? `🎟 คูปองต้อนรับลด ${baht(L.reg.coupon.value)}${L.reg.coupon.min ? " (ขั้นต่ำ " + baht(L.reg.coupon.min) + ")" : ""}` : "", L.reg.points ? `🪙 ${pts(L.reg.points)} แต้ม` : "",
+    L.bday.coupon || L.bday.gift ? `🎂 ของขวัญเดือนเกิดทุกปี: ${[L.bday.coupon ? "คูปองลด " + baht(L.bday.coupon.value) : "", L.bday.gift].filter(Boolean).join(" + ")}` : ""].filter(Boolean);
+  return `${p.registered ? "" : `<div class="invite"><div class="cele">🎂</div><h2>บันทึกข้อมูลสมาชิก รับของขวัญ!</h2><p class="desc" style="margin:0">ไม่บังคับนะคะ ไม่สมัครก็ช้อปและสะสมแต้มได้ตามปกติ</p><ul class="gl" style="text-align:left">${gifts.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>`}
+    <div class="box"><h3>ข้อมูลสมาชิก</h3>
+      <label class="fld">ชื่อเล่น<input id="pf-nick" data-pf="nick" maxlength="60" value="${esc(pf.nick)}"></label>
+      <label class="fld">เบอร์โทร (ไม่บังคับ)<input id="pf-phone" data-pf="phone" type="tel" inputmode="tel" maxlength="20" value="${esc(pf.phone)}"></label>
+      <label class="fld">วันเกิด${p.birthday ? " (แก้ไขไม่ได้ ติดต่อแอดมินถ้าต้องการแก้)" : " (ตั้งได้ครั้งเดียว)"}<input id="pf-bday" data-pf="birthday" type="date" max="${today()}" value="${esc(pf.birthday)}" ${p.birthday ? "disabled" : ""}></label>
+      <label class="check" style="margin:0;align-items:flex-start"><input type="checkbox" data-pf="consent" ${pf.consent ? "checked" : ""}> <span>ยินยอมให้ บริษัท ปอนปอน แอนด์ โค จำกัด เก็บชื่อเล่น เบอร์โทร และวันเกิด เพื่อมอบสิทธิพิเศษ ของขวัญวันเกิด และติดต่อเรื่องคำสั่งซื้อ ไม่เปิดเผยต่อบุคคลอื่น และขอลบข้อมูลได้ทุกเมื่อ</span></label>
+      <p class="desc" style="margin:0">สิทธิ์วันเกิดใช้ได้ตั้งแต่ปีถัดจากเดือนที่สมัคร ถ้าสมัครในเดือนเกิด จะเริ่มได้ปีหน้านะคะ</p>
+      <p class="warn" id="pf-err" style="margin:0" hidden></p>
+      <button class="btn" type="button" data-act="pfsave">${p.registered ? "บันทึกข้อมูล" : "สมัครสมาชิกรับของขวัญ"}</button>
+      ${p.registered ? `<button type="button" class="desc" data-act="pfremove" style="text-decoration:underline;margin-top:6px">ลบข้อมูลส่วนตัวของฉัน</button>` : ""}</div>`;
+}
+async function pfSave(){
+  const err = $("pf-err");
+  if (!pf.consent){ err.textContent = "กรุณากดยินยอมให้เก็บข้อมูลก่อนนะคะ"; err.hidden = false; return; }
+  toast("กำลังบันทึก...");
+  try {
+    const res = await api("api/member/profile", {method: "POST", body: JSON.stringify(pf)}, await idToken());
+    MEMBER = res.member; pf = null; $("toast").hidden = true;
+    if (res.gift) openSheet(`<div class="cele">🎉</div><h2>สมัครสมาชิกเรียบร้อย!</h2><p>${res.gift.coupon ? `ได้คูปองลด <b>${baht(res.gift.coupon.value)}</b> เก็บไว้ใน "คูปองของฉัน" แล้ว` : ""}${res.gift.points ? ` และ ${pts(res.gift.points)} แต้ม` : ""}</p>
+      <button class="btn" type="button" data-act="nav" data-to="#rewards">ดูคูปองของฉัน</button><button class="btn line" type="button" data-act="closesheet">ปิด</button>`);
+    else toast("บันทึกแล้ว");
+    keepRender();
+  } catch (e) { $("toast").hidden = true; err.textContent = e.message; err.hidden = false; }
+}
+/* หน้า: วงล้อ */
+const WHEEL_COL = ["#E40019", "#FFFFFF", "#1E1E22", "#FFE4E7"];
+function wheelSvg(prizes){
+  const n = prizes.length, R = 150, seg = 360 / n;
+  const pt = (a, r) => { const t = (a - 90) * Math.PI / 180; return [160 + r * Math.cos(t), 160 + r * Math.sin(t)]; };
+  const cols = i => n % 2 && i === n - 1 ? WHEEL_COL[3] : WHEEL_COL[i % 2 ? 1 : (i / 2) % 2 ? 2 : 0];
+  return `<svg viewBox="0 0 320 320" class="wheel-svg" aria-hidden="true">${prizes.map((p, i) => {
+    const a0 = i * seg, a1 = (i + 1) * seg, [x0, y0] = pt(a0, R), [x1, y1] = pt(a1, R), mid = a0 + seg / 2, fill = cols(i), dark = fill === "#E40019" || fill === "#1E1E22";
+    const [tx, ty] = pt(mid, R * 0.62), big = p.type === "points" && /jack/i.test(p.label);
+    return `<path d="M160 160L${x0.toFixed(1)} ${y0.toFixed(1)}A${R} ${R} 0 ${seg > 180 ? 1 : 0} 1 ${x1.toFixed(1)} ${y1.toFixed(1)}Z" fill="${fill}" stroke="#1E1E22" stroke-width="2"/>
+      <text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" transform="rotate(${mid.toFixed(1)} ${tx.toFixed(1)} ${ty.toFixed(1)})" text-anchor="middle" dominant-baseline="middle" fill="${dark ? "#fff" : "#1E1E22"}" font-family="Mitr,Prompt,sans-serif" font-weight="600" font-size="${big ? 11 : 13}">${esc(p.label.length > 14 ? p.label.slice(0, 13) + "…" : p.label)}</text>`; }).join("")}
+    <circle cx="160" cy="160" r="${R}" fill="none" stroke="#1E1E22" stroke-width="4"/>
+    ${prizes.map((p, i) => { const [x, y] = pt(i * seg, R - 2); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="#fff" stroke="#1E1E22" stroke-width="1.5"/>`; }).join("")}</svg>`;
+}
+function viewSpin(){
+  const g = memberGate(); if (g) return g;
+  const L = LOY(), prizes = L.spin.prizes;
+  if (!L.spin.enabled || !prizes.length) return `<div class="state" style="margin-top:20px">วงล้อปิดอยู่ชั่วคราว แวะมาใหม่นะคะ</div>`;
+  const free = !!MEMBER.freeSpin, can = free || MEMBER.points >= L.spin.cost;
+  return `<div class="spinwrap"><h2 class="spin-h">🎡 หมุนวงล้อ ลุ้นรางวัล!</h2>
+      <div class="wheel"><div class="wheel-rot" id="wheel" style="transform:rotate(${spinRot}deg)">${wheelSvg(prizes)}</div><span class="wheel-pin"></span>
+        <button class="wheel-hub" type="button" data-act="spingo" ${can && !spinBusy ? "" : "disabled"}>หมุน!</button></div>
+      <p class="spin-cost">${free ? `👑 สิทธิ์ PonPrime: <b>หมุนฟรี 1 ครั้ง</b> เดือนนี้` : `ครั้งละ <b>${pts(L.spin.cost)}</b> แต้ม · คุณมี <b>${pts(MEMBER.points)}</b> แต้ม`}</p>
+      <button class="btn" type="button" data-act="spingo" ${can && !spinBusy ? "" : "disabled"}>${free ? "หมุนฟรี!" : can ? `หมุนเลย (−${pts(L.spin.cost)} แต้ม)` : "แต้มไม่พอ ช้อปเพื่อสะสมแต้มก่อนนะคะ"}</button></div>
+    <div class="box"><h3>รางวัลในวงล้อ</h3><div class="chips">${prizes.map(p => `<span class="chip" style="cursor:default">${esc(p.label)}</span>`).join("")}</div>
+      <p class="desc" style="margin:0">คูปองใช้ได้ภายในเวลาที่กำหนด ของรางวัลส่งไปพร้อมออเดอร์ถัดไป (ต้องสั่งซื้อสินค้าเพื่อรับ) แต้มเข้าบัญชีทันที</p></div>`;
+}
+async function spinGo(){
+  if (spinBusy) return; const L = LOY(); spinBusy = true;
+  document.querySelectorAll('[data-act="spingo"]').forEach(b => b.disabled = true);
+  const w = $("wheel");
+  try {
+    const res = await api("api/spin", {method: "POST", body: "{}"}, await idToken());
+    const n = L.spin.prizes.length, seg = 360 / n, target = 360 - (res.index * seg + seg / 2);
+    const fast = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    spinRot = spinRot - (spinRot % 360) + 360 * (fast ? 1 : 6) + target + (Math.random() - .5) * seg * .6;
+    if (w){ w.style.transition = `transform ${fast ? .4 : 4.6}s cubic-bezier(.12,.72,.08,1)`; w.style.transform = `rotate(${spinRot}deg)`; }
+    setTimeout(() => {
+      spinBusy = false; MEMBER = res.member;
+      const p = res.prize, big = p.type === "points" && p.value >= 1000;
+      openSheet(`<div class="cele">${big ? "💰" : p.type === "gift" ? "🎁" : p.type === "none" ? "🍀" : "🎉"}</div><h2>${p.type === "none" ? "เกือบแล้ว!" : big ? "JACKPOT!!" : "ยินดีด้วย!"}</h2>
+        <p style="font-size:18px;font-family:var(--display);font-weight:700;text-align:center;margin:0">${esc(p.label)}</p><p class="desc" style="text-align:center">${esc(res.detail || "ขอบคุณที่ร่วมสนุกนะคะ")}</p>
+        <button class="btn" type="button" data-act="closesheet">โอเค!</button>${p.type === "amount" || p.type === "freeship" ? `<button class="btn line" type="button" data-act="nav" data-to="#cart">ไปใช้คูปอง</button>` : ""}`);
+      keepRender();
+    }, fast ? 500 : 4800);
+  } catch (e) { spinBusy = false; toast(e.message); keepRender(); }
+}
+async function donate(){
+  const L = LOY(); closeSheet(); toast("กำลังบันทึก...");
+  try {
+    const res = await api("api/points/donate", {method: "POST", body: JSON.stringify({points: giveN})}, await idToken());
+    MEMBER = res.member; $("toast").hidden = true;
+    openSheet(`<div class="cele">💝</div><h2>ขอบคุณสายบุญ!</h2><p>PonPon จะนำ ${baht(res.baht)} ไปส่งมอบให้ ${esc(L.donate.org)} ในนามของคุณ</p><button class="btn" type="button" data-act="closesheet">ปิด</button>`);
+    keepRender();
+  } catch (e) { $("toast").hidden = true; toast(e.message); }
+}
+/* กล่องใช้แต้มในหน้าชำระเงิน */
+function pointsBox(t){
+  const L = LOY(); if (!L || !MEMBER || !profile) return "";
+  const step = L.burnPoints, maxUse = t.maxPoints;
+  if (MEMBER.points < step) return `<div class="box"><h3>PonPoints</h3><p class="desc" style="margin:0">มี ${pts(MEMBER.points)} แต้ม · สะสมครบ ${pts(step)} แต้ม ใช้ลด ${baht(L.burnBaht)} ได้${t.earn ? ` · ออเดอร์นี้จะได้ +${pts(t.earn)} แต้ม` : ""}</p></div>`;
+  return `<div class="box"><h3>ใช้แต้มเป็นส่วนลด</h3><p class="desc" style="margin:0">มี ${pts(MEMBER.points)} แต้ม · ทุก ${pts(step)} แต้ม ลด ${baht(L.burnBaht)}</p>
+    <div class="qrow" style="margin:0"><div class="step"><button type="button" data-act="ptsminus" ${t.usePoints <= 0 ? "disabled" : ""}>−</button><b>${pts(t.usePoints)}</b><button class="plus" type="button" data-act="ptsplus" ${t.usePoints + step > maxUse ? "disabled" : ""}>+</button></div>
+      <button class="mini ${t.usePoints >= maxUse ? "line" : ""}" type="button" data-act="${t.usePoints >= maxUse ? "ptsnone" : "ptsmax"}">${t.usePoints >= maxUse ? "ไม่ใช้แต้ม" : "ใช้สูงสุด"}</button></div>
+    ${t.pointsDiscount ? `<p class="hint" style="margin:0">✦ ลด ${baht(t.pointsDiscount)} จากแต้ม</p>` : ""}${t.earn ? `<p class="desc" style="margin:0">ออเดอร์นี้จะได้ +${pts(t.earn)} แต้ม (x${MEMBER.earnMult || tierOfMe().mult}${MEMBER.bdayDouble ? " เดือนเกิด 🎂" : ""})</p>` : ""}</div>`;
+}
+function memberClick(a, b){
+  if (a === "mreload") return memberLoad(true);
+  if (a === "spingo") return spinGo();
+  if (a === "refshare") return refShare();
+  if (a === "pfsave") return pfSave();
+  if (a === "pfremove") return openSheet(`<h2>ลบข้อมูลส่วนตัว?</h2><p>ระบบจะลบชื่อเล่น เบอร์โทร และวันเกิด สิทธิ์วันเกิดจะใช้ไม่ได้ ส่วนแต้มและระดับสมาชิกยังอยู่ครบ</p>
+      <button class="btn" type="button" data-act="pfremoveyes">ยืนยันลบข้อมูล</button><button class="btn line" type="button" data-act="closesheet">ยกเลิก</button>`);
+  if (a === "pfremoveyes"){ closeSheet(); return idToken().then(t => api("api/member/profile", {method: "POST", body: JSON.stringify({remove: true})}, t)).then(r => { MEMBER = r.member; pf = null; toast("ลบข้อมูลแล้ว"); keepRender(); }).catch(e => toast(e.message)); }
+  if (a === "usemine"){ const c = memberCoupons().find(x => x.code === b.dataset.code); if (!c) return; if (isShip(c)){ usedShip = c.code; store.set("ponpon-used-ship", usedShip); } else { usedCoupon = c.code; store.set("ponpon-used-coupon", usedCoupon); } toast("เลือกคูปองแล้ว"); return go("#cart"); }
+  if (a === "giveplus" || a === "giveminus"){ giveN += (a === "giveplus" ? 1 : -1) * LOY().burnPoints; return keepRender(); }
+  if (a === "giveask"){ const L = LOY(); return openSheet(`<h2>ยืนยันบริจาค</h2><p>ใช้ <b>${pts(giveN)} แต้ม</b> ร่วมบริจาค <b>${baht(giveN / L.burnPoints * L.burnBaht)}</b> ให้ ${esc(L.donate.org)}</p><button class="btn" type="button" data-act="giveyes">ยืนยันบริจาค</button><button class="btn line" type="button" data-act="closesheet">ยกเลิก</button>`); }
+  if (a === "giveyes") return donate();
+  if (a === "ptsplus" || a === "ptsminus"){ const t = totals(); usePts = Math.max(0, t.usePoints + (a === "ptsplus" ? 1 : -1) * LOY().burnPoints); return keepRender(); }
+  if (a === "ptsmax"){ usePts = 1e9; return keepRender(); }
+  if (a === "ptsnone"){ usePts = 0; return keepRender(); }
   return false;
 }
 
@@ -1862,6 +2381,7 @@ document.addEventListener("click", e => {
     <button class="btn line" type="button" data-act="closesheet">ไม่ยกเลิก</button>`);
   if (a === "cancelyes") return cancelOrder(b.dataset.v);
   if (a.startsWith("ad-")) return adminClick(a, b);
+  if (memberClick(a, b) !== false) return;
   if (a === "lang") return showLangs();
   if (a === "galgo"){ const tr = $("galtrack"); if (tr) tr.scrollTo({left: Number(b.dataset.i) * tr.clientWidth, behavior: "smooth"}); return; }
   if (a === "setlang") return setLang(b.dataset.v);
@@ -1888,11 +2408,12 @@ document.addEventListener("input", e => {
   const t = e.target;
   if (adminInput(t)) return;
   if (t.dataset.f){ draft[t.dataset.f] = t.type === "checkbox" ? t.checked : t.value; return; }
+  if (t.dataset.pf && pf){ pf[t.dataset.pf] = t.type === "checkbox" ? t.checked : t.value; return; }
   if (t.id === "q"){ listQ = t.value; $("plist").innerHTML = productList(); }
   if (t.id === "only"){ listOnly = t.checked; $("plist").innerHTML = productList(); }
 });
-document.addEventListener("change", e => { const t = e.target; if (t.dataset && (t.dataset.e || t.dataset.upkey || t.dataset.pdshow) && adminInput(t)) return; if (t.dataset && t.dataset.slip && t.files && t.files[0]) uploadSlip(t.dataset.slip, t.files[0]); });
-document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.classList && e.target.classList.contains("ocard")) e.target.click(); if (e.key === "Escape") closeSheet(); if (e.key === "Enter" && e.target.id === "code"){ e.preventDefault(); setCoupon(e.target.value.trim()); render(); } });
+document.addEventListener("change", e => { const t = e.target; if (t.dataset && t.dataset.ly && route().page === "admin"){ lyInput(t); return keepRender(); } if (t.dataset && t.dataset.pf && pf){ pf[t.dataset.pf] = t.type === "checkbox" ? t.checked : t.value; return; } if (t.dataset && (t.dataset.e || t.dataset.upkey || t.dataset.pdshow) && adminInput(t)) return; if (t.dataset && t.dataset.slip && t.files && t.files[0]) uploadSlip(t.dataset.slip, t.files[0]); });
+document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.classList && e.target.classList.contains("ocard")) e.target.click(); if (e.key === "Escape") closeSheet(); if (e.key === "Enter" && e.target.id === "ly-q"){ e.preventDefault(); LY.q = e.target.value.trim(); return lyMembers(); } if (e.key === "Enter" && e.target.id === "code"){ e.preventDefault(); setCoupon(e.target.value.trim()); render(); } });
 let holdSheet = false; // ให้หน้าต่างแจ้งผลสั่งซื้อค้างไว้ตอนเปลี่ยนหน้า
 window.addEventListener("hashchange", () => { if (holdSheet) holdSheet = false; else closeSheet(); render(); });
 
@@ -1972,7 +2493,10 @@ function showLangs(){
 }
 
 const liffReady = CONFIG.LIFF_ID && window.liff ? liff.init({liffId: CONFIG.LIFF_ID}).then(() => true).catch(() => false) : Promise.resolve(false);
-liffReady.then(async ok => { if (ok && liff.isLoggedIn()){ adminCheck().then(x => { if (x && route().page === "me") render(); }); try { profile = await liff.getProfile(); if (["me", "checkout"].includes(route().page)) render(); } catch (e) {} } });
+{ const rf = new URLSearchParams(location.search).get("ref"); if (rf && /^[A-Za-z0-9]{4,10}$/.test(rf)) store.set("ponpon-ref", rf.toUpperCase()); }
+liffReady.then(async ok => { if (ok && liff.isLoggedIn()){ adminCheck().then(x => { if (x && route().page === "me") render(); }); try { profile = await liff.getProfile(); if (["me", "checkout"].includes(route().page)) render(); } catch (e) {}
+  if (!loaded) await new Promise(r => { const iv = setInterval(() => { if (loaded || loadError){ clearInterval(iv); r(); } }, 200); });
+  memberLoad(); } });
 async function start(){
   loadError = false; render();
   try { await load(); } catch (e) { loadError = true; }
