@@ -400,6 +400,15 @@ body.admin-mode .app{max-width:1280px;padding-bottom:40px}
 .fld select{font-size:16px;color:var(--ink);background:var(--card);border:1.5px solid var(--ink);border-radius:14px;padding:10px 12px;width:100%}
 .prize{display:flex;flex-direction:column;gap:8px;padding:12px 0;border-bottom:1px dashed var(--line)}
 .prize.off{opacity:.55}
+.shp-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px}
+.shp-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.shp-row{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1.5px solid var(--ink);border-radius:16px;padding:10px}
+.shp-row > img{width:84px;height:84px;object-fit:cover;border-radius:12px;border:1px solid var(--line);flex:none}
+.shp-m{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.shp-m b{font-size:13.5px;font-weight:500;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.shp-m small{font-size:12px;color:var(--muted)}.shp-m small button{color:var(--red);text-decoration:underline;font-size:12px}
+.shp-pick{display:flex;align-items:center;gap:8px}.shp-pick img{width:40px;height:40px;object-fit:cover;border-radius:8px;flex:none}
+.shp-pick input{flex:1;min-width:0;font-size:15px;border:1.5px solid var(--ink);border-radius:12px;padding:8px 10px;background:var(--card);color:var(--ink)}
 </style>
 </head>
 <body>
@@ -658,7 +667,7 @@ async function load(){
   if (LANG !== "th"){ try { await loadLang(); } catch (e) { LANG = "th"; } }
   applyLang();
   RAW = new Map(data.products.map(r => [r.sku, r]));
-  await Promise.race([loadPhotoIndex(), new Promise(ok => setTimeout(ok, 3000))]);
+  await Promise.race([Promise.all([loadPhotoIndex(), loadShopeeImages()]), new Promise(ok => setTimeout(ok, 3000))]);
   PRODUCTS = buildProducts(data.products.map(r => ({...r, orig: r.price, price: linePrice(r.price, r.sku)})));
   byId = new Map(); bySku = new Map();
   for (const p of PRODUCTS){
@@ -707,18 +716,143 @@ async function loadPhotoIndex(){
 }
 /* รูปของ SKU นี้: ไฟล์ที่ SKU ขึ้นต้นด้วยชื่อไฟล์ เรียงชื่อยาว (เจาะจง) ก่อน */
 function photoList(sku){
-  if (!PHOTOS) return null;
   const S = String(sku).toUpperCase();
-  return PHOTOS.filter(x => S.startsWith(x.key)).sort((a, b) => b.key.length - a.key.length || a.key.localeCompare(b.key) || a.n - b.n).map(x => x.url);
+  const gh = PHOTOS ? PHOTOS.filter(x => S.startsWith(x.key)).sort((a, b) => b.key.length - a.key.length || a.key.localeCompare(b.key) || a.n - b.n).map(x => x.url) : null;
+  if (gh && gh.length) return gh;
+  const sh = shpList(S); // ไม่มีรูปที่อัปเอง ใช้รูปจาก Shopee
+  return sh.length ? sh : gh;
 }
 /* รูปปกของสินค้า: รูปรวม (ชื่อไฟล์ = รหัส 7 ตัว) ถ้าไม่มี ใช้รูปของตัวเลือกแรกที่มีรูป */
 function coverOf(p){
   if (PHOTOS){
     const own = PHOTOS.filter(x => x.key === p.id).sort((a, b) => a.n - b.n);
     if (own.length) return own[0].url;
-    for (const v of p.variants){ const l = photoList(v.sku); if (l && l.length) return l[0]; }
+    for (const v of p.variants){ const l = PHOTOS.filter(x => v.sku.toUpperCase().startsWith(x.key)); if (l.length) return photoList(v.sku)[0]; }
   }
-  return "";
+  return shpCover(p);
+}
+/* ---------- รูปจาก Shopee ----------
+   แอดมินอัปไฟล์ Excel "แก้ไขรูปภาพสินค้าแบบกลุ่ม" (mass update media info) จากหลังบ้าน Shopee ในแท็บสินค้า
+   ระบบจับคู่กับสินค้า ZORT ด้วยชื่อ แล้วเก็บแค่รหัสรูป หน้าร้านแสดงรูปจาก cf.shopee.co.th
+   ลำดับรูป: รูปที่อัปเองใน GitHub > รูป Shopee (สีที่เลือกก่อน) > รูปจาก ZORT */
+let SHPIMG = {pid: {}, sku: {}};
+const SHP_CDN = "https://cf.shopee.co.th/file/";
+const shpUrl = (id, small) => SHP_CDN + id + (small ? "_tn" : "");
+function shpList(sku){
+  const S = String(sku).toUpperCase(), own = SHPIMG.sku[S], all = SHPIMG.pid[S.slice(0, CONFIG.GROUP_LEN)] || [];
+  return [...new Set([own, ...all].filter(Boolean))].map(id => shpUrl(id));
+}
+const shpCover = p => { const l = SHPIMG.pid[p.id]; return l && l[0] ? shpUrl(l[0], true) : ""; };
+async function loadShopeeImages(){
+  try { const r = await fetch(CONFIG.API_URL + "api/shopee", {cache: "no-cache"}); if (r.ok){ const d = await r.json(); if (d && d.pid) SHPIMG = {pid: d.pid || {}, sku: d.sku || {}}; } } catch (e) {}
+}
+/* จับคู่ด้วยชื่อสินค้า */
+const shpNorm = s => String(s || "").toLowerCase().replace(/ponpon|ipopi/g, "").replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "").replace(/[\s​()\[\]{}.,:;!?'"`~@#$%^&*_+=|\\/<>\-–—]+/g, "");
+const shpOpt = s => shpNorm(s).replace(/^สี/, "").replace(/^ลาย/, "");
+function shpDice(a, b){
+  if (!a || !b) return 0; if (a === b) return 1;
+  const g = s => { const m = new Map(); for (let i = 0; i < s.length - 1; i++){ const x = s.slice(i, i + 2); m.set(x, (m.get(x) || 0) + 1); } return m; };
+  const A = g(a), B = g(b); let h = 0; for (const [x, n] of A) h += Math.min(n, B.get(x) || 0);
+  return 2 * h / Math.max(1, a.length + b.length - 2);
+}
+function shpLcs(a, b){ let best = 0; const prev = new Array(b.length + 1).fill(0); for (let i = 1; i <= a.length; i++){ let diag = 0; for (let j = 1; j <= b.length; j++){ const t = prev[j]; prev[j] = a[i - 1] === b[j - 1] ? diag + 1 : 0; if (prev[j] > best) best = prev[j]; diag = t; } } return best; }
+function shpScore(n, p){
+  const a = shpNorm(p.name), t = shpNorm(p.title), head = Math.min(n.length, a.length, 24);
+  if (head >= 8 && n.slice(0, head) === a.slice(0, head)) return 0.95;
+  return Math.max(shpDice(n, a), shpDice(n, t), Math.min(1, shpLcs(n, a) / Math.max(1, Math.min(n.length, a.length))) * 0.95, Math.min(1, shpLcs(n, t) / Math.max(4, t.length)) * 0.95);
+}
+/* อ่านไฟล์ Excel ของ Shopee: [{name, imgs:[รหัสรูป], opts:[[ชื่อตัวเลือก, รหัสรูป]]}] */
+async function shpReadFile(file){
+  if (!window.XLSX) await loadScript("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js");
+  const wb = XLSX.read(await file.arrayBuffer(), {type: "array"});
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1, defval: ""});
+  const head = rows.findIndex(r => String(r[0]).trim() === "รหัสสินค้า");
+  const hdr = head >= 0 ? rows[head].map(x => String(x).trim()) : [];
+  const col = name => hdr.indexOf(name);
+  const fid = u => { const m = String(u || "").match(/\/file\/([A-Za-z0-9_-]{6,80})/); return m ? m[1] : ""; };
+  const cName = col("ชื่อสินค้า") >= 0 ? col("ชื่อสินค้า") : 2, cCover = col("ภาพปก") >= 0 ? col("ภาพปก") : 4;
+  const optCols = []; hdr.forEach((h, i) => { const m = h.match(/^รูปภาพตัวเลือก\s*(\d+)/); if (m) optCols.push([i - 1, i]); });
+  const out = [];
+  for (const r of rows.slice(head + 1)){
+    if (!/^\d{6,}$/.test(String(r[0]).trim())) continue;
+    const imgs = [r[cCover], ...Array.from({length: 8}, (_, k) => r[cCover + 1 + k])].map(fid).filter(Boolean);
+    const opts = optCols.map(([n, i]) => [String(r[n] || "").trim(), fid(r[i])]).filter(o => o[0]);
+    if (imgs.length) out.push({name: String(r[cName] || "").trim(), imgs: [...new Set(imgs)].slice(0, 9), opts});
+  }
+  if (!out.length) throw new Error("ไม่พบรายการรูปในไฟล์นี้ ใช้ไฟล์ \"แก้ไขรูปภาพสินค้าแบบกลุ่ม\" จาก Shopee Seller Centre นะคะ");
+  return out;
+}
+/* จับคู่อัตโนมัติ: แถวที่ชื่อเหมือนมากได้ก่อน สินค้า 1 ตัวรับได้แถวเดียว */
+function shpAuto(rows){
+  const scored = rows.map((r, i) => { const n = shpNorm(r.name); let best = null, bs = 0; for (const p of PRODUCTS){ const s = shpScore(n, p); if (s > bs){ bs = s; best = p; } } return {i, best, s: bs}; });
+  const used = new Set(), out = rows.map(() => ({pid: "", score: 0, guess: ""}));
+  for (const x of [...scored].sort((a, b) => b.s - a.s)){
+    out[x.i].score = Math.round(x.s * 100); out[x.i].guess = x.best ? x.best.id : "";
+    if (x.best && x.s >= 0.55 && !used.has(x.best.id)){ used.add(x.best.id); out[x.i].pid = x.best.id; }
+  }
+  for (const a of out) a.grp = !a.pid ? "none" : a.score < 80 ? "check" : "ok"; // หมวดคงที่ ระหว่างแก้จะได้ไม่กระโดด
+  return out;
+}
+function shpBuild(rows, assign){
+  const pid = {}, sku = {};
+  rows.forEach((r, i) => {
+    const p = byId.get(assign[i].pid); if (!p || pid[p.id]) return;
+    pid[p.id] = r.imgs;
+    for (const v of p.variants){
+      const L = shpOpt(v.label || v.raw || ""); if (!L) continue;
+      const o = r.opts.find(([n, id]) => id && shpOpt(n) === L) || r.opts.find(([n, id]) => id && shpOpt(n).length >= 2 && (shpOpt(n).includes(L) || L.includes(shpOpt(n))));
+      if (o) sku[v.sku] = o[1];
+    }
+  });
+  return {pid, sku};
+}
+/* หน้าหลังบ้าน: ตรวจคู่ก่อนบันทึก */
+const SHPI = {rows: null, assign: null, tab: "check", busy: false};
+async function shpImport(file){
+  toast("กำลังอ่านไฟล์...");
+  try { SHPI.rows = await shpReadFile(file); SHPI.assign = shpAuto(SHPI.rows); SHPI.tab = SHPI.assign.some(a => a.pid && a.score < 80) ? "check" : "ok"; $("toast").hidden = true; keepRender(); scrollTo(0, 0); }
+  catch (e) { $("toast").hidden = true; toast(e.message || "อ่านไฟล์ไม่สำเร็จ"); }
+}
+function shpView(){
+  const R = SHPI.rows, A = SHPI.assign;
+  const groups = {check: [], ok: [], none: []};
+  R.forEach((r, i) => groups[A[i].grp].push(i));
+  const list = groups[SHPI.tab];
+  const opts = `<datalist id="shp-dl">${PRODUCTS.map(p => `<option value="${esc(p.id)} ${esc(p.title)}">`).join("")}</datalist>`;
+  const row = i => { const r = R[i], a = A[i], p = byId.get(a.pid), g = !a.pid && a.guess ? byId.get(a.guess) : null;
+    return `<div class="shp-row"><img src="${esc(shpUrl(r.imgs[0], true))}" alt="" loading="lazy"><div class="shp-m"><small>Shopee · รูป ${r.imgs.length}${r.opts.some(o => o[1]) ? " · มีรูปตามตัวเลือก" : ""}</small><b>${esc(r.name)}</b>
+      <div class="shp-pick"><span>→</span>${p ? `<img src="${esc(coverOf(p) || p.variants[0].image || "")}" alt="" loading="lazy">` : ""}<input data-shp="${i}" list="shp-dl" placeholder="พิมพ์ชื่อหรือรหัสสินค้า เพื่อจับคู่" value="${esc(p ? p.id + " " + p.title : "")}" autocomplete="off"></div>
+      ${a.pid ? `<small>ความเหมือน ${a.score}% · <button type="button" data-act="ad-shpclear" data-v="${i}">ไม่ใช้รูปชุดนี้</button></small>` : g ? `<small>ใกล้เคียงที่สุด: <button type="button" data-act="ad-shpuse" data-v="${i}">${esc(g.id)} ${esc(g.title)}</button> (${a.score}%)</small>` : ""}</div></div>`; };
+  const nMatched = A.filter(a => a.pid).length, nPics = PRODUCTS.filter(p => !(PHOTOS || []).some(x => x.key.startsWith(p.id))).length;
+  return `${opts}<div class="box" style="margin-top:0"><h3>นำเข้ารูปจาก Shopee</h3>
+      <p class="desc" style="margin:0">พบสินค้าในไฟล์ ${R.length} รายการ · จับคู่กับสินค้าในร้านได้ ${nMatched} รายการ · สินค้าที่อัปรูปเองไว้แล้วจะยังใช้รูปเดิม (สินค้าที่ยังไม่มีรูปของตัวเอง ${nPics} รายการ)</p>
+      <div class="seg">${[["check", `ควรตรวจ (${groups.check.length})`], ["ok", `จับคู่แล้ว (${groups.ok.length})`], ["none", `ไม่พบคู่ (${groups.none.length})`]].map(([k, t]) => `<button type="button" data-act="ad-shptab" data-v="${k}" aria-pressed="${SHPI.tab === k}">${t}</button>`).join("")}</div>
+      <div class="bo-btns"><button class="btn" type="button" data-act="ad-shpsave" ${SHPI.busy ? "disabled" : ""}>บันทึกรูป ${nMatched} สินค้า</button><button class="btn line" type="button" data-act="ad-shpcancel">ยกเลิก</button></div></div>
+    <div class="shp-list">${list.length ? list.map(row).join("") : `<div class="state">ไม่มีรายการในหมวดนี้</div>`}</div>`;
+}
+async function shpSave(value, note){
+  SHPI.busy = true; keepRender();
+  try {
+    await api("api/admin/save", {method: "POST", body: JSON.stringify({key: "shopee", value, note})}, await idToken());
+    SHPIMG = {pid: value.pid, sku: value.sku}; SHPI.rows = null; SHPI.busy = false; toast("บันทึกรูปแล้ว หน้าร้านอัปเดตทันที"); keepRender();
+  } catch (e) { SHPI.busy = false; toast(e.message); keepRender(); }
+}
+function shpClick(a, b){
+  if (a === "ad-shptab"){ SHPI.tab = b.dataset.v; return keepRender(); }
+  if (a === "ad-shpcancel"){ SHPI.rows = null; return keepRender(); }
+  if (a === "ad-shpclear"){ SHPI.assign[Number(b.dataset.v)].pid = ""; return keepRender(); }
+  if (a === "ad-shpuse"){ const x = SHPI.assign[Number(b.dataset.v)]; x.pid = x.guess; return keepRender(); }
+  if (a === "ad-shpsave"){ const m = shpBuild(SHPI.rows, SHPI.assign); return shpSave({...m, at: Date.now()}, `นำเข้ารูป Shopee ${Object.keys(m.pid).length} สินค้า`); }
+  if (a === "ad-shpwipe") return openSheet(`<h2>ลบรูปจาก Shopee ทั้งหมด?</h2><p>หน้าร้านจะกลับไปใช้รูปที่อัปเองและรูปจาก ZORT</p><button class="btn" type="button" data-act="ad-shpwipeyes">ยืนยันลบ</button><button class="btn line" type="button" data-act="closesheet">ยกเลิก</button>`);
+  if (a === "ad-shpwipeyes"){ closeSheet(); return shpSave({pid: {}, sku: {}, at: Date.now()}, "ลบรูป Shopee ทั้งหมด"); }
+  return false;
+}
+function shpInput(t){
+  if (t.dataset.shp === undefined) return false;
+  const i = Number(t.dataset.shp), id = String(t.value || "").trim().split(/\s+/)[0].toUpperCase();
+  if (!t.value.trim()){ SHPI.assign[i].pid = ""; return true; }
+  if (byId.has(id)) SHPI.assign[i].pid = id;
+  return true;
 }
 const picUrl = (base, n) => CONFIG.IMAGE_DIR + base + (n > 1 ? "-" + n : "") + ".jpg" + verQ();
 const colorKey = (p, v) => { const m = (v.mid || "").match(RE_MID); return m && m[2] ? p.id + m[2] : ""; };
@@ -753,7 +887,7 @@ document.addEventListener("error", e => {
 const priceHtml = (price, orig, multi) => `<span class="pr"><b>${multi ? "เริ่ม " : ""}${baht(price)}</b>${orig > price ? `<s>${baht(orig)}</s>` : ""}</span>`;
 const heartBtn = id => `<button class="heart" type="button" data-act="fav" data-id="${esc(id)}" aria-pressed="${favs.has(id)}" aria-label="ถูกใจ">${ic("heart")}</button>`;
 const card = p => `<div class="cell"><button class="card${p.stock ? "" : " sold"}" type="button" data-act="open" data-id="${esc(p.id)}">
-    <span class="ph">${img(PHOTOS ? [coverOf(p), p.variants[0].image] : [picUrl(p.id, 1), colorKey(p, p.variants[0]) ? picUrl(colorKey(p, p.variants[0]), 1) : "", p.variants[0].image], p.title)}${promoOf(p) ? `<i class="pbadge">${promoBadge(promoOf(p))}</i>` : ""}</span>
+    <span class="ph">${img(PHOTOS ? [coverOf(p), p.variants[0].image] : [picUrl(p.id, 1), colorKey(p, p.variants[0]) ? picUrl(colorKey(p, p.variants[0]), 1) : "", shpCover(p), p.variants[0].image], p.title)}${promoOf(p) ? `<i class="pbadge">${promoBadge(promoOf(p))}</i>` : ""}</span>
     <span class="nm" translate="no">${esc(tName(p))}</span>
     ${priceHtml(p.price, p.orig, p.multiPrice)}
     <span class="st">${p.stock ? `เหลือ ${num(p.stock)} ชิ้น` : `<span class="out">สินค้าหมด</span>`}</span>
@@ -1466,6 +1600,7 @@ function adminClick(a, b){
   if (a.startsWith("ad-rp")) return rpClick(a, b);
   if (a.startsWith("ad-db")) return dbClick(a, b);
   if (a.startsWith("ad-ly")) return lyClick(a, b);
+  if (a.startsWith("ad-shp")) return shpClick(a, b);
   if (a === "ad-reload") return adminLoad();
   if (a === "ad-tab"){ AD.tab = b.dataset.k; render(); return scrollTo(0, 0); }
   if (a === "ad-login"){
@@ -1506,6 +1641,7 @@ function adminClick(a, b){
 function adminInput(t){
   if (route().page === "admin" && pdInput(t)) return true;
   if (route().page === "admin" && lyInput(t)) return true;
+  if (route().page === "admin" && SHPI.rows && shpInput(t)) return true;
   if (!AD.edit) return false;
   if (t.id === "bo-q"){ AD.edit.q = t.value; $("bo-res").innerHTML = adPickList(); return true; }
   if (t.id === "bo-gq"){ AD.edit.gq = t.value; $("bo-gres").innerHTML = adGiftList(); return true; }
@@ -1540,7 +1676,8 @@ function pdCover(g, files){
   const own = files.filter(f => f.key === g.id).sort((a, b) => a.n - b.n)[0];
   if (own) return pdSrc(own.name);
   const any = files.filter(f => g.skus.some(s => s.sku.toUpperCase().startsWith(f.key))).sort((a, b) => a.n - b.n)[0];
-  return any ? pdSrc(any.name) : (g.skus.find(s => s.image) || {}).image || PLACEHOLDER;
+  const sh = SHPIMG.pid[g.id];
+  return any ? pdSrc(any.name) : sh && sh[0] ? shpUrl(sh[0], true) : (g.skus.find(s => s.image) || {}).image || PLACEHOLDER;
 }
 /* กลุ่มรูป: รูปรวม + รูปตามตัวเลือก (ชื่อไฟล์ = ต้นของ SKU) */
 function pdPhotoGroups(g){
@@ -1559,6 +1696,7 @@ function pdPhotoGroups(g){
   return groups;
 }
 function adProducts(){
+  if (SHPI.rows) return shpView();
   if (!PD.state){ pdLoad(); return `<div class="state">กำลังโหลดสินค้า...</div>`; }
   if (PD.state === "loading" && !PD.data) return `<div class="state">กำลังโหลดสินค้าจาก ZORT...</div>`;
   if (PD.state === "error") return `<div class="state">${esc(PD.err)}<br><br><button class="btn" type="button" data-act="ad-pdreload">ลองใหม่</button></div>`;
@@ -1580,11 +1718,13 @@ function adProducts(){
       <span class="pd-n"><b>${esc(pdName(g))}</b><small>${esc(g.id)} · ${g.skus.length} ตัวเลือก</small></span>
       <span class="pd-p">${prices.length ? (lo === hi ? baht(lo) : baht(lo) + "–" + baht(hi)) : "ไม่มีราคา"}</span>
       <span class="pd-s">เหลือ ${num(stock)}</span>
-      <span class="pd-t">${pics ? `<i>รูป ${pics}</i>` : `<i class="warn-t">ไม่มีรูป</i>`}${hid ? `<i class="warn-t">ซ่อน ${hid}</i>` : ""}${g.skus.some(s => PD.data.prices[s.sku] > 0) ? `<i>ราคา LINE</i>` : ""}</span></button>`;
+      <span class="pd-t">${pics ? `<i>รูป ${pics}</i>` : SHPIMG.pid[g.id] ? `<i>รูป Shopee</i>` : `<i class="warn-t">ไม่มีรูป</i>`}${hid ? `<i class="warn-t">ซ่อน ${hid}</i>` : ""}${g.skus.some(s => PD.data.prices[s.sku] > 0) ? `<i>ราคา LINE</i>` : ""}</span></button>`;
   }).join("");
   const list = `<div class="pd-list"><div class="pd-tools"><input id="pd-q" placeholder="ค้นหาชื่อหรือรหัสสินค้า" value="${esc(PD.q)}" autocomplete="off">
       <div class="seg">${[["all", "ทั้งหมด"], ["nophoto", "ไม่มีรูป"], ["hidden", "ซ่อนอยู่"], ["price", "ตั้งราคา LINE"]].map(([k, t]) => `<button type="button" data-act="ad-pdfilter" data-v="${k}" aria-pressed="${PD.filter === k}">${t}</button>`).join("")}</div></div>
     ${!PD.data.github ? `<p class="warn" style="margin:0 0 10px">ยังไม่ได้เชื่อม GitHub จึงยังอัปโหลดรูปไม่ได้ (ตั้ง GITHUB_TOKEN ใน Cloudflare) ส่วนชื่อและราคาแก้ได้ตามปกติ</p>` : PD.data.photoError ? `<p class="warn" style="margin:0 0 10px">${esc(PD.data.photoError)}</p>` : ""}
+    <div class="shp-bar"><label class="mini" style="cursor:pointer">📥 นำเข้ารูปจาก Shopee (Excel)<input type="file" id="shp-file" accept=".xlsx,.xls" hidden></label>
+      <span class="desc">${Object.keys(SHPIMG.pid).length ? `ใช้รูป Shopee ${Object.keys(SHPIMG.pid).length} สินค้า · <button type="button" data-act="ad-shpwipe" style="text-decoration:underline">ลบทั้งหมด</button>` : "Seller Centre → สินค้าของฉัน → แก้ไขแบบกลุ่ม → แก้ไขรูปภาพ → ดาวน์โหลด"}</span></div>
     <p class="desc" style="margin:0 0 8px">${groups.length} สินค้า</p><div class="pd-rows">${rows || `<div class="state">ไม่พบสินค้า</div>`}</div></div>`;
   return `<div class="pd-wrap${PD.sel ? " has-ed" : ""}">${list}${PD.sel ? `<div class="pd-ed">${pdEditor()}</div>` : ""}</div>`;
 }
@@ -2412,7 +2552,7 @@ document.addEventListener("input", e => {
   if (t.id === "q"){ listQ = t.value; $("plist").innerHTML = productList(); }
   if (t.id === "only"){ listOnly = t.checked; $("plist").innerHTML = productList(); }
 });
-document.addEventListener("change", e => { const t = e.target; if (t.dataset && t.dataset.ly && route().page === "admin"){ lyInput(t); return keepRender(); } if (t.dataset && t.dataset.pf && pf){ pf[t.dataset.pf] = t.type === "checkbox" ? t.checked : t.value; return; } if (t.dataset && (t.dataset.e || t.dataset.upkey || t.dataset.pdshow) && adminInput(t)) return; if (t.dataset && t.dataset.slip && t.files && t.files[0]) uploadSlip(t.dataset.slip, t.files[0]); });
+document.addEventListener("change", e => { const t = e.target; if (t.id === "shp-file" && t.files && t.files[0]) return shpImport(t.files[0]); if (t.dataset && t.dataset.shp !== undefined && SHPI.rows){ shpInput(t); const i = Number(t.dataset.shp), p = byId.get(SHPI.assign[i].pid); t.style.borderColor = p ? "" : "var(--red)"; if (p && t.value.trim().toUpperCase().split(/\s+/)[0] === p.id && !t.value.includes(" ")) t.value = p.id + " " + p.title; return; } if (t.dataset && t.dataset.ly && route().page === "admin"){ lyInput(t); return keepRender(); } if (t.dataset && t.dataset.pf && pf){ pf[t.dataset.pf] = t.type === "checkbox" ? t.checked : t.value; return; } if (t.dataset && (t.dataset.e || t.dataset.upkey || t.dataset.pdshow) && adminInput(t)) return; if (t.dataset && t.dataset.slip && t.files && t.files[0]) uploadSlip(t.dataset.slip, t.files[0]); });
 document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.classList && e.target.classList.contains("ocard")) e.target.click(); if (e.key === "Escape") closeSheet(); if (e.key === "Enter" && e.target.id === "ly-q"){ e.preventDefault(); LY.q = e.target.value.trim(); return lyMembers(); } if (e.key === "Enter" && e.target.id === "code"){ e.preventDefault(); setCoupon(e.target.value.trim()); render(); } });
 let holdSheet = false; // ให้หน้าต่างแจ้งผลสั่งซื้อค้างไว้ตอนเปลี่ยนหน้า
 window.addEventListener("hashchange", () => { if (holdSheet) holdSheet = false; else closeSheet(); render(); });
