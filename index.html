@@ -817,7 +817,9 @@ function shpList(sku){
 }
 const shpCover = p => { const l = SHPIMG.pid[p.id]; return l && l[0] ? shpUrl(l[0], true) : ""; };
 async function loadShopeeImages(){
-  try { const r = await fetch(CONFIG.API_URL + "api/shopee", {cache: "no-cache"}); if (r.ok){ const d = await r.json(); if (d && d.pid) SHPIMG = {pid: d.pid || {}, sku: d.sku || {}}; } } catch (e) {}
+  // รูปที่นำเข้าในหลังบ้าน (D1) ก่อน ถ้ายังไม่เคยนำเข้า ใช้ไฟล์ shopee.json ใน GitHub แทน
+  try { const r = await fetch(CONFIG.API_URL + "api/shopee", {cache: "no-cache"}); if (r.ok){ const d = await r.json(); if (d && d.pid && Object.keys(d.pid).length){ SHPIMG = {pid: d.pid, sku: d.sku || {}}; return; } } } catch (e) {}
+  try { const r = await fetch("shopee.json", {cache: "no-cache"}); if (r.ok){ const d = await r.json(); if (d && d.pid) SHPIMG = {pid: d.pid, sku: d.sku || {}}; } } catch (e) {}
 }
 /* จับคู่ด้วยชื่อสินค้า */
 const shpNorm = s => String(s || "").toLowerCase().replace(/ponpon|ipopi/g, "").replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "").replace(/[\s​()\[\]{}.,:;!?'"`~@#$%^&*_+=|\\/<>\-–—]+/g, "");
