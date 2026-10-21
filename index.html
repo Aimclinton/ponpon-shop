@@ -980,7 +980,7 @@ async function copyText(text, ok){
 const today = () => new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10); // วันที่ตามเวลาไทย
 const couponOf = code => [...SHOP.coupons, ...memberCoupons()].find(c => c.code === String(code || "").toUpperCase());
 const couponFace = c => c.type === "freeship" ? (c.value > 0 ? "ค่าส่งลด " + baht(c.value) : "ส่งฟรี") : c.type === "amount" ? "ลด " + baht(c.value) : "ลด " + c.value + "%";
-const couponNote = c => [c.min ? "ขั้นต่ำ " + baht(c.min) : "ไม่มีขั้นต่ำ", c.type === "percent" && c.max ? "ลดสูงสุด " + baht(c.max) : "", c.perUser ? (c.perUser === 1 ? "ใช้ได้คนละครั้ง" : `คนละ ${c.perUser} ครั้ง`) : "", c.expires ? "ถึง " + c.expires : ""].filter(Boolean).join(" · ");
+const couponNote = c => [c.min ? "ขั้นต่ำ " + baht(c.min) : "ไม่มีขั้นต่ำ", c.type === "percent" && c.max ? "ลดสูงสุด " + baht(c.max) : "", c.perUser ? (c.perUser === 1 ? "ใช้ได้คนละครั้ง" : tt("คนละ {n} ครั้ง", {n: c.perUser})) : "", c.expires ? "ถึง " + c.expires : ""].filter(Boolean).join(" · ");
 function couponProblem(c, goods, noCoupon){
   if (!c) return "ไม่พบโค้ดนี้ค่ะ ลองตรวจตัวสะกดอีกครั้ง";
   if (c.expires && today() > c.expires) return "โค้ดนี้หมดอายุแล้วค่ะ";
@@ -1157,7 +1157,7 @@ function viewCart(){
       <p class="desc">ใช้ได้ออเดอร์ละ 1 โค้ดส่วนลดสินค้า และ 1 โค้ดส่วนลดค่าจัดส่ง <button type="button" data-act="coupons" style="color:var(--red);font-weight:500">ดูโค้ดทั้งหมด</button></p>
       ${group("โค้ดส่วนลดสินค้า", mine.filter(c => !isShip(c)), usedCoupon, t.coupon, "clearcoupon")}
       ${group("โค้ดส่วนลดค่าจัดส่ง", mine.filter(isShip), usedShip, t.shipCoupon, "clearship")}</div>
-    <div class="box">${summaryRows(t)}${t.earn && MEMBER ? `<p class="hint" style="margin:8px 0 0">✦ ออเดอร์นี้จะได้ +${pts(t.earn)} แต้ม PonPoints</p>` : ""}</div>`;
+    <div class="box">${summaryRows(t)}${t.earn && MEMBER ? `<p class="hint" style="margin:8px 0 0">✦ ${tt("ออเดอร์นี้จะได้ +{n} แต้ม", {n: pts(t.earn)})} PonPoints</p>` : ""}</div>`;
 }
 function viewCheckout(){
   if (!cart.size) return viewCart();
@@ -1559,8 +1559,8 @@ function viewAdmin(){
       <label class="fld">รหัสแอดมิน<input id="bo-code" type="password" autocomplete="off"></label>
       <p class="warn" id="bo-err" style="margin:0" hidden></p>
       <button class="btn" type="button" data-act="ad-login">เข้าสู่หลังบ้าน</button></div>`;
-  const tabs = [["dash", "🏠 ภาพรวม"], ["report", "📊 รายงานยอดขาย"], ["products", "📦 สินค้าและรูป"], ["loyalty", "🌟 สมาชิก & แต้ม"], ["coupons", "🎟 โค้ดส่วนลด"], ["promos", "🎁 โปรโมชั่น"], ["store", "🏪 ตั้งค่าร้าน"], ["team", "👥 ทีมแอดมิน"]];
-  const body = {dash: adDash, report: adReport, products: adProducts, loyalty: adLoyalty, coupons: adCoupons, promos: adPromos, store: adStore, team: adTeam}[AD.tab]();
+  const tabs = [["dash", "🏠 ภาพรวม"], ["report", "📊 รายงานยอดขาย"], ["products", "📦 สินค้าและรูป"], ["loyalty", "🌟 สมาชิก & แต้ม"], ["coupons", "🎟 โค้ดส่วนลด"], ["promos", "🎁 โปรโมชั่น"], ["store", "🏪 ตั้งค่าร้าน"], ["notify", "🔔 แจ้งเตือน LINE"], ["team", "👥 ทีมแอดมิน"]];
+  const body = {dash: adDash, report: adReport, products: adProducts, loyalty: adLoyalty, coupons: adCoupons, promos: adPromos, store: adStore, notify: adNotify, team: adTeam}[AD.tab]();
   return `<div class="bo-shell"><nav class="bo-side">${tabs.map(([k, t]) => `<button class="tab" type="button" data-act="ad-tab" data-k="${k}" aria-pressed="${AD.tab === k}">${t}</button>`).join("")}
       <a class="bo-shop" href="#home">← กลับหน้าร้าน</a></nav><div class="bo-main">${body}</div></div>`;
 }
@@ -1677,12 +1677,63 @@ function adSaveEdit(){
   const label = e.kind === "coupon" ? `${e.i >= 0 ? "แก้ไข" : "เพิ่ม"}โค้ด ${d.code}` : `${e.i >= 0 ? "แก้ไข" : "เพิ่ม"}โปร ${d.title}`;
   adminSaveKey(key, list, label).then(ok => { if (ok){ AD.edit = null; closeSheet(); } });
 }
+/* ----- หลังบ้าน: แจ้งเตือนเข้า LINE แอดมิน ----- */
+let NT = {state: "", data: null, ev: null, err: ""};
+const NT_LIST = [
+  ["paid", "💰 ลูกค้าชำระเงินแล้ว", "ตรวจสลิปผ่าน พร้อมแพ็ก มีรายการสินค้าและของแถมสมาชิกให้ด้วย"],
+  ["slipfail", "⚠️ สลิปไม่ผ่าน / ส่งสลิปหลังหมดเวลา", "ต้องเข้าไปตรวจในแชต LINE OA (ลูกค้าคนเดิมแจ้งไม่เกิน 1 ครั้งใน 10 นาที)"],
+  ["refund", "↩️ ลูกค้าขอยกเลิกและคืนเงิน", "ต้องโอนเงินคืนตามบัญชีที่ลูกค้าแจ้ง"],
+  ["zort", "🧾 ZORT มีปัญหา", "สร้างออเดอร์หรือบันทึกรับชำระใน ZORT ไม่สำเร็จ"],
+  ["error", "🚨 ระบบขัดข้อง", "แจ้งไม่เกินชั่วโมงละครั้ง"],
+  ["neworder", "🛒 มีออเดอร์ใหม่ (ยังไม่จ่าย)", "ใช้โควตาข้อความเยอะ แนะนำให้ปิดไว้ แล้วรอแจ้งตอนจ่ายแล้วแทน"],
+  ["daily", "📊 สรุปยอดประจำวัน", "ส่งวันละครั้งหลัง 2 ทุ่ม"]];
+async function ntLoad(){
+  NT.state = "loading"; NT.err = "";
+  try { NT.data = await api("api/admin/notify", {method: "GET"}, await idToken()); NT.ev = {...NT.data.events}; NT.state = "ok"; }
+  catch (e) { NT.state = "error"; NT.err = e.message; }
+  if (route().page === "admin" && AD.tab === "notify") keepRender();
+}
+async function ntPost(body, msg){
+  toast("กำลังบันทึก...");
+  try { NT.data = await api("api/admin/notify", {method: "POST", body: JSON.stringify(body)}, await idToken()); NT.ev = {...NT.data.events}; toast(msg); keepRender(); }
+  catch (e) { toast(e.message); }
+}
+function ntClick(a){
+  if (a === "ad-ntreload") return ntLoad();
+  if (!NT.data) return;
+  if (a === "ad-ntme") return ntPost({me: !NT.data.me}, NT.data.me ? "ปิดรับแจ้งเตือนที่บัญชีนี้แล้ว" : "เปิดรับแจ้งเตือนแล้ว ลองกดส่งข้อความทดสอบได้เลย");
+  if (a === "ad-ntsave") return ntPost({events: NT.ev}, "บันทึกแล้ว");
+  if (a === "ad-nttest"){ toast("กำลังส่ง..."); return idToken().then(t => api("api/admin/notify", {method: "POST", body: JSON.stringify({test: true})}, t)).then(() => { toast("ส่งแล้ว ลองเปิดแชต LINE ของร้านดูนะคะ"); ntLoad(); }).catch(e => toast(e.message)); }
+}
+function adNotify(){
+  if (!NT.state) ntLoad();
+  if (NT.state === "error") return `<div class="state">${esc(NT.err || "โหลดไม่สำเร็จ")}<br><br><button class="btn" type="button" data-act="ad-ntreload">ลองใหม่</button></div>`;
+  if (!NT.data) return `<div class="state">กำลังโหลด...</div>`;
+  const x = NT.data, q = x.quota, on = x.admins.filter(a => a.on).length;
+  const est = Math.max(1, on) * 30;
+  return `<div class="box"><h3>รับแจ้งเตือนที่บัญชีนี้</h3>
+      <div class="acc"><span>${x.me ? "✅ บัญชีนี้รับแจ้งเตือนอยู่" : "ยังไม่ได้รับแจ้งเตือน"}</span><button class="mini ${x.me ? "line" : ""}" type="button" data-act="ad-ntme">${x.me ? "ปิด" : "เปิดรับแจ้งเตือน"}</button></div>
+      <p class="desc" style="margin:0">ข้อความจะส่งมาจาก LINE OA ของร้าน บัญชีนี้ต้องเพิ่มเพื่อน LINE OA ไว้ก่อน (ถ้าบล็อกไว้จะไม่ได้รับ)</p>
+      ${x.me ? `<button class="btn line" type="button" data-act="ad-nttest">ส่งข้อความทดสอบหาฉัน</button>` : ""}
+      <b style="font-size:13.5px">แอดมินที่รับแจ้งเตือน (${on}/${x.admins.length})</b>
+      ${x.admins.map(a => `<div class="acc"><span>${esc(a.name)}${a.me ? " (คุณ)" : ""}</span><span class="bo-st ${a.on ? "on" : "off"}">${a.on ? "รับอยู่" : "ไม่รับ"}</span></div>`).join("")}
+      <p class="desc" style="margin:0">แอดมินแต่ละคนเปิด/ปิดเองได้จากหน้านี้ในเครื่องของตัวเอง</p></div>
+    <div class="box"><h3>เรื่องที่จะแจ้ง</h3>
+      ${NT_LIST.map(([k, t, d]) => `<label class="check" style="margin:0;align-items:flex-start"><input type="checkbox" style="flex:none" data-nt="${k}" ${NT.ev[k] ? "checked" : ""}> <span><b>${t}</b><br><small class="desc">${d}</small></span></label>`).join("")}
+      <button class="btn" type="button" data-act="ad-ntsave">บันทึก</button></div>
+    <div class="box"><h3>โควตาข้อความ LINE OA เดือนนี้</h3>
+      ${q ? `<div class="acc"><span>ใช้ไปแล้ว</span><b>${q.used.toLocaleString("en-US")}${q.limit !== null ? " / " + q.limit.toLocaleString("en-US") : ""} ข้อความ</b></div>${q.limit ? `<div class="mc-bar" style="background:#f1eeee;color:#1E1E22"><i style="width:${Math.min(100, Math.round(q.used / q.limit * 100))}%;background:${q.used / q.limit > .8 ? "#E40019" : "#1E1E22"}"></i></div>` : ""}` : `<p class="desc" style="margin:0">ดูโควตาไม่ได้ตอนนี้</p>`}
+      <p class="desc" style="margin:0">แจ้งเตือน 1 เรื่อง ส่งหาแอดมิน ${on || 1} คน = ${on || 1} ข้อความ ถ้ามีออเดอร์ที่จ่ายแล้ว 30 ออเดอร์/เดือน จะใช้ประมาณ ${est} ข้อความ ข้อความที่ร้านตอบลูกค้าในแชตไม่นับ ถ้าโควตาหมด แจ้งเตือนจะหยุดจนถึงเดือนถัดไป (หน้าร้านใช้ได้ตามปกติ)</p></div>
+    ${x.log.length ? `<div class="box"><h3>ส่งล่าสุด</h3>${x.log.map(l => `<div class="desc">${esc(l.time)} · ${esc(l.detail)}</div>`).join("")}</div>` : ""}`;
+}
+
 function adminClick(a, b){
   if (a.startsWith("ad-pd") || a.startsWith("ad-ph")) return pdClick(a, b);
   if (a.startsWith("ad-rp")) return rpClick(a, b);
   if (a.startsWith("ad-db")) return dbClick(a, b);
   if (a.startsWith("ad-ly")) return lyClick(a, b);
   if (a.startsWith("ad-shp")) return shpClick(a, b);
+  if (a.startsWith("ad-nt")) return ntClick(a, b);
   if (a === "ad-reload") return adminLoad();
   if (a === "ad-tab"){ AD.tab = b.dataset.k; render(); return scrollTo(0, 0); }
   if (a === "ad-login"){
@@ -2280,6 +2331,8 @@ function dbClick(a, b){
 let MEMBER = null, celeLater = null, memberState = "", memberAt = 0, usePts = 0, spinBusy = false, spinRot = 0, giveN = 0;
 const LOY = () => SHOP.loyalty && SHOP.loyalty.enabled ? SHOP.loyalty : null;
 const pts = n => Number(n || 0).toLocaleString("en-US");
+/* ข้อความที่มีตัวเลขแทรก: ภาษาอื่นใช้แม่แบบจาก lang.json (เช่น "ครั้งละ {n} แต้ม") ภาษาไทยใช้ตามที่เขียน */
+function tt(th, v = {}){ const tr = LANG !== "th" && LANGDATA && LANGDATA[LANG] && LANGDATA[LANG][th]; return String(tr || th).replace(/\{(\w+)\}/g, (m, k) => k in v ? v[k] : m); }
 const memberCoupons = () => (MEMBER && MEMBER.coupons) || [];
 const tierOfMe = () => { const L = LOY(), t = MEMBER ? MEMBER.tier : 0; return t > 0 && L ? L.tiers[t - 1] : (L ? L.base : {name: "", emoji: "🎀", mult: 1}); };
 const mySeen = () => "ponpon-seen-" + ((profile && profile.userId) || "x");
@@ -2304,27 +2357,27 @@ function keepRender(){ const y = scrollY; render(); scrollTo(0, y); }
 function memberCelebrate(res){
   const L = LOY(); if (!L || !MEMBER) return;
   const seen = store.get(mySeen(), {tier: null, bday: ""});
-  if (res.welcome) return openSheet(`<div class="cele">🎉</div><h2>ยินดีต้อนรับเข้าแก๊ง PonPon!</h2><p>เพื่อนชวนคุณมา รับไปเลย <b>${pts(res.welcome.points)} แต้ม</b> PonPoints ใช้แทนเงินสด หรือหมุนวงล้อลุ้นรางวัลได้นะคะ</p>
+  if (res.welcome) return openSheet(`<div class="cele">🎉</div><h2>ยินดีต้อนรับเข้าแก๊ง PonPon!</h2><p>${tt("เพื่อนชวนคุณมา รับไปเลย {b} PonPoints ใช้แทนเงินสด หรือหมุนวงล้อลุ้นรางวัลได้นะคะ", {b: `<b>${pts(res.welcome.points)} แต้ม</b>`})}</p>
     <button class="btn" type="button" data-act="nav" data-to="#home">ไปช้อปเลย</button><button class="btn line" type="button" data-act="nav" data-to="#me">ดูแต้มของฉัน</button>`);
   if (seen.tier === null){ seen.tier = MEMBER.tier; store.set(mySeen(), seen); }
   else if (MEMBER.tier > seen.tier){
     seen.tier = MEMBER.tier; store.set(mySeen(), seen);
     const t = L.tiers[MEMBER.tier - 1];
-    return openSheet(`<div class="cele">${esc(t.emoji)}</div><h2>เลื่อนเป็น ${esc(t.name)} แล้ว!</h2><p>${esc(t.desc)}</p>
+    return openSheet(`<div class="cele">${esc(t.emoji)}</div><h2>${tt("เลื่อนเป็น {t} แล้ว!", {t: esc(t.name)})}</h2><p>${esc(t.desc)}</p>
       <div class="box" style="margin:0"><b>ของขวัญต้อนรับ</b>${tierGifts(t, MEMBER.tier)}</div>
-      <p class="desc">รับแต้ม x${t.mult} ทุกการช้อปตั้งแต่ตอนนี้</p>
+      <p class="desc">${tt("รับแต้ม x{m} ทุกการช้อปตั้งแต่ตอนนี้", {m: t.mult})}</p>
       <button class="btn" type="button" data-act="nav" data-to="#rewards">ดูของขวัญของฉัน</button><button class="btn line" type="button" data-act="closesheet">เย้!</button>`);
   } else if (MEMBER.tier < seen.tier){ seen.tier = MEMBER.tier; store.set(mySeen(), seen); }
   const ym = today().slice(0, 7);
   if (MEMBER.bdayMonth && seen.bday !== ym){
     seen.bday = ym; store.set(mySeen(), seen);
-    return openSheet(`<div class="cele">🎂</div><h2>สุขสันต์เดือนเกิดนะคะ!</h2><p>PonPon เตรียมของขวัญไว้ให้แล้ว ${L.bday.coupon ? `คูปองลด <b>${baht(L.bday.coupon.value)}</b>${L.bday.coupon.min ? " (ขั้นต่ำ " + baht(L.bday.coupon.min) + ")" : ""}` : ""}${L.bday.gift ? ` และ <b>${esc(L.bday.gift)}</b> ส่งไปพร้อมออเดอร์` : ""}</p>
+    return openSheet(`<div class="cele">🎂</div><h2>สุขสันต์เดือนเกิดนะคะ!</h2><p>${tt("PonPon เตรียมของขวัญไว้ให้แล้ว: {g}", {g: [L.bday.coupon ? tt("คูปองลด {v}", {v: `<b>${baht(L.bday.coupon.value)}</b>`}) + (L.bday.coupon.min ? " " + tt("(ขั้นต่ำ {v})", {v: baht(L.bday.coupon.min)}) : "") : "", L.bday.gift ? `<b>${esc(L.bday.gift)}</b>` : ""].filter(Boolean).join(" + ")})}${L.bday.gift ? " " + tt("(ของขวัญส่งไปพร้อมออเดอร์)") : ""}</p>
       <p class="warn" style="margin:0">ใช้สิทธิ์ได้ภายในเดือนนี้ สั่งซื้อก่อนสิ้นเดือนนะคะ</p>
       <button class="btn" type="button" data-act="nav" data-to="#home">ไปช้อปรับของขวัญ</button><button class="btn line" type="button" data-act="closesheet">ปิด</button>`);
   }
 }
 const tierGifts = (t, i) => { const L = LOY(), x = []; if (L && i && L.bday.doubleTier > 0 && i >= L.bday.doubleTier) x.push("🎂 แต้ม x2 ทั้งเดือนเกิด"); if (L && i && L.spin.enabled && L.spin.freeTier > 0 && i >= L.spin.freeTier) x.push("🎡 หมุนวงล้อฟรีเดือนละครั้ง");
-  return `<ul class="gl">${x.map(y => `<li>${y}</li>`).join("")}${t.bonus ? `<li>🪙 โบนัส ${pts(t.bonus)} แต้ม</li>` : ""}${t.coupon ? `<li>🎟 คูปองลด ${baht(t.coupon.value)}${t.coupon.min ? " ขั้นต่ำ " + baht(t.coupon.min) : " ไม่มีขั้นต่ำ"}</li>` : ""}${t.gift ? `<li>🎁 ${esc(t.gift)}</li>` : ""}<li>✨ รับแต้ม x${t.mult}</li></ul>`; };
+  return `<ul class="gl">${x.map(y => `<li>${y}</li>`).join("")}${t.bonus ? `<li>${tt("🪙 โบนัส {n} แต้ม", {n: pts(t.bonus)})}</li>` : ""}${t.coupon ? `<li>${tt("🎟 คูปองลด {v}", {v: baht(t.coupon.value)})} ${t.coupon.min ? tt("ขั้นต่ำ {v}", {v: baht(t.coupon.min)}) : "ไม่มีขั้นต่ำ"}</li>` : ""}${t.gift ? `<li>🎁 ${esc(t.gift)}</li>` : ""}<li>${tt("✨ รับแต้ม x{m}", {m: t.mult})}</li></ul>`; };
 /* ประตูหน้าสมาชิก: ต้องล็อกอินก่อน */
 function memberGate(){
   if (!LOY()) return `<div class="state" style="margin-top:20px">ระบบสมาชิกยังไม่เปิดใช้งานค่ะ</div>`;
@@ -2338,11 +2391,11 @@ function memberCard(){
   const L = LOY(), m = MEMBER, t = tierOfMe();
   const nx = m.next, pct = nx ? Math.min(100, Math.round((m.spent / nx.min) * 100)) : 100;
   return `<button class="mcard t${m.tier}" type="button" data-act="nav" data-to="#tiers">
-    <span class="mc-top"><span class="mc-tier"><i>${esc(t.emoji)}</i>${esc(t.name)}</span><span class="mc-x">${m.bdayDouble ? "🎂 " : ""}แต้ม x${m.earnMult || t.mult}</span></span>
-    <span class="mc-pts"><small>PonPoints</small><b>${pts(m.points)}</b><small>แต้ม · มูลค่า ${baht(Math.floor(m.points / L.burnPoints) * L.burnBaht)}</small></span>
+    <span class="mc-top"><span class="mc-tier"><i>${esc(t.emoji)}</i>${esc(t.name)}</span><span class="mc-x">${m.bdayDouble ? "🎂 " : ""}${tt("แต้ม x{m}", {m: m.earnMult || t.mult})}</span></span>
+    <span class="mc-pts"><small>PonPoints</small><b>${pts(m.points)}</b><small>${tt("แต้ม · มูลค่า {v}", {v: baht(Math.floor(m.points / L.burnPoints) * L.burnBaht)})}</small></span>
     <span class="mc-bar"><i style="width:${pct}%"></i></span>
-    <span class="mc-next">${nx ? `ช้อปอีก <b>${baht(nx.need)}</b> เป็น ${esc(nx.emoji)} ${esc(nx.name)}` : "คุณอยู่ระดับสูงสุดแล้ว 👑"}</span>
-    ${m.expiring.points ? `<span class="mc-exp">⏳ ${pts(m.expiring.points)} แต้มจะหมดอายุ ${esc(dateOnly(m.expiring.at))}</span>` : ""}
+    <span class="mc-next">${nx ? tt("ช้อปอีก {v} เป็น {t}", {v: `<b>${baht(nx.need)}</b>`, t: esc(nx.emoji) + " " + esc(nx.name)}) : "คุณอยู่ระดับสูงสุดแล้ว 👑"}</span>
+    ${m.expiring.points ? `<span class="mc-exp">${tt("⏳ {n} แต้มจะหมดอายุ {d}", {n: pts(m.expiring.points), d: esc(dateOnly(m.expiring.at))})}</span>` : ""}
   </button>`;
 }
 const dateOnly = ms => new Date(ms).toLocaleDateString(LOCALE[LANG] || "th-TH", {day: "numeric", month: "short", year: "numeric"});
@@ -2367,11 +2420,11 @@ function viewTiers(){
   const all = [{...L.base, min: 0, bonus: 0, coupon: null, gift: ""}, ...L.tiers];
   return `<p class="desc" style="margin:0 0 10px">ยอดสะสมนับจากทุกออเดอร์ที่ชำระแล้วตลอดชีพ (ไม่รวมค่าส่ง) ขึ้นระดับแล้วอยู่ตลอดไป</p>
     ${all.map((t, i) => `<div class="box tierbox${i === cur ? " cur" : ""}"><div class="acc"><b class="tb-n"><i>${esc(t.emoji)}</i>${esc(t.name)}</b>${i === cur ? `<span class="badge">ระดับของคุณ</span>` : ""}</div>
-      <span class="desc">${i ? `ยอดสะสม ${baht(t.min)} ขึ้นไป` : "สมาชิกทุกคน"} · รับแต้ม x${t.mult}</span>
+      <span class="desc">${i ? tt("ยอดสะสม {v} ขึ้นไป", {v: baht(t.min)}) : "สมาชิกทุกคน"} · ${tt("รับแต้ม x{m}", {m: t.mult})}</span>
       ${t.desc ? `<p style="margin:0">"${esc(t.desc)}"</p>` : ""}${i ? `<b style="font-size:13.5px">ของขวัญและสิทธิ์</b>${tierGifts(t, i)}` : ""}</div>`).join("")}
     <div class="box"><h3>PonPoints ทำงานยังไง</h3><ul class="gl">
-      <li>🛍 ช้อปทุก ${baht(L.earnPer)} = 1 แต้ม (คูณตามระดับ)</li><li>🎟 ทุก ${pts(L.burnPoints)} แต้ม = ส่วนลด ${baht(L.burnBaht)} ไม่มีขั้นต่ำ</li>
-      ${L.donate.enabled ? `<li>💝 ทุก ${pts(L.burnPoints)} แต้ม = ร่วมบริจาค ${baht(L.burnBaht)}</li>` : ""}<li>⏳ แต้มมีอายุ ${Math.round(L.expiryDays / 30.4)} เดือนนับจากวันที่ได้รับ</li></ul></div>`;
+      <li>${tt("🛍 ช้อปทุก {v} = 1 แต้ม (คูณตามระดับ)", {v: baht(L.earnPer)})}</li><li>${tt("🎟 ทุก {n} แต้ม = ส่วนลด {v} ไม่มีขั้นต่ำ", {n: pts(L.burnPoints), v: baht(L.burnBaht)})}</li>
+      ${L.donate.enabled ? `<li>${tt("💝 ทุก {n} แต้ม = ร่วมบริจาค {v}", {n: pts(L.burnPoints), v: baht(L.burnBaht)})}</li>` : ""}<li>${tt("⏳ แต้มมีอายุ {n} เดือนนับจากวันที่ได้รับ", {n: Math.round(L.expiryDays / 30.4)})}</li></ul></div>`;
 }
 /* หน้า: แต้ม ประวัติ แลกแต้ม */
 function viewPoints(){
@@ -2381,12 +2434,12 @@ function viewPoints(){
   const kindIcon = {earn: "🛍", use: "🎟", spin: "🎡", spin_win: "🎡", donate: "💝", ref_join: "💌", ref_welcome: "💌", ref_order: "💌", tier: "👑", bday: "🎂", reg: "📝", refund: "↩️", reverse: "↩️", admin: "✏️"};
   return `${memberCard()}
     <div class="box"><h3>แลกแต้ม</h3>
-      <div class="redeem"><i>🎟</i><span><b>ใช้เป็นส่วนลดตอนชำระเงิน</b><small>ทุก ${pts(L.burnPoints)} แต้ม ลด ${baht(L.burnBaht)} ไม่มีขั้นต่ำ ใช้ร่วมกับโค้ดได้</small></span><button class="mini" type="button" data-act="nav" data-to="#cart">ไปตะกร้า</button></div>
-      ${L.spin.enabled ? `<div class="redeem"><i>🎡</i><span><b>หมุนวงล้อลุ้นรางวัล</b><small>ครั้งละ ${pts(L.spin.cost)} แต้ม</small></span><button class="mini" type="button" data-act="nav" data-to="#spin">หมุนเลย</button></div>` : ""}
-      ${L.donate.enabled ? `<div class="redeem"><i>💝</i><span><b>สายบุญ: ร่วมบริจาค</b><small>ทุก ${pts(L.burnPoints)} แต้ม = ${baht(L.burnBaht)} ให้ ${esc(L.donate.org)} โดย PonPon เป็นตัวแทนส่งมอบ</small></span></div>
+      <div class="redeem"><i>🎟</i><span><b>ใช้เป็นส่วนลดตอนชำระเงิน</b><small>${tt("ทุก {n} แต้ม ลด {v} ไม่มีขั้นต่ำ ใช้ร่วมกับโค้ดได้", {n: pts(L.burnPoints), v: baht(L.burnBaht)})}</small></span><button class="mini" type="button" data-act="nav" data-to="#cart">ไปตะกร้า</button></div>
+      ${L.spin.enabled ? `<div class="redeem"><i>🎡</i><span><b>หมุนวงล้อลุ้นรางวัล</b><small>${tt("ครั้งละ {n} แต้ม", {n: pts(L.spin.cost)})}</small></span><button class="mini" type="button" data-act="nav" data-to="#spin">หมุนเลย</button></div>` : ""}
+      ${L.donate.enabled ? `<div class="redeem"><i>💝</i><span><b>สายบุญ: ร่วมบริจาค</b><small>${tt("ทุก {n} แต้ม = {v} ให้ {o} โดย PonPon เป็นตัวแทนส่งมอบ", {n: pts(L.burnPoints), v: baht(L.burnBaht), o: esc(L.donate.org)})}</small></span></div>
         <div class="qrow" style="margin:0"><div class="step"><button type="button" data-act="giveminus" ${giveN <= L.burnPoints ? "disabled" : ""}>−</button><b>${pts(giveN)}</b><button class="plus" type="button" data-act="giveplus" ${giveN + L.burnPoints > max ? "disabled" : ""}>+</button></div>
-        <button class="btn soft" type="button" data-act="giveask" ${max < L.burnPoints ? "disabled" : ""} style="flex:1">บริจาค ${baht(giveN / L.burnPoints * L.burnBaht)}</button></div>` : ""}</div>
-    <div class="box"><h3>ประวัติแต้ม</h3>${m.history.length ? m.history.map(h => `<div class="hrow"><i>${kindIcon[h.kind] || "✦"}</i><span><b>${esc(h.note || h.kind)}</b><small>${esc(dateText(h.at))}${h.delta > 0 && h.expiresAt ? " · หมดอายุ " + esc(dateOnly(h.expiresAt)) : ""}</small></span><b class="${h.delta > 0 ? "plus" : "neg"}">${h.delta > 0 ? "+" : "−"}${pts(Math.abs(h.delta))}</b></div>`).join("") : `<p class="desc">ยังไม่มีประวัติแต้ม ช้อปครั้งแรกรับแต้มเลย!</p>`}</div>`;
+        <button class="btn soft" type="button" data-act="giveask" ${max < L.burnPoints ? "disabled" : ""} style="flex:1">${tt("บริจาค {v}", {v: baht(giveN / L.burnPoints * L.burnBaht)})}</button></div>` : ""}</div>
+    <div class="box"><h3>ประวัติแต้ม</h3>${m.history.length ? m.history.map(h => `<div class="hrow"><i>${kindIcon[h.kind] || "✦"}</i><span><b>${esc(h.note || h.kind)}</b><small>${esc(dateText(h.at))}${h.delta > 0 && h.expiresAt ? " · " + tt("หมดอายุ {d}", {d: esc(dateOnly(h.expiresAt))}) : ""}</small></span><b class="${h.delta > 0 ? "plus" : "neg"}">${h.delta > 0 ? "+" : "−"}${pts(Math.abs(h.delta))}</b></div>`).join("") : `<p class="desc">ยังไม่มีประวัติแต้ม ช้อปครั้งแรกรับแต้มเลย!</p>`}</div>`;
 }
 /* หน้า: คูปองและของขวัญของฉัน */
 function viewRewards(){
@@ -2395,7 +2448,7 @@ function viewRewards(){
   return `<div class="box"><h3>คูปองของฉัน</h3>${m.coupons.length ? m.coupons.map(c => `<button class="cp" type="button" data-act="usemine" data-code="${esc(c.code)}">
       <span class="l">${esc(couponFace(c))}</span><span class="m"><b>${esc(c.title)}</b><small>${esc(couponNote(c))}</small></span><span class="a">ใช้</span></button>`).join("")
       : `<p class="desc">ยังไม่มีคูปองส่วนตัว ลองหมุนวงล้อหรือสมัครสมาชิกรับคูปองได้นะคะ</p>`}</div>
-    <div class="box"><h3>ของขวัญรอส่ง</h3>${m.gifts.length ? m.gifts.map(x => `<div class="hrow"><i>🎁</i><span><b>${esc(x.title)}</b><small>${esc(src(x.source))}${x.status === "order" ? " · อยู่ในออเดอร์ " + esc(x.number) : " · ส่งไปพร้อมออเดอร์ถัดไป สั่งภายใน " + esc(dateOnly(x.expiresAt))}</small></span></div>`).join("")
+    <div class="box"><h3>ของขวัญรอส่ง</h3>${m.gifts.length ? m.gifts.map(x => `<div class="hrow"><i>🎁</i><span><b>${esc(x.title)}</b><small>${esc(src(x.source))}${x.status === "order" ? " · " + tt("อยู่ในออเดอร์ {n}", {n: esc(x.number)}) : " · " + tt("ส่งไปพร้อมออเดอร์ถัดไป สั่งภายใน {d}", {d: esc(dateOnly(x.expiresAt))})}</small></span></div>`).join("")
       : `<p class="desc">ยังไม่มีของขวัญรอส่ง</p>`}
       <p class="desc" style="margin:0">ของขวัญจะถูกแพ็กส่งไปพร้อมออเดอร์ถัดไปของคุณอัตโนมัติ ไม่ต้องกดรับ</p></div>`;
 }
@@ -2405,15 +2458,15 @@ function viewInvite(){
   const g = memberGate(); if (g) return g;
   const L = LOY(), m = MEMBER;
   return `<div class="invite"><div class="cele">💌</div><h2>ชวนเพื่อนมาเข้าแก๊ง ได้แต้มทั้งคู่!</h2>
-      <div class="steps3"><div><b>1</b><span>ส่งลิงก์ให้เพื่อน</span></div><div><b>2</b><span>เพื่อนเปิดลิงก์และเข้าสู่ระบบ LINE<br><em>คุณได้ +${pts(L.ref.joinReferrer)} · เพื่อนได้ +${pts(L.ref.joinFriend)}</em></span></div><div><b>3</b><span>เพื่อนช้อปครั้งแรก<br><em>คุณได้อีก +${pts(L.ref.firstOrder)}</em></span></div></div></div>
+      <div class="steps3"><div><b>1</b><span>ส่งลิงก์ให้เพื่อน</span></div><div><b>2</b><span>เพื่อนเปิดลิงก์และเข้าสู่ระบบ LINE<br><em>${tt("คุณได้ +{a} · เพื่อนได้ +{b}", {a: pts(L.ref.joinReferrer), b: pts(L.ref.joinFriend)})}</em></span></div><div><b>3</b><span>เพื่อนช้อปครั้งแรก<br><em>${tt("คุณได้อีก +{a}", {a: pts(L.ref.firstOrder)})}</em></span></div></div></div>
     <div class="box"><h3>ลิงก์ชวนเพื่อนของคุณ</h3><p class="msg" style="word-break:break-all">${esc(refLink())}</p>
       <div class="acc"><span>รหัสของคุณ <b class="bo-code">${esc(m.refCode)}</b></span><button class="mini" type="button" data-act="copynum" data-v="${esc(refLink())}">คัดลอกลิงก์</button></div>
       <button class="btn" type="button" data-act="refshare">ส่งคำชวนทาง LINE</button></div>
-    <div class="box"><div class="acc"><span>เพื่อนที่ชวนมาแล้ว</span><b>${pts(m.refCount)} คน</b></div><div class="acc"><span>ช้อปแล้ว</span><b>${pts(m.refPaid)} คน</b></div>
+    <div class="box"><div class="acc"><span>เพื่อนที่ชวนมาแล้ว</span><b>${tt("{n} คน", {n: pts(m.refCount)})}</b></div><div class="acc"><span>ช้อปแล้ว</span><b>${tt("{n} คน", {n: pts(m.refPaid)})}</b></div>
       <p class="desc" style="margin:0">นับเฉพาะเพื่อนใหม่ที่ยังไม่เคยสั่งซื้อในร้าน และเปิดลิงก์ของคุณเป็นครั้งแรก</p></div>`;
 }
 async function refShare(){
-  const L = LOY(), text = `มาช้อป PonPon ใน LINE กัน! เปิดลิงก์นี้รับ ${pts(L.ref.joinFriend)} แต้มฟรี 🎀\n${refLink()}`;
+  const L = LOY(), text = tt("มาช้อป PonPon ใน LINE กัน! เปิดลิงก์นี้รับ {n} แต้มฟรี 🎀", {n: pts(L.ref.joinFriend)}) + "\n" + refLink();
   if (await liffReady && liff.isLoggedIn() && liff.isApiAvailable("shareTargetPicker")){
     try { const r = await liff.shareTargetPicker([{type: "text", text}]); if (r) toast("ส่งคำชวนแล้ว"); return; } catch (e) {}
   }
@@ -2425,8 +2478,8 @@ function viewProfile(){
   const g = memberGate(); if (g) return g;
   const L = LOY(), p = MEMBER.profile;
   if (!pf) pf = {nick: p.nick || (profile && profile.displayName) || "", phone: p.phone || draft.phone || "", birthday: p.birthday || "", consent: !!p.consentAt};
-  const gifts = [L.reg.coupon ? `🎟 คูปองต้อนรับลด ${baht(L.reg.coupon.value)}${L.reg.coupon.min ? " (ขั้นต่ำ " + baht(L.reg.coupon.min) + ")" : ""}` : "", L.reg.points ? `🪙 ${pts(L.reg.points)} แต้ม` : "",
-    L.bday.coupon || L.bday.gift ? `🎂 ของขวัญเดือนเกิดทุกปี: ${[L.bday.coupon ? "คูปองลด " + baht(L.bday.coupon.value) : "", L.bday.gift].filter(Boolean).join(" + ")}` : ""].filter(Boolean);
+  const gifts = [L.reg.coupon ? tt("🎟 คูปองต้อนรับลด {v}", {v: baht(L.reg.coupon.value)}) + (L.reg.coupon.min ? " " + tt("(ขั้นต่ำ {v})", {v: baht(L.reg.coupon.min)}) : "") : "", L.reg.points ? `🪙 ${pts(L.reg.points)} แต้ม` : "",
+    L.bday.coupon || L.bday.gift ? tt("🎂 ของขวัญเดือนเกิดทุกปี: {g}", {g: [L.bday.coupon ? tt("คูปองลด {v}", {v: baht(L.bday.coupon.value)}) : "", L.bday.gift].filter(Boolean).join(" + ")}) : ""].filter(Boolean);
   return `${p.registered ? "" : `<div class="invite"><div class="cele">🎂</div><h2>บันทึกข้อมูลสมาชิก รับของขวัญ!</h2><p class="desc" style="margin:0">ไม่บังคับนะคะ ไม่สมัครก็ช้อปและสะสมแต้มได้ตามปกติ</p><ul class="gl" style="text-align:left">${gifts.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>`}
     <div class="box"><h3>ข้อมูลสมาชิก</h3>
       <label class="fld">ชื่อเล่น<input id="pf-nick" data-pf="nick" maxlength="60" value="${esc(pf.nick)}"></label>
@@ -2445,7 +2498,7 @@ async function pfSave(){
   try {
     const res = await api("api/member/profile", {method: "POST", body: JSON.stringify(pf)}, await idToken());
     MEMBER = res.member; pf = null; $("toast").hidden = true;
-    if (res.gift) openSheet(`<div class="cele">🎉</div><h2>สมัครสมาชิกเรียบร้อย!</h2><p>${res.gift.coupon ? `ได้คูปองลด <b>${baht(res.gift.coupon.value)}</b> เก็บไว้ใน "คูปองของฉัน" แล้ว` : ""}${res.gift.points ? ` และ ${pts(res.gift.points)} แต้ม` : ""}</p>
+    if (res.gift) openSheet(`<div class="cele">🎉</div><h2>สมัครสมาชิกเรียบร้อย!</h2><p>${res.gift.coupon ? tt("ได้คูปองลด {v} เก็บไว้ใน \"คูปองของฉัน\" แล้ว", {v: `<b>${baht(res.gift.coupon.value)}</b>`}) : ""}${res.gift.points ? " + " + pts(res.gift.points) + " แต้ม" : ""}</p>
       <button class="btn" type="button" data-act="nav" data-to="#rewards">ดูคูปองของฉัน</button><button class="btn line" type="button" data-act="closesheet">ปิด</button>`);
     else toast("บันทึกแล้ว");
     keepRender();
@@ -2473,8 +2526,8 @@ function viewSpin(){
   return `<div class="spinwrap"><h2 class="spin-h">🎡 หมุนวงล้อ ลุ้นรางวัล!</h2>
       <div class="wheel"><div class="wheel-rot" id="wheel" style="transform:rotate(${spinRot}deg)">${wheelSvg(prizes)}</div><span class="wheel-pin"></span>
         <button class="wheel-hub" type="button" data-act="spingo" ${can && !spinBusy ? "" : "disabled"}>หมุน!</button></div>
-      <p class="spin-cost">${free ? `👑 สิทธิ์ PonPrime: <b>หมุนฟรี 1 ครั้ง</b> เดือนนี้` : `ครั้งละ <b>${pts(L.spin.cost)}</b> แต้ม · คุณมี <b>${pts(MEMBER.points)}</b> แต้ม`}</p>
-      <button class="btn" type="button" data-act="spingo" ${can && !spinBusy ? "" : "disabled"}>${free ? "หมุนฟรี!" : can ? `หมุนเลย (−${pts(L.spin.cost)} แต้ม)` : "แต้มไม่พอ ช้อปเพื่อสะสมแต้มก่อนนะคะ"}</button></div>
+      <p class="spin-cost">${free ? tt("👑 สิทธิ์ PonPrime: {b} เดือนนี้", {b: `<b>${tt("หมุนฟรี 1 ครั้ง")}</b>`}) : tt("ครั้งละ {a} แต้ม · คุณมี {b} แต้ม", {a: `<b>${pts(L.spin.cost)}</b>`, b: `<b>${pts(MEMBER.points)}</b>`})}</p>
+      <button class="btn" type="button" data-act="spingo" ${can && !spinBusy ? "" : "disabled"}>${free ? "หมุนฟรี!" : can ? tt("หมุนเลย (−{n} แต้ม)", {n: pts(L.spin.cost)}) : "แต้มไม่พอ ช้อปเพื่อสะสมแต้มก่อนนะคะ"}</button></div>
     <div class="box"><h3>รางวัลในวงล้อ</h3><div class="chips">${prizes.map(p => `<span class="chip" style="cursor:default">${esc(p.label)}</span>`).join("")}</div>
       <p class="desc" style="margin:0">คูปองใช้ได้ภายในเวลาที่กำหนด ของรางวัลส่งไปพร้อมออเดอร์ถัดไป (ต้องสั่งซื้อสินค้าเพื่อรับ) แต้มเข้าบัญชีทันที</p></div>`;
 }
@@ -2492,7 +2545,7 @@ async function spinGo(){
       spinBusy = false; MEMBER = res.member;
       const p = res.prize, big = p.type === "points" && p.value >= 1000;
       openSheet(`<div class="cele">${big ? "💰" : p.type === "gift" ? "🎁" : p.type === "none" ? "🍀" : "🎉"}</div><h2>${p.type === "none" ? "เกือบแล้ว!" : big ? "JACKPOT!!" : "ยินดีด้วย!"}</h2>
-        <p style="font-size:18px;font-family:var(--display);font-weight:700;text-align:center;margin:0">${esc(p.label)}</p><p class="desc" style="text-align:center">${esc(res.detail || "ขอบคุณที่ร่วมสนุกนะคะ")}</p>
+        <p style="font-size:18px;font-family:var(--display);font-weight:700;text-align:center;margin:0">${esc(p.label)}</p><p class="desc" style="text-align:center">${esc(p.type === "points" ? tt("+{n} แต้ม เข้าบัญชีแล้ว", {n: pts(p.value)}) : p.type === "amount" || p.type === "freeship" || p.type === "percent" ? tt("เก็บคูปองไว้ใน \"คูปองของฉัน\" แล้ว ใช้ได้ภายใน {n} วัน", {n: L.spin.couponDays || 30}) : p.type === "gift" ? tt("ของรางวัลจะส่งไปพร้อมออเดอร์ถัดไป สั่งซื้อภายใน {n} วันนะคะ", {n: L.spin.giftDays || 60}) : res.detail || "ขอบคุณที่ร่วมสนุกนะคะ")}</p>
         <button class="btn" type="button" data-act="closesheet">โอเค!</button>${p.type === "amount" || p.type === "freeship" ? `<button class="btn line" type="button" data-act="nav" data-to="#cart">ไปใช้คูปอง</button>` : ""}`);
       keepRender();
     }, fast ? 500 : 4800);
@@ -2503,7 +2556,7 @@ async function donate(){
   try {
     const res = await api("api/points/donate", {method: "POST", body: JSON.stringify({points: giveN})}, await idToken());
     MEMBER = res.member; $("toast").hidden = true;
-    openSheet(`<div class="cele">💝</div><h2>ขอบคุณสายบุญ!</h2><p>PonPon จะนำ ${baht(res.baht)} ไปส่งมอบให้ ${esc(L.donate.org)} ในนามของคุณ</p><button class="btn" type="button" data-act="closesheet">ปิด</button>`);
+    openSheet(`<div class="cele">💝</div><h2>ขอบคุณสายบุญ!</h2><p>${tt("PonPon จะนำ {v} ไปส่งมอบให้ {o} ในนามของคุณ", {v: baht(res.baht), o: esc(L.donate.org)})}</p><button class="btn" type="button" data-act="closesheet">ปิด</button>`);
     keepRender();
   } catch (e) { $("toast").hidden = true; toast(e.message); }
 }
@@ -2511,11 +2564,11 @@ async function donate(){
 function pointsBox(t){
   const L = LOY(); if (!L || !MEMBER || !profile) return "";
   const step = L.burnPoints, maxUse = t.maxPoints;
-  if (MEMBER.points < step) return `<div class="box"><h3>PonPoints</h3><p class="desc" style="margin:0">มี ${pts(MEMBER.points)} แต้ม · สะสมครบ ${pts(step)} แต้ม ใช้ลด ${baht(L.burnBaht)} ได้${t.earn ? ` · ออเดอร์นี้จะได้ +${pts(t.earn)} แต้ม` : ""}</p></div>`;
-  return `<div class="box"><h3>ใช้แต้มเป็นส่วนลด</h3><p class="desc" style="margin:0">มี ${pts(MEMBER.points)} แต้ม · ทุก ${pts(step)} แต้ม ลด ${baht(L.burnBaht)}</p>
+  if (MEMBER.points < step) return `<div class="box"><h3>PonPoints</h3><p class="desc" style="margin:0">${tt("มี {n} แต้ม · สะสมครบ {s} แต้ม ใช้ลด {v} ได้", {n: pts(MEMBER.points), s: pts(step), v: baht(L.burnBaht)})}${t.earn ? " · " + tt("ออเดอร์นี้จะได้ +{n} แต้ม", {n: pts(t.earn)}) : ""}</p></div>`;
+  return `<div class="box"><h3>ใช้แต้มเป็นส่วนลด</h3><p class="desc" style="margin:0">${tt("มี {n} แต้ม · ทุก {s} แต้ม ลด {v}", {n: pts(MEMBER.points), s: pts(step), v: baht(L.burnBaht)})}</p>
     <div class="qrow" style="margin:0"><div class="step"><button type="button" data-act="ptsminus" ${t.usePoints <= 0 ? "disabled" : ""}>−</button><b>${pts(t.usePoints)}</b><button class="plus" type="button" data-act="ptsplus" ${t.usePoints + step > maxUse ? "disabled" : ""}>+</button></div>
       <button class="mini ${t.usePoints >= maxUse ? "line" : ""}" type="button" data-act="${t.usePoints >= maxUse ? "ptsnone" : "ptsmax"}">${t.usePoints >= maxUse ? "ไม่ใช้แต้ม" : "ใช้สูงสุด"}</button></div>
-    ${t.pointsDiscount ? `<p class="hint" style="margin:0">✦ ลด ${baht(t.pointsDiscount)} จากแต้ม</p>` : ""}${t.earn ? `<p class="desc" style="margin:0">ออเดอร์นี้จะได้ +${pts(t.earn)} แต้ม (x${MEMBER.earnMult || tierOfMe().mult}${MEMBER.bdayDouble ? " เดือนเกิด 🎂" : ""})</p>` : ""}</div>`;
+    ${t.pointsDiscount ? `<p class="hint" style="margin:0">${tt("✦ ลด {v} จากแต้ม", {v: baht(t.pointsDiscount)})}</p>` : ""}${t.earn ? `<p class="desc" style="margin:0">${tt("ออเดอร์นี้จะได้ +{n} แต้ม", {n: pts(t.earn)})} (x${MEMBER.earnMult || tierOfMe().mult}${MEMBER.bdayDouble ? " 🎂" : ""})</p>` : ""}</div>`;
 }
 function memberClick(a, b){
   if (a === "mreload") return memberLoad(true);
@@ -2523,11 +2576,11 @@ function memberClick(a, b){
   if (a === "refshare") return refShare();
   if (a === "pfsave") return pfSave();
   if (a === "pfremove") return openSheet(`<h2>ลบข้อมูลส่วนตัว?</h2><p>ระบบจะลบชื่อเล่น เบอร์โทร และวันเกิด สิทธิ์วันเกิดจะใช้ไม่ได้ ส่วนแต้มและระดับสมาชิกยังอยู่ครบ</p>
-      <button class="btn" type="button" data-act="pfremoveyes">ยืนยันลบข้อมูล</button><button class="btn line" type="button" data-act="closesheet">ยกเลิก</button>`);
+      <button class="btn" type="button" data-act="pfremoveyes">ยืนยันลบข้อมูล</button><button class="btn line" type="button" data-act="closesheet">ไว้ก่อน</button>`);
   if (a === "pfremoveyes"){ closeSheet(); return idToken().then(t => api("api/member/profile", {method: "POST", body: JSON.stringify({remove: true})}, t)).then(r => { MEMBER = r.member; pf = null; toast("ลบข้อมูลแล้ว"); keepRender(); }).catch(e => toast(e.message)); }
   if (a === "usemine"){ const c = memberCoupons().find(x => x.code === b.dataset.code); if (!c) return; if (isShip(c)){ usedShip = c.code; store.set("ponpon-used-ship", usedShip); } else { usedCoupon = c.code; store.set("ponpon-used-coupon", usedCoupon); } toast("เลือกคูปองแล้ว"); return go("#cart"); }
   if (a === "giveplus" || a === "giveminus"){ giveN += (a === "giveplus" ? 1 : -1) * LOY().burnPoints; return keepRender(); }
-  if (a === "giveask"){ const L = LOY(); return openSheet(`<h2>ยืนยันบริจาค</h2><p>ใช้ <b>${pts(giveN)} แต้ม</b> ร่วมบริจาค <b>${baht(giveN / L.burnPoints * L.burnBaht)}</b> ให้ ${esc(L.donate.org)}</p><button class="btn" type="button" data-act="giveyes">ยืนยันบริจาค</button><button class="btn line" type="button" data-act="closesheet">ยกเลิก</button>`); }
+  if (a === "giveask"){ const L = LOY(); return openSheet(`<h2>ยืนยันบริจาค</h2><p>${tt("ใช้ {a} ร่วมบริจาค {b} ให้ {o}", {a: `<b>${pts(giveN)} แต้ม</b>`, b: `<b>${baht(giveN / L.burnPoints * L.burnBaht)}</b>`, o: esc(L.donate.org)})}</p><button class="btn" type="button" data-act="giveyes">ยืนยันบริจาค</button><button class="btn line" type="button" data-act="closesheet">ไว้ก่อน</button>`); }
   if (a === "giveyes") return donate();
   if (a === "ptsplus" || a === "ptsminus"){ const t = totals(); usePts = Math.max(0, t.usePoints + (a === "ptsplus" ? 1 : -1) * LOY().burnPoints); return keepRender(); }
   if (a === "ptsmax"){ usePts = 1e9; return keepRender(); }
@@ -2635,7 +2688,7 @@ document.addEventListener("input", e => {
   if (t.id === "dq"){ listQ = t.value; if (route().page !== "products"){ go("#products"); setTimeout(() => { const d = $("dq"); if (d){ d.focus(); d.setSelectionRange(d.value.length, d.value.length); } }, 0); } else if ($("plist")){ $("plist").innerHTML = productList(); const q = $("q"); if (q) q.value = listQ; } }
   if (t.id === "only"){ listOnly = t.checked; $("plist").innerHTML = productList(); }
 });
-document.addEventListener("change", e => { const t = e.target; if (t.id === "shp-file" && t.files && t.files[0]) return shpImport(t.files[0]); if (t.dataset && t.dataset.shp !== undefined && SHPI.rows){ shpInput(t); const i = Number(t.dataset.shp), p = byId.get(SHPI.assign[i].pid); t.style.borderColor = p ? "" : "var(--red)"; if (p && t.value.trim().toUpperCase().split(/\s+/)[0] === p.id && !t.value.includes(" ")) t.value = p.id + " " + p.title; return; } if (t.dataset && t.dataset.ly && route().page === "admin"){ lyInput(t); return keepRender(); } if (t.dataset && t.dataset.pf && pf){ pf[t.dataset.pf] = t.type === "checkbox" ? t.checked : t.value; return; } if (t.dataset && (t.dataset.e || t.dataset.upkey || t.dataset.pdshow) && adminInput(t)) return; if (t.dataset && t.dataset.slip && t.files && t.files[0]) uploadSlip(t.dataset.slip, t.files[0]); });
+document.addEventListener("change", e => { const t = e.target; if (t.dataset && t.dataset.nt && NT.ev){ NT.ev[t.dataset.nt] = t.checked; return; } if (t.id === "shp-file" && t.files && t.files[0]) return shpImport(t.files[0]); if (t.dataset && t.dataset.shp !== undefined && SHPI.rows){ shpInput(t); const i = Number(t.dataset.shp), p = byId.get(SHPI.assign[i].pid); t.style.borderColor = p ? "" : "var(--red)"; if (p && t.value.trim().toUpperCase().split(/\s+/)[0] === p.id && !t.value.includes(" ")) t.value = p.id + " " + p.title; return; } if (t.dataset && t.dataset.ly && route().page === "admin"){ lyInput(t); return keepRender(); } if (t.dataset && t.dataset.pf && pf){ pf[t.dataset.pf] = t.type === "checkbox" ? t.checked : t.value; return; } if (t.dataset && (t.dataset.e || t.dataset.upkey || t.dataset.pdshow) && adminInput(t)) return; if (t.dataset && t.dataset.slip && t.files && t.files[0]) uploadSlip(t.dataset.slip, t.files[0]); });
 document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.classList && e.target.classList.contains("ocard")) e.target.click(); if (e.key === "Escape") closeSheet(); if (e.key === "Enter" && e.target.id === "ly-q"){ e.preventDefault(); LY.q = e.target.value.trim(); return lyMembers(); } if (e.key === "Enter" && e.target.id === "code"){ e.preventDefault(); setCoupon(e.target.value.trim()); render(); } });
 let holdSheet = false; // ให้หน้าต่างแจ้งผลสั่งซื้อค้างไว้ตอนเปลี่ยนหน้า
 window.addEventListener("hashchange", () => { if (holdSheet) holdSheet = false; else closeSheet(); render(); });
