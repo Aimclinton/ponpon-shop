@@ -409,6 +409,79 @@ body.admin-mode .app{max-width:1280px;padding-bottom:40px}
 .shp-m small{font-size:12px;color:var(--muted)}.shp-m small button{color:var(--red);text-decoration:underline;font-size:12px}
 .shp-pick{display:flex;align-items:center;gap:8px}.shp-pick img{width:40px;height:40px;object-fit:cover;border-radius:8px;flex:none}
 .shp-pick input{flex:1;min-width:0;font-size:15px;border:1.5px solid var(--ink);border-radius:12px;padding:8px 10px;background:var(--card);color:var(--ink)}
+
+/* ---------- Desktop / แท็บเล็ต ---------- */
+.nav .nav-brand,.nav .nav-search,.nav .nav-lang{display:none}
+@media (min-width:768px){
+  .app{max-width:820px}
+  .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .mtiles{grid-template-columns:repeat(6,minmax(0,1fr))}
+}
+@media (min-width:1024px){
+  body:not(.admin-mode) .app{max-width:1240px;padding:84px 32px 48px}
+  body.admin-mode .app{padding-top:0}
+  body:not(.admin-mode) .top{margin:0 -32px;padding:12px 32px;top:72px}
+  body[data-page="home"] .top{display:none}
+  /* แถบเมนูด้านบนแทนแถบล่าง */
+  .nav{top:0;bottom:auto;padding:0;background:rgba(246,246,246,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:2px solid var(--ink)}
+  .nav > div{max-width:1240px;height:72px;padding:0 32px;background:transparent;border-radius:0;box-shadow:none;justify-content:flex-start;align-items:center;gap:6px}
+  .nav button{flex:none;max-width:none;height:44px;flex-direction:row;gap:7px;padding:0 16px;font-size:14.5px;color:var(--ink)}
+  .nav button svg{width:19px;height:19px}
+  .nav button:hover{background:var(--red-soft)}
+  .nav button[aria-current="page"]{border:var(--edge);box-shadow:var(--pop)}
+  .nav em{top:-4px;right:-4px;background:var(--red);color:#fff;border:1.5px solid var(--ink)}
+  .nav button[aria-current="page"] em{background:#fff;color:var(--red)}
+  .nav-brand{display:flex!important;margin-right:auto;padding:0!important;background:none!important;border:0!important;box-shadow:none!important;height:auto!important}
+  .nav-brand img{height:40px;width:auto}
+  .nav-brand b{font-family:var(--display);font-weight:700;font-size:21px;line-height:1;color:var(--red);text-align:left}
+  .nav-brand small{display:block;font-size:10px;letter-spacing:.12em;color:var(--ink);font-weight:500;margin-top:2px}
+  .nav-search{display:flex!important;align-items:center;gap:8px;width:300px;height:44px;margin-right:10px;padding:0 16px;background:var(--card);border:var(--edge);border-radius:999px;color:var(--muted)}
+  .nav-search svg{width:18px;height:18px;flex:none}
+  .nav-search input{border:0;outline:0;background:transparent;font-size:15px;width:100%;color:var(--ink)}
+  .nav-lang{display:flex!important;margin-left:6px}
+  body[data-page="products"] .search{display:none}
+  /* หน้าแรก / สินค้า */
+  .hello{font-size:18px;margin:8px 0 16px}
+  .banner{flex:0 0 calc(50% - 6px);min-height:200px;padding:28px}
+  .banner h2{font-size:30px}
+  .banners{margin:4px 0 0;padding:2px 0 6px}
+  .dots{display:none}
+  .tabs{margin:20px 0 18px;padding:2px 0 5px;flex-wrap:wrap}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:26px 20px}
+  .card .nm{font-size:14.5px}
+  .card:hover .ph{transform:translateY(-3px);box-shadow:0 6px 0 var(--ink)}
+  .card .ph{transition:transform .15s,box-shadow .15s}
+  .mstrip{max-width:560px}
+  /* หน้าสินค้า: รูปซ้าย รายละเอียดขวา */
+  body[data-page="product"] #view{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:36px;align-items:start;margin-top:8px}
+  body[data-page="product"] .hero{margin:0;border-radius:28px;overflow:hidden;border:var(--edge);box-shadow:0 6px 0 var(--ink);position:sticky;top:150px}
+  body[data-page="product"] .pd{margin:0;border-radius:28px;border:var(--edge);box-shadow:0 6px 0 var(--ink);padding:28px}
+  body[data-page="product"] .pd-h h2{font-size:26px}
+  body[data-page="product"] .pd .pr b{font-size:34px}
+  .gal-thumbs{bottom:16px}
+  /* ตะกร้า + ชำระเงิน: 2 คอลัมน์ */
+  body[data-page="cart"] #view,body[data-page="checkout"] #view{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:0 28px;align-items:start}
+  body[data-page="cart"] #view > .items{grid-column:1;grid-row:1 / span 8;margin-top:14px}
+  body[data-page="cart"] #view > :not(.items),body[data-page="checkout"] #view > :not(.col-l){grid-column:2}
+  body[data-page="checkout"] #view > .col-l{grid-column:1;grid-row:1 / span 8}
+  body[data-page="checkout"] #view > .col-l + .col-l{grid-row:auto}
+  body[data-page="cart"] #view > .state,body[data-page="checkout"] #view > .warn{grid-column:1 / -1}
+  .paybar{bottom:28px;left:auto;right:max(32px,calc((100vw - 1240px) / 2 + 32px));width:440px;padding:0}
+  .paybar > div{max-width:none}
+  /* หน้าอื่น ๆ อยู่กลางจอ อ่านง่าย */
+  body[data-page="me"] #view,body[data-page="orders"] #view,body[data-page="order"] #view,body[data-page="points"] #view,body[data-page="spin"] #view,body[data-page="invite"] #view,body[data-page="profile"] #view,body[data-page="tiers"] #view,body[data-page="rewards"] #view{max-width:860px;margin:0 auto}
+  body[data-page="orders"] #view .items{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .wheel{width:420px}
+  /* หน้าต่างเด้ง: กลางจอ */
+  .sheet{left:0;right:0;top:0;bottom:0;margin:auto;width:560px;height:fit-content;max-height:86vh;border-radius:28px;border:var(--edge);box-shadow:0 8px 0 var(--ink);padding:28px}
+  .sheet::before{display:none}
+  .toast{bottom:40px}
+}
+@media (min-width:1024px) and (hover:hover){ .item:hover,.box.ocard:hover{transform:translateY(-2px)} .item,.box.ocard{transition:transform .15s} }
+@media (min-width:1024px){
+  .paybar.paybar-in{position:sticky;left:auto;right:auto;bottom:24px;width:auto;margin-top:16px;grid-column:2;z-index:5}
+  .banner h2{max-width:88%;font-size:28px}
+}
 </style>
 </head>
 <body>
@@ -974,7 +1047,10 @@ function navBar(r){
   const n = [...cart.values()].reduce((a, b) => a + b, 0);
   const items = [["home", "#home", "หน้าแรก", "home"], ["products", "#products", "สินค้า", "grid"], ["cart", "#cart", "ตะกร้า", "cart"], ["orders", "#orders", "ออเดอร์", "box"], ["me", "#me", "ของฉัน", "user"]];
   const cur = r.page === "product" ? "products" : r.page === "checkout" ? "cart" : r.page === "order" ? "orders" : ["admin", "points", "spin", "invite", "profile", "tiers", "rewards"].includes(r.page) ? "me" : r.page;
-  return items.map(([k, to, label, icon]) => `<button type="button" data-act="nav" data-to="${to}" ${cur === k ? 'aria-current="page"' : ""}>${ic(icon)}<span>${label}</span>${k === "cart" && n ? `<em>${n}</em>` : ""}</button>`).join("");
+  const desk = `<button type="button" class="nav-brand" data-act="nav" data-to="#home" aria-label="หน้าแรก"><img src="${esc(CONFIG.LOGO_URL)}" alt=""><b>PonPon<small>SHOPPING CENTER</small></b></button>
+    <label class="nav-search">${ic("search")}<input id="dq" type="search" placeholder="ค้นหาสินค้า" aria-label="ค้นหาสินค้า" value="${esc(listQ)}"></label>`;
+  return desk + items.map(([k, to, label, icon]) => `<button type="button" data-act="nav" data-to="${to}" ${cur === k ? 'aria-current="page"' : ""}>${ic(icon)}<span>${label}</span>${k === "cart" && n ? `<em>${n}</em>` : ""}</button>`).join("")
+    + `<button type="button" class="nav-lang" data-act="lang" aria-label="ภาษา / Language">${ic("globe")}<span translate="no">${esc(LANG.toUpperCase())}</span></button>`;
 }
 function viewHome(){
   const have = PRODUCTS.filter(p => p.stock > 0);
@@ -1095,8 +1171,8 @@ function viewCheckout(){
       ${pay.text ? `<p style="white-space:pre-wrap">${esc(pay.text)}</p>` : ""}
       <p class="desc">โอนแล้วส่งสลิปในแชต PonPon ได้เลยค่ะ</p></div>` : "";
   return `${formError ? `<p class="warn">${esc(formError)}</p>` : ""}
-    ${profile ? "" : `<div class="box"><h3>เข้าสู่ระบบก่อนสั่งซื้อ</h3><p class="desc">ใช้บัญชี LINE ของคุณเพื่อยืนยันคำสั่งซื้อและติดตามสถานะได้</p><button class="btn" type="button" data-act="login">เข้าสู่ระบบด้วย LINE</button></div>`}
-    <div class="box"><h3>ที่อยู่จัดส่ง</h3>
+    ${profile ? "" : `<div class="box col-l"><h3>เข้าสู่ระบบก่อนสั่งซื้อ</h3><p class="desc">ใช้บัญชี LINE ของคุณเพื่อยืนยันคำสั่งซื้อและติดตามสถานะได้</p><button class="btn" type="button" data-act="login">เข้าสู่ระบบด้วย LINE</button></div>`}
+    <div class="box col-l"><h3>ที่อยู่จัดส่ง</h3>
       <label class="fld">ชื่อผู้รับ<input id="c-name" data-f="name" autocomplete="name" value="${esc(draft.name)}"></label>
       <label class="fld">เบอร์โทร<input id="c-phone" data-f="phone" type="tel" inputmode="tel" autocomplete="tel" value="${esc(draft.phone)}"></label>
       <label class="fld">ที่อยู่จัดส่ง (รวมรหัสไปรษณีย์)<textarea id="c-address" data-f="address" rows="3" autocomplete="street-address">${esc(draft.address)}</textarea></label>
@@ -1132,6 +1208,8 @@ function viewMe(){
 }
 
 let bannerTimer = null;
+const DESK = matchMedia("(min-width:1024px)");
+DESK.addEventListener("change", () => { if (loaded) render(); });
 function render(){
   const r = route();
   $("top").innerHTML = topBar(r);
@@ -1146,11 +1224,13 @@ function render(){
   $("view").innerHTML = (views[r.page] || viewHome)();
   $("view").toggleAttribute("translate", false); if (r.page === "admin") $("view").setAttribute("translate", "no");
   document.body.classList.toggle("admin-mode", r.page === "admin");
+  document.body.dataset.page = r.page;
   if (shopStale && r.page !== "admin"){ shopStale = false; load().then(render).catch(() => 0); }
   if ((r.page === "cart" || r.page === "checkout") && cart.size){
     const t = totals();
-    pay.innerHTML = `<div><span><small>${t.ship === null ? "ยอดสินค้า" : "ยอดรวม"}</small><b>${baht(t.total)}</b></span><button type="button" data-act="${r.page === "cart" ? "checkout" : "order"}">${r.page === "cart" ? "ชำระเงิน" : "ยืนยันสั่งซื้อ"}</button></div>`;
-    pay.hidden = false; $("app").classList.add("haspay");
+    const bar = `<div><span><small>${t.ship === null ? "ยอดสินค้า" : "ยอดรวม"}</small><b>${baht(t.total)}</b></span><button type="button" data-act="${r.page === "cart" ? "checkout" : "order"}">${r.page === "cart" ? "ชำระเงิน" : "ยืนยันสั่งซื้อ"}</button></div>`;
+    if (DESK.matches) $("view").insertAdjacentHTML("beforeend", `<div class="paybar paybar-in">${bar}</div>`); // คอม: ปุ่มชำระเงินอยู่ในคอลัมน์ขวา
+    else { pay.innerHTML = bar; pay.hidden = false; $("app").classList.add("haspay"); }
   }
   if (r.page === "home") startBanners();
   tick();
@@ -2550,6 +2630,7 @@ document.addEventListener("input", e => {
   if (t.dataset.f){ draft[t.dataset.f] = t.type === "checkbox" ? t.checked : t.value; return; }
   if (t.dataset.pf && pf){ pf[t.dataset.pf] = t.type === "checkbox" ? t.checked : t.value; return; }
   if (t.id === "q"){ listQ = t.value; $("plist").innerHTML = productList(); }
+  if (t.id === "dq"){ listQ = t.value; if (route().page !== "products"){ go("#products"); setTimeout(() => { const d = $("dq"); if (d){ d.focus(); d.setSelectionRange(d.value.length, d.value.length); } }, 0); } else if ($("plist")){ $("plist").innerHTML = productList(); const q = $("q"); if (q) q.value = listQ; } }
   if (t.id === "only"){ listOnly = t.checked; $("plist").innerHTML = productList(); }
 });
 document.addEventListener("change", e => { const t = e.target; if (t.id === "shp-file" && t.files && t.files[0]) return shpImport(t.files[0]); if (t.dataset && t.dataset.shp !== undefined && SHPI.rows){ shpInput(t); const i = Number(t.dataset.shp), p = byId.get(SHPI.assign[i].pid); t.style.borderColor = p ? "" : "var(--red)"; if (p && t.value.trim().toUpperCase().split(/\s+/)[0] === p.id && !t.value.includes(" ")) t.value = p.id + " " + p.title; return; } if (t.dataset && t.dataset.ly && route().page === "admin"){ lyInput(t); return keepRender(); } if (t.dataset && t.dataset.pf && pf){ pf[t.dataset.pf] = t.type === "checkbox" ? t.checked : t.value; return; } if (t.dataset && (t.dataset.e || t.dataset.upkey || t.dataset.pdshow) && adminInput(t)) return; if (t.dataset && t.dataset.slip && t.files && t.files[0]) uploadSlip(t.dataset.slip, t.files[0]); });
