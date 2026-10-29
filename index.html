@@ -381,6 +381,8 @@ body.admin-mode .app{max-width:1280px;padding-bottom:40px}
 .fr-hero{margin-top:6px;background:var(--red);color:#fff;border-radius:24px;padding:18px 16px;border:var(--edge);box-shadow:0 4px 0 var(--ink);text-align:center;display:flex;flex-direction:column;gap:6px}
 .fr-hero h2{margin:0;font-size:22px}.fr-hero p{margin:0;font-size:14px}.fr-hero .cele{font-size:40px;line-height:1}
 .fr-why{background:var(--red-tint)}
+.fr-left{font-size:20px !important;font-weight:700;background:#fff;color:var(--red);border-radius:999px;padding:4px 16px;align-self:center;border:2px solid var(--ink)}.fr-left b{font-size:26px}
+.fr-req{font-size:12px;color:var(--red);font-weight:500}
 .fr-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;counter-reset:s}
 .fr-steps li{counter-increment:s;font-size:11.5px;text-align:center;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px}
 .fr-steps li::before{content:counter(s);width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-weight:700;background:var(--card)}
@@ -1754,8 +1756,9 @@ async function frLoad(){
 function frForm(){
   if (FR.f) return FR.f;
   const m = FR.data.mine, pre = FR.data.prefill || {};
-  FR.f = m ? {name: m.name, phone: m.phone, address: m.address, interests: [...m.interests], repeatItem: m.repeatItem, consentData: true, consentMarketing: m.marketing}
-    : {name: pre.name || draft.name || (profile && profile.displayName) || "", phone: pre.phone || draft.phone || "", address: pre.address || draft.address || "", interests: [], repeatItem: "", consentData: false, consentMarketing: false};
+  const reps = m ? String(m.repeatItem || "").split(/\s*,\s*/).filter(Boolean) : [];
+  FR.f = m ? {name: m.name, phone: m.phone, address: m.address, interests: [...m.interests], interestNote: m.interestNote || "", repeatItems: reps.filter(x => FR_REPEAT.includes(x)), repeatOther: reps.filter(x => !FR_REPEAT.includes(x)).join(", "), consentData: true, consentMarketing: m.marketing}
+    : {name: pre.name || draft.name || (profile && profile.displayName) || "", phone: pre.phone || draft.phone || "", address: pre.address || draft.address || "", interests: [], interestNote: "", repeatItems: [], repeatOther: "", consentData: false, consentMarketing: false};
   return FR.f;
 }
 function viewFree(){
@@ -1788,22 +1791,23 @@ function viewFree(){
       <button class="btn line" type="button" data-act="frreload">เพิ่มเพื่อนแล้ว ไปต่อ</button>
       <p class="desc" style="margin:0">ถ้าเคยบล็อกไว้ ให้ปลดบล็อกในแชตก่อน แล้วกด "เพิ่มเพื่อนแล้ว ไปต่อ"</p></div>`;
   const f = frForm();
-  return `<div class="fr-hero"><div class="cele">🎁</div><h2>${m ? "แก้ไขข้อมูล" : "ลงทะเบียนรับฟรี!"}</h2><p>${esc(x.title)} · ส่งฟรีทั่วไทย${x.left !== null && !m ? ` · เหลือ <b>${x.left}</b> ชุดเดือนนี้` : ""}</p></div>
-    <div class="box fr-why"><h3>เราเก็บข้อมูลไปทำอะไร</h3>
+  return `<div class="fr-hero"><div class="cele">🎁</div><h2>${m ? "แก้ไขข้อมูล" : "ลงทะเบียนรับฟรี!"}</h2><p>${esc(x.title)} · ไม่มีค่าใช้จ่าย</p>${x.left !== null && !m ? `<p class="fr-left">เหลือ <b>${x.left}</b> ชุดสุดท้าย</p>` : ""}</div>
+    <div class="box fr-why"><h3>ทำไมถึงต้องเก็บข้อมูล?</h3>
       <ul class="gl"><li>📦 ส่งสินค้าตัวอย่างไปให้คุณ (ชื่อ เบอร์ ที่อยู่)</li><li>⭐ ถามความเห็นหลังได้ของ 1 ครั้งทาง LINE</li><li>💌 ส่งโปรเฉพาะหมวดที่สนใจ เฉพาะเมื่อคุณยินยอม</li></ul>
       <p class="desc" style="margin:0">เก็บไม่เกิน 2 ปี แก้ไขหรือลบเองได้ที่หน้านี้ทุกเมื่อ · <a href="#privacy" style="text-decoration:underline">นโยบายความเป็นส่วนตัว</a></p></div>
     <div class="box"><h3>ข้อมูลจัดส่ง</h3>
       <label class="fld">ชื่อ-นามสกุลผู้รับ<input data-fr="name" maxlength="100" autocomplete="name" value="${esc(f.name)}"></label>
       <label class="fld">เบอร์โทร<input data-fr="phone" type="tel" inputmode="tel" maxlength="20" autocomplete="tel" value="${esc(f.phone)}"></label>
       <label class="fld">ที่อยู่ (รวมรหัสไปรษณีย์ 5 หลัก ส่งเฉพาะในไทย)<textarea data-fr="address" rows="3" maxlength="500" autocomplete="street-address">${esc(f.address)}</textarea></label></div>
-    <div class="box"><h3>หมวดที่สนใจ <small class="desc">(เลือกได้หลายอัน อย่างน้อย 1)</small></h3>
-      <div class="chips">${x.interests.map(t => `<button class="chip" type="button" data-act="frint" data-v="${esc(t)}" aria-pressed="${f.interests.includes(t)}">${f.interests.includes(t) ? "✓ " : ""}${esc(t)}</button>`).join("")}</div></div>
-    <div class="box"><h3>สินค้าที่ซื้อซ้ำบ่อยที่สุด <small class="desc">(ไม่บังคับ)</small></h3>
-      <div class="chips">${FR_REPEAT.map(t => `<button class="chip" type="button" data-act="frrep" data-v="${esc(t)}" aria-pressed="${f.repeatItem === t}">${esc(t)}</button>`).join("")}</div>
-      <label class="fld">หรือพิมพ์เอง<input data-fr="repeatItem" maxlength="60" value="${esc(f.repeatItem)}" placeholder="เช่น ถุงซิปล็อก"></label></div>
+    <div class="box"><h3>หมวดหมู่ที่สนใจ <small class="fr-req">*จำเป็น เลือกได้มากกว่า 1 ตัวเลือก</small></h3>
+      <div class="chips">${x.interests.map(t => `<button class="chip" type="button" data-act="frint" data-v="${esc(t)}" aria-pressed="${f.interests.includes(t)}">${f.interests.includes(t) ? "✓ " : ""}${esc(t)}</button>`).join("")}</div>
+      <label class="fld">อยากให้มีหมวดอื่นเพิ่มเติม (ไม่บังคับ)<input data-fr="interestNote" maxlength="200" value="${esc(f.interestNote)}" placeholder="เช่น อุปกรณ์แคมปิ้ง"></label></div>
+    <div class="box"><h3>สินค้าที่ซื้อซ้ำบ่อยที่สุด <small class="fr-req">*จำเป็น เลือกได้มากกว่า 1 ตัวเลือก</small></h3>
+      <div class="chips">${FR_REPEAT.map(t => `<button class="chip" type="button" data-act="frrep" data-v="${esc(t)}" aria-pressed="${f.repeatItems.includes(t)}">${f.repeatItems.includes(t) ? "✓ " : ""}${esc(t)}</button>`).join("")}</div>
+      <label class="fld">สินค้าอื่น ๆ<input data-fr="repeatOther" maxlength="60" value="${esc(f.repeatOther)}" placeholder="เช่น ถุงซิปล็อก"></label></div>
     <div class="box">
       <label class="check" style="margin:0;align-items:flex-start"><input type="checkbox" data-fr="consentData" ${f.consentData ? "checked" : ""}> <span><b>(จำเป็น)</b> ยินยอมให้ บริษัท ปอนปอน แอนด์ โค จำกัด ใช้ชื่อ เบอร์โทร และที่อยู่ เพื่อส่งสินค้าตัวอย่างและสอบถามความเห็นหลังได้รับ ตาม<a href="#privacy" style="text-decoration:underline">นโยบายความเป็นส่วนตัว</a></span></label>
-      <label class="check" style="margin:0;align-items:flex-start"><input type="checkbox" data-fr="consentMarketing" ${f.consentMarketing ? "checked" : ""}> <span>(ไม่บังคับ) ยินดีรับข่าวสารและโปรโมชั่นทาง LINE ตามหมวดที่สนใจ ไม่ติ๊กก็ยังรับของฟรีได้</span></label>
+      <label class="check" style="margin:0;align-items:flex-start"><input type="checkbox" data-fr="consentMarketing" ${f.consentMarketing ? "checked" : ""}> <span>(ไม่บังคับ) ยินดีรับข่าวสารและโปรโมชั่นจาก PonPon ตามความสนใจ</span></label>
       <p class="warn" id="fr-err" style="margin:0" ${FR.err ? "" : "hidden"}>${esc(FR.err)}</p>
       <button class="btn" type="button" data-act="frsave" ${FR.busy ? "disabled" : ""}>${FR.busy ? "กำลังส่ง..." : m ? "บันทึกการแก้ไข" : "ลงทะเบียนรับฟรี"}</button>
       ${m ? `<button class="btn line" type="button" data-act="frcancel">ยกเลิก</button>` : ""}</div>`;
@@ -1818,7 +1822,8 @@ function frCheck(f){
   if (String(f.name || "").trim().length < 2) return "กรุณากรอกชื่อผู้รับนะคะ";
   if (!/^0\d{8,9}$/.test(ph)) return "เบอร์โทรไม่ถูกต้องค่ะ (ตัวเลข 9–10 หลัก ขึ้นต้นด้วย 0)";
   if (String(f.address || "").trim().length < 15 || !/(^|\D)[1-9]\d{4}(\D|$)/.test(f.address)) return "กรุณากรอกที่อยู่ให้ครบ พร้อมรหัสไปรษณีย์ 5 หลักนะคะ";
-  if (!f.interests.length) return "กรุณาเลือกหมวดที่สนใจอย่างน้อย 1 หมวดนะคะ";
+  if (!f.interests.length) return "กรุณาเลือกหมวดหมู่ที่สนใจอย่างน้อย 1 หมวดนะคะ";
+  if (!f.repeatItems.length && !String(f.repeatOther || "").trim()) return "กรุณาเลือกสินค้าที่ซื้อซ้ำบ่อยอย่างน้อย 1 อย่างนะคะ";
   if (!f.consentData) return "กรุณากดยินยอม (ข้อจำเป็น) ก่อนนะคะ";
   return "";
 }
@@ -1840,7 +1845,7 @@ async function frSave(){
   keepRender();
 }
 async function frMarketing(on){
-  try { const m = FR.data.mine; const res = await api("api/free", {method: "POST", body: JSON.stringify({name: m.name, phone: m.phone, address: m.address, interests: m.interests, repeatItem: m.repeatItem, consentData: true, consentMarketing: on})}, await idToken());
+  try { const m = FR.data.mine; const res = await api("api/free", {method: "POST", body: JSON.stringify({name: m.name, phone: m.phone, address: m.address, interests: m.interests, interestNote: m.interestNote, repeatItem: m.repeatItem, consentData: true, consentMarketing: on})}, await idToken());
     FR.data.mine = res.mine; toast(on ? "เปิดรับข่าวสารแล้ว" : "ปิดรับข่าวสารแล้ว"); }
   catch (e) { toast(e.message); }
   keepRender();
@@ -1848,7 +1853,7 @@ async function frMarketing(on){
 function frClick(a, b){
   if (a === "frreload") return frLoad();
   if (a === "frint"){ const f = frForm(), v = b.dataset.v, i = f.interests.indexOf(v); if (i >= 0) f.interests.splice(i, 1); else f.interests.push(v); FR.err = ""; return keepRender(); }
-  if (a === "frrep"){ const f = frForm(); f.repeatItem = f.repeatItem === b.dataset.v ? "" : b.dataset.v; return keepRender(); }
+  if (a === "frrep"){ const f = frForm(), v = b.dataset.v, i = f.repeatItems.indexOf(v); if (i >= 0) f.repeatItems.splice(i, 1); else f.repeatItems.push(v); FR.err = ""; return keepRender(); }
   if (a === "frsave") return frSave();
   if (a === "fredit"){ FR.edit = true; FR.f = null; FR.err = ""; return keepRender(); }
   if (a === "frcancel"){ FR.edit = false; FR.f = null; FR.err = ""; return keepRender(); }
@@ -1916,7 +1921,7 @@ function adFree(){
         <div class="acc">${r.status === "new" ? `<label class="check" style="margin:0"><input type="checkbox" data-fasel="${esc(r.code)}" ${FA.sel.has(r.code) ? "checked" : ""}> <b translate="no">${esc(r.code)}</b></label>` : `<b translate="no">${esc(r.code)}</b>`}<span class="bo-st ${r.status === "new" ? "on" : r.status === "rejected" || r.status === "lapsed" ? "off" : "soon"}">${esc(r.statusText)}</span></div>
         <span translate="no"><b>${esc(r.name || "(ลบข้อมูลแล้ว)")}</b> · ${esc(r.phone)}${r.lineName ? ` · LINE: ${esc(r.lineName)}` : ""}</span>
         <span class="desc" translate="no">${esc(r.address)}</span>
-        <span class="desc">สนใจ: ${esc(r.interests.join(", ") || "-")}${r.repeatItem ? " · ซื้อซ้ำ: " + esc(r.repeatItem) : ""} · มาจาก: ${esc(r.src || "-")} · ${r.marketing ? "✅ รับข่าวสาร" : "ไม่รับข่าวสาร"}</span>
+        <span class="desc">สนใจ: ${esc(r.interests.join(", ") || "-")}${r.interestNote ? " · อยากให้มีเพิ่ม: " + esc(r.interestNote) : ""}${r.repeatItem ? " · ซื้อซ้ำ: " + esc(r.repeatItem) : ""} · มาจาก: ${esc(r.src || "-")} · ${r.marketing ? "✅ รับข่าวสาร" : "ไม่รับข่าวสาร"}</span>
         <span class="desc">ลงทะเบียน ${esc(dateText(r.createdAt))}${r.number ? " · ออเดอร์ " + esc(r.number) : ""}${r.tracking ? " · พัสดุ " + esc(r.tracking) : ""}${r.rating ? " · " + "★".repeat(r.rating) : ""}${r.askAt && !r.rating ? " · ส่งการ์ดให้ดาวแล้ว" : ""}</span>
         <div class="bo-btns">${r.status === "new" ? `<button class="mini line" type="button" data-act="ad-fast" data-c="${esc(r.code)}" data-s="rejected">ไม่ส่ง</button>` : ""}
           ${r.status === "rejected" ? `<button class="mini line" type="button" data-act="ad-fast" data-c="${esc(r.code)}" data-s="new">กลับเป็น "ใหม่"</button>` : ""}
@@ -1976,9 +1981,9 @@ function faInput(t){
   return true;
 }
 function faCsv(){
-  const head = ["รหัส", "วันที่ลงทะเบียน", "สถานะ", "ชื่อ", "เบอร์", "ที่อยู่", "ชื่อ LINE", "หมวดที่สนใจ", "สินค้าซื้อซ้ำ", "มาจาก", "รับข่าวสาร", "เลขออเดอร์", "เลขพัสดุ", "ดาว"];
+  const head = ["รหัส", "วันที่ลงทะเบียน", "สถานะ", "ชื่อ", "เบอร์", "ที่อยู่", "ชื่อ LINE", "หมวดที่สนใจ", "หมวดที่อยากให้มีเพิ่ม", "สินค้าซื้อซ้ำ", "มาจาก", "รับข่าวสาร", "เลขออเดอร์", "เลขพัสดุ", "ดาว"];
   const q = v => '"' + String(v ?? "").replace(/"/g, '""') + '"';
-  const lines = [head, ...faRows().map(r => [r.code, new Date(r.createdAt).toLocaleString("th-TH"), r.statusText, r.name, "'" + r.phone, r.address, r.lineName, r.interests.join(", "), r.repeatItem, r.src, r.marketing ? "ยินยอม" : "ไม่", r.number, r.tracking, r.rating || ""])].map(l => l.map(q).join(","));
+  const lines = [head, ...faRows().map(r => [r.code, new Date(r.createdAt).toLocaleString("th-TH"), r.statusText, r.name, "'" + r.phone, r.address, r.lineName, r.interests.join(", "), r.interestNote, r.repeatItem, r.src, r.marketing ? "ยินยอม" : "ไม่", r.number, r.tracking, r.rating || ""])].map(l => l.map(q).join(","));
   const blob = new Blob(["﻿" + lines.join("\r\n")], {type: "text/csv;charset=utf-8"});
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "ponpon-free-" + today() + ".csv"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
