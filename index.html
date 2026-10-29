@@ -1528,6 +1528,7 @@ function viewOrder(number){
 /* ---------- หลังบ้านสำหรับแอดมิน (#admin) ----------
    เข้าได้เฉพาะบัญชี LINE ที่เป็นแอดมิน ครั้งแรกต้องกรอกรหัสแอดมิน (ADMIN_CODE ที่ตั้งใน Cloudflare) */
 let AD = {state: "", data: null, tab: "dash", edit: null, err: "", busy: false, isAdmin: false};
+const adminWebLink = () => "https://aimclinton.github.io/ponpon-shop/?page=admin";
 const adminLink = () => (CONFIG.LIFF_ID ? "https://miniapp.line.me/" + CONFIG.LIFF_ID : location.origin + location.pathname) + "?page=admin";
 async function adminCheck(){
   const token = await idToken(); if (!token) return false;
@@ -1617,7 +1618,11 @@ function adStore(){
 function adTeam(){
   return `<div class="box"><h3>แอดมิน</h3>${AD.data.admins.map(a => `<div class="acc"><span>${esc(a.name)}${a.me ? " (คุณ)" : ""}</span>${a.me ? "" : `<button class="mini line" type="button" data-act="ad-rmadmin" data-v="${esc(a.id)}" data-n="${esc(a.name)}">ลบ</button>`}</div>`).join("")}</div>
     <div class="box"><h3>เพิ่มแอดมินใหม่</h3><p class="desc">ส่งลิงก์นี้ให้คนที่จะเป็นแอดมิน เปิดในแอป LINE แล้วกรอกรหัสแอดมินครั้งเดียว (บอกรหัสแบบตัวต่อตัว อย่าโพสต์ในกลุ่ม)</p>
-      <p class="msg">${esc(adminLink())}</p><button class="btn line" type="button" data-act="copynum" data-v="${esc(adminLink())}">คัดลอกลิงก์หลังบ้าน</button></div>
+      <b style="font-size:13.5px">📱 มือถือ (เปิดในแอป LINE)</b>
+      <p class="msg">${esc(adminLink())}</p><button class="btn line" type="button" data-act="copynum" data-v="${esc(adminLink())}">คัดลอกลิงก์มือถือ</button>
+      <b style="font-size:13.5px">💻 คอม (เปิดใน Chrome / Safari แล้วล็อกอิน LINE)</b>
+      <p class="msg">${esc(adminWebLink())}</p><button class="btn line" type="button" data-act="copynum" data-v="${esc(adminWebLink())}">คัดลอกลิงก์คอม</button>
+      <button class="btn" type="button" data-act="copynum" data-v="${esc("ลิงก์หลังบ้าน PonPon\n📱 มือถือ: " + adminLink() + "\n💻 คอม: " + adminWebLink())}">คัดลอกทั้ง 2 ลิงก์</button></div>
     <div class="box"><h3>ประวัติการแก้ไขล่าสุด</h3>${AD.data.log.length ? AD.data.log.map(l => `<div class="desc">${esc(l.time)} · ${esc(l.detail)}</div>`).join("") : `<p class="desc">ยังไม่มี</p>`}</div>`;
 }
 
