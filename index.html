@@ -1783,6 +1783,10 @@ function viewFree(){
   }
   if (!m && !x.open) return `<div class="fr-hero"><div class="cele">🎁</div><h2>ปิดรับลงทะเบียนชั่วคราว</h2><p>ติดตามรอบใหม่ได้ทาง LINE @ponponco นะคะ</p></div>`;
   if (!m && x.left === 0) return `<div class="fr-hero"><div class="cele">🎁</div><h2>ของฟรีเดือนนี้หมดแล้ว</h2><p>รอบหน้าเปิดต้นเดือนถัดไปนะคะ</p></div>`;
+  if (!m && x.friend === false) return `<div class="fr-hero"><div class="cele">💚</div><h2>เพิ่มเพื่อนก่อนนะคะ</h2><p>ลงทะเบียนรับของฟรีได้เฉพาะเพื่อน LINE ${esc(x.oa || "@ponponco")}<br>เราจะแจ้งการจัดส่งและส่งคูปองให้ทางแชตนี้</p></div>
+    <div class="box"><a class="btn" href="https://line.me/R/ti/p/${encodeURIComponent(x.oa || "@ponponco")}" style="text-align:center;text-decoration:none">➕ เพิ่มเพื่อน ${esc(x.oa || "@ponponco")}</a>
+      <button class="btn line" type="button" data-act="frreload">เพิ่มเพื่อนแล้ว ไปต่อ</button>
+      <p class="desc" style="margin:0">ถ้าเคยบล็อกไว้ ให้ปลดบล็อกในแชตก่อน แล้วกด "เพิ่มเพื่อนแล้ว ไปต่อ"</p></div>`;
   const f = frForm();
   return `<div class="fr-hero"><div class="cele">🎁</div><h2>${m ? "แก้ไขข้อมูล" : "ลงทะเบียนรับฟรี!"}</h2><p>${esc(x.title)} · ส่งฟรีทั่วไทย${x.left !== null && !m ? ` · เหลือ <b>${x.left}</b> ชุดเดือนนี้` : ""}</p></div>
     <div class="box fr-why"><h3>เราเก็บข้อมูลไปทำอะไร</h3>
@@ -1832,7 +1836,7 @@ async function frSave(){
         <button class="btn" type="button" data-act="closesheet">ตกลง</button>`);
     } else toast(res.note || "บันทึกแล้ว");
     memberAt = 0;
-  } catch (e) { FR.busy = false; FR.err = e.message; }
+  } catch (e) { FR.busy = false; FR.err = e.message; if (/เพิ่มเพื่อน/.test(e.message)) FR.data.friend = false; }
   keepRender();
 }
 async function frMarketing(on){
@@ -2015,7 +2019,9 @@ function adRichMenu(){
   const live = x && x.ids && x.ids["pp-main"] && x.defaultId === x.ids["pp-main"];
   return `<div class="box"><h3>📱 Rich Menu 3 หน้า</h3>
       ${!x ? `<p class="desc">กำลังโหลด...</p>` : `<p class="desc" style="margin:0">${live ? `🟢 ใช้งานอยู่ อัปโหลดล่าสุด ${esc(dateText(x.at))}` : x.at ? "⚠️ เมนูเริ่มต้นของ OA ไม่ใช่เมนูชุดนี้" : "ยังไม่เคยอัปโหลดจากหลังบ้าน"}</p>
-        ${x.aliases.length ? `<p class="desc" style="margin:0" translate="no">${x.aliases.filter(a => /^pp-/.test(a.alias)).map(a => esc(a.alias)).join(" · ")}</p>` : ""}`}
+        ${x.aliases.length ? `<p class="desc" style="margin:0" translate="no">${x.aliases.filter(a => /^pp-/.test(a.alias)).map(a => esc(a.alias)).join(" · ")}</p>` : ""}
+        ${(() => { const keep = Object.values(x.ids || {}), old = x.menus.filter(mm => !keep.includes(mm.id)); return old.length ? `<p class="warn" style="margin:0">มีเมนูเก่าค้างอยู่ ${old.length} อัน (${old.map(mm => esc(mm.name)).join(", ")}) ลูกค้าที่เคยกดแท็บของเมนูเก่าจะยังเห็นเมนูเก่าอยู่ กดลบเพื่อให้ทุกคนเห็นเมนูใหม่</p><button class="btn" type="button" data-act="ad-rmnclean">ลบเมนูเก่า ${old.length} อัน</button>` : ""; })()}
+        ${x.mine && !Object.values(x.ids || {}).includes(x.mine) ? `<p class="warn" style="margin:0">บัญชีของคุณยังถูกผูกกับเมนูเก่า</p>` : ""}`}
       <p class="desc" style="margin:0">แท็บด้านบน 3 แท็บกดสลับหน้าได้ทุกหน้า รูปควรเป็น 2500×1686 px (ถ้าขนาดไม่ตรง ระบบจะย่อและครอปให้ และแปลงเป็น JPG ไม่เกิน 1 MB)</p></div>
     ${pages.map(([k, t, d]) => `<div class="box"><h3>${t}</h3><p class="desc" style="margin:0">${esc(d)}</p>
       ${RMN.img[k] ? `<img src="${RMN.img[k]}" alt="" style="width:100%;border-radius:12px;border:1.5px solid var(--ink)">` : ""}
@@ -2031,6 +2037,7 @@ function rmInput(t){
 }
 function rmClick(a){
   if (a === "ad-rmnreload") return rmLoad();
+  if (a === "ad-rmnclean"){ toast("กำลังลบเมนูเก่า..."); return idToken().then(t => api("api/admin/richmenu", {method: "POST", body: JSON.stringify({action: "cleanup"})}, t)).then(d => { RMN.data = d; toast("ลบเมนูเก่าแล้ว ปิดแชตแล้วเปิดใหม่เพื่อดูเมนูใหม่"); keepRender(); }).catch(e => toast(e.message)); }
   if (a === "ad-rmngo"){ RMN.busy = true; keepRender(); toast("กำลังสร้างเมนู...");
     return idToken().then(t => api("api/admin/richmenu", {method: "POST", body: JSON.stringify({images: RMN.img})}, t))
       .then(d => { RMN.data = d; RMN.busy = false; toast("เปิดใช้ Rich Menu ใหม่แล้ว"); keepRender(); })
