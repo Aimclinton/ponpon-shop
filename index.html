@@ -378,6 +378,19 @@ body.admin-mode .app{max-width:1280px;padding-bottom:40px}
 .hrow > i{font-style:normal;font-size:20px;flex:none;width:30px;text-align:center}
 .hrow > span{flex:1;min-width:0;display:flex;flex-direction:column}.hrow > span b{font-size:14px;font-weight:500}.hrow small{color:var(--muted);font-size:12px}
 .hrow .plus{color:#1b7a3a;font-family:var(--display);white-space:nowrap}.hrow .neg{font-family:var(--display);white-space:nowrap}
+.fr-hero{margin-top:6px;background:var(--red);color:#fff;border-radius:24px;padding:18px 16px;border:var(--edge);box-shadow:0 4px 0 var(--ink);text-align:center;display:flex;flex-direction:column;gap:6px}
+.fr-hero h2{margin:0;font-size:22px}.fr-hero p{margin:0;font-size:14px}.fr-hero .cele{font-size:40px;line-height:1}
+.fr-why{background:var(--red-tint)}
+.fr-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;counter-reset:s}
+.fr-steps li{counter-increment:s;font-size:11.5px;text-align:center;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px}
+.fr-steps li::before{content:counter(s);width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-weight:700;background:var(--card)}
+.fr-steps li.on{color:var(--ink);font-weight:600}.fr-steps li.on::before{content:"✓";background:var(--red);color:#fff;border-color:var(--ink)}
+.fa-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.fa-stat{border:1.5px solid var(--ink);border-radius:12px;padding:6px 4px;background:var(--card);display:flex;flex-direction:column;align-items:center;line-height:1.2}
+.fa-stat b{font-size:18px}.fa-stat small{font-size:11px;color:var(--muted)}.fa-stat[aria-pressed="true"]{background:var(--ink);color:#fff}.fa-stat[aria-pressed="true"] small{color:#ddd}
+.fa-q{width:100%;font-size:15px;border:1.5px solid var(--ink);border-radius:12px;padding:9px 12px}
+.fa-row{gap:4px}
+.pv h3{margin:16px 0 4px;font-size:16px}.pv p{margin:6px 0;font-size:14px;line-height:1.6}.pv-ul{margin:4px 0;padding-left:20px;font-size:14px;line-height:1.6}
 .invite{margin-top:4px;background:var(--red);color:#fff;border-radius:24px;padding:18px 16px;border:var(--edge);box-shadow:0 4px 0 var(--ink);text-align:center;display:flex;flex-direction:column;gap:10px}
 .invite h2{font-family:var(--display);font-weight:700;font-size:20px;line-height:1.3}
 .invite .desc{color:#fff;opacity:.9}
@@ -469,7 +482,7 @@ body.admin-mode .app{max-width:1280px;padding-bottom:40px}
   .paybar{bottom:28px;left:auto;right:max(32px,calc((100vw - 1240px) / 2 + 32px));width:440px;padding:0}
   .paybar > div{max-width:none}
   /* หน้าอื่น ๆ อยู่กลางจอ อ่านง่าย */
-  body[data-page="me"] #view,body[data-page="orders"] #view,body[data-page="order"] #view,body[data-page="points"] #view,body[data-page="spin"] #view,body[data-page="invite"] #view,body[data-page="profile"] #view,body[data-page="tiers"] #view,body[data-page="rewards"] #view{max-width:860px;margin:0 auto}
+  body[data-page="me"] #view,body[data-page="orders"] #view,body[data-page="order"] #view,body[data-page="points"] #view,body[data-page="spin"] #view,body[data-page="invite"] #view,body[data-page="profile"] #view,body[data-page="tiers"] #view,body[data-page="rewards"] #view,body[data-page="free"] #view,body[data-page="privacy"] #view{max-width:860px;margin:0 auto}
   body[data-page="orders"] #view .items{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   .wheel{width:420px}
   /* หน้าต่างเด้ง: กลางจอ */
@@ -1048,7 +1061,7 @@ function topBar(r){
 function navBar(r){
   const n = [...cart.values()].reduce((a, b) => a + b, 0);
   const items = [["home", "#home", "หน้าแรก", "home"], ["products", "#products", "สินค้า", "grid"], ["cart", "#cart", "ตะกร้า", "cart"], ["orders", "#orders", "ออเดอร์", "box"], ["me", "#me", "ของฉัน", "user"]];
-  const cur = r.page === "product" ? "products" : r.page === "checkout" ? "cart" : r.page === "order" ? "orders" : ["admin", "points", "spin", "invite", "profile", "tiers", "rewards"].includes(r.page) ? "me" : r.page;
+  const cur = r.page === "product" ? "products" : r.page === "checkout" ? "cart" : r.page === "order" ? "orders" : ["admin", "points", "spin", "invite", "profile", "tiers", "rewards", "free", "privacy"].includes(r.page) ? "me" : r.page;
   const desk = `<button type="button" class="nav-brand" data-act="nav" data-to="#home" aria-label="หน้าแรก"><img src="${esc(CONFIG.LOGO_URL)}" alt=""><b>PonPon<small>SHOPPING CENTER</small></b></button>
     <label class="nav-search">${ic("search")}<input id="dq" type="search" placeholder="ค้นหาสินค้า" aria-label="ค้นหาสินค้า" value="${esc(listQ)}"></label>`;
   return desk + items.map(([k, to, label, icon]) => `<button type="button" data-act="nav" data-to="${to}" ${cur === k ? 'aria-current="page"' : ""}>${ic(icon)}<span>${label}</span>${k === "cart" && n ? `<em>${n}</em>` : ""}</button>`).join("")
@@ -1222,7 +1235,7 @@ function render(){
     $("view").innerHTML = loadError ? `<div class="state" style="margin-top:20px">โหลดสินค้าไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่อีกครั้ง<br><br><button class="btn" type="button" data-act="retry">ลองใหม่</button></div>` : `<div class="state" style="margin-top:20px">แป๊บนึงนะคะ กำลังจัดของให้อยู่~</div>`;
     return;
   }
-  const views = {home: viewHome, products: viewProducts, product: () => viewProduct(r.arg), cart: viewCart, checkout: viewCheckout, me: viewMe, orders: viewOrders, order: () => viewOrder(r.arg), admin: viewAdmin, points: viewPoints, spin: viewSpin, invite: viewInvite, profile: viewProfile, tiers: viewTiers, rewards: viewRewards};
+  const views = {home: viewHome, products: viewProducts, product: () => viewProduct(r.arg), cart: viewCart, checkout: viewCheckout, me: viewMe, orders: viewOrders, order: () => viewOrder(r.arg), admin: viewAdmin, points: viewPoints, spin: viewSpin, invite: viewInvite, profile: viewProfile, tiers: viewTiers, rewards: viewRewards, free: viewFree, privacy: viewPrivacy};
   $("view").innerHTML = (views[r.page] || viewHome)();
   $("view").toggleAttribute("translate", false); if (r.page === "admin") $("view").setAttribute("translate", "no");
   document.body.classList.toggle("admin-mode", r.page === "admin");
@@ -1559,8 +1572,8 @@ function viewAdmin(){
       <label class="fld">รหัสแอดมิน<input id="bo-code" type="password" autocomplete="off"></label>
       <p class="warn" id="bo-err" style="margin:0" hidden></p>
       <button class="btn" type="button" data-act="ad-login">เข้าสู่หลังบ้าน</button></div>`;
-  const tabs = [["dash", "🏠 ภาพรวม"], ["report", "📊 รายงานยอดขาย"], ["products", "📦 สินค้าและรูป"], ["loyalty", "🌟 สมาชิก & แต้ม"], ["coupons", "🎟 โค้ดส่วนลด"], ["promos", "🎁 โปรโมชั่น"], ["store", "🏪 ตั้งค่าร้าน"], ["notify", "🔔 แจ้งเตือน LINE"], ["team", "👥 ทีมแอดมิน"]];
-  const body = {dash: adDash, report: adReport, products: adProducts, loyalty: adLoyalty, coupons: adCoupons, promos: adPromos, store: adStore, notify: adNotify, team: adTeam}[AD.tab]();
+  const tabs = [["dash", "🏠 ภาพรวม"], ["report", "📊 รายงานยอดขาย"], ["products", "📦 สินค้าและรูป"], ["loyalty", "🌟 สมาชิก & แต้ม"], ["free", "🎁 รับของฟรี"], ["richmenu", "📱 Rich Menu"], ["coupons", "🎟 โค้ดส่วนลด"], ["promos", "🎁 โปรโมชั่น"], ["store", "🏪 ตั้งค่าร้าน"], ["notify", "🔔 แจ้งเตือน LINE"], ["team", "👥 ทีมแอดมิน"]];
+  const body = {dash: adDash, report: adReport, products: adProducts, loyalty: adLoyalty, coupons: adCoupons, promos: adPromos, store: adStore, notify: adNotify, team: adTeam, free: adFree, richmenu: adRichMenu}[AD.tab]();
   return `<div class="bo-shell"><nav class="bo-side">${tabs.map(([k, t]) => `<button class="tab" type="button" data-act="ad-tab" data-k="${k}" aria-pressed="${AD.tab === k}">${t}</button>`).join("")}
       <a class="bo-shop" href="#home">← กลับหน้าร้าน</a></nav><div class="bo-main">${body}</div></div>`;
 }
@@ -1686,7 +1699,8 @@ const NT_LIST = [
   ["zort", "🧾 ZORT มีปัญหา", "สร้างออเดอร์หรือบันทึกรับชำระใน ZORT ไม่สำเร็จ"],
   ["error", "🚨 ระบบขัดข้อง", "แจ้งไม่เกินชั่วโมงละครั้ง"],
   ["neworder", "🛒 มีออเดอร์ใหม่ (ยังไม่จ่าย)", "ใช้โควตาข้อความเยอะ แนะนำให้ปิดไว้ แล้วรอแจ้งตอนจ่ายแล้วแทน"],
-  ["daily", "📊 สรุปยอดประจำวัน", "ส่งวันละครั้งหลัง 2 ทุ่ม"]];
+  ["daily", "📊 สรุปยอดประจำวัน", "ส่งวันละครั้งหลัง 2 ทุ่ม"],
+  ["free", "🎁 มีคนลงทะเบียนรับของฟรี", "แจ้งทุกครั้งที่มีคนลงทะเบียน เพื่อเข้าไปอนุมัติส่งของ (ไม่ส่งข้อมูลส่วนตัวในแชต)"]];
 async function ntLoad(){
   NT.state = "loading"; NT.err = "";
   try { NT.data = await api("api/admin/notify", {method: "GET"}, await idToken()); NT.ev = {...NT.data.events}; NT.state = "ok"; }
@@ -1727,6 +1741,302 @@ function adNotify(){
     ${x.log.length ? `<div class="box"><h3>ส่งล่าสุด</h3>${x.log.map(l => `<div class="desc">${esc(l.time)} · ${esc(l.detail)}</div>`).join("")}</div>` : ""}`;
 }
 
+/* ---------- หน้า: ลงทะเบียนรับของฟรี (#free) ---------- */
+let FR = {state: "", data: null, f: null, edit: false, busy: false, err: ""};
+const FR_REPEAT = ["ถุงขยะ", "ทิชชู่", "ทิชชู่เปียก", "น้ำยาล้างจาน", "น้ำยาทำความสะอาด"];
+const frSrc = () => store.get("ponpon-free-src", "");
+async function frLoad(){
+  FR.state = "loading"; FR.err = "";
+  try { FR.data = await api("api/free", {method: "GET"}, await idToken()); FR.state = "ok"; }
+  catch (e) { FR.state = "error"; FR.err = e.message; }
+  if (route().page === "free") keepRender();
+}
+function frForm(){
+  if (FR.f) return FR.f;
+  const m = FR.data.mine, pre = FR.data.prefill || {};
+  FR.f = m ? {name: m.name, phone: m.phone, address: m.address, interests: [...m.interests], repeatItem: m.repeatItem, consentData: true, consentMarketing: m.marketing}
+    : {name: pre.name || draft.name || (profile && profile.displayName) || "", phone: pre.phone || draft.phone || "", address: pre.address || draft.address || "", interests: [], repeatItem: "", consentData: false, consentMarketing: false};
+  return FR.f;
+}
+function viewFree(){
+  if (!profile) return `<div class="fr-hero"><div class="cele">🎁</div><h2>ลงทะเบียนรับของฟรี</h2><p>เข้าสู่ระบบด้วย LINE ก่อนลงทะเบียนนะคะ</p></div>
+    <div class="state" style="margin-top:14px"><button class="btn" type="button" data-act="login">เข้าสู่ระบบด้วย LINE</button></div>`;
+  if (!FR.state) frLoad();
+  if (FR.state === "error") return `<div class="state" style="margin-top:20px">${esc(FR.err || "โหลดไม่สำเร็จ")}<br><br><button class="btn" type="button" data-act="frreload">ลองใหม่</button></div>`;
+  if (!FR.data) return `<div class="state" style="margin-top:20px">กำลังโหลด...</div>`;
+  const x = FR.data, m = x.mine;
+  if (m && !FR.edit){
+    const steps = ["new", "shipping", "received", "feedback"], at = m.status === "bought" || m.status === "lapsed" ? 3 : Math.max(0, steps.indexOf(m.status));
+    return `<div class="fr-hero"><div class="cele">${m.status === "rejected" ? "🙏" : "🎉"}</div><h2>${m.status === "rejected" ? "ขออภัย รอบนี้ยังส่งให้ไม่ได้" : "ลงทะเบียนเรียบร้อยแล้ว!"}</h2><p>รหัสของคุณ <b translate="no">${esc(m.code)}</b> · ${esc(x.title)}</p></div>
+      ${m.removed ? `<div class="box"><p class="desc" style="margin:0">ลบข้อมูลส่วนตัวของคุณแล้วค่ะ</p></div>` : `<div class="box"><h3>สถานะ</h3>
+        ${m.status === "rejected" ? `<p class="desc" style="margin:0">ทีมงานตรวจแล้วยังจัดส่งให้ไม่ได้ในรอบนี้ ถ้ามีคำถามทักแชตแอดมินได้เลยนะคะ</p>` : `<ol class="fr-steps">${["ได้รับข้อมูลแล้ว", "กำลังจัดส่ง", "ได้รับของแล้ว", "ให้คะแนนแล้ว"].map((t, i) => `<li class="${i <= at ? "on" : ""}">${t}</li>`).join("")}</ol>`}
+        ${m.tracking ? `<div class="acc"><span>เลขพัสดุ</span><b translate="no">${esc(m.tracking)}</b><button class="mini line" type="button" data-act="copynum" data-v="${esc(m.tracking)}">คัดลอก</button></div>` : ""}
+        ${m.status === "received" ? `<p class="desc" style="margin:0">อีกไม่กี่วันเราจะส่งการ์ดให้คะแนนในแชต LINE กดดาวแล้วรับคูปองส่วนลดได้เลยค่ะ</p>` : ""}
+        ${m.rating ? `<p class="desc" style="margin:0">คุณให้ ${"★".repeat(m.rating)} ขอบคุณมากค่ะ <button type="button" class="desc" data-act="nav" data-to="#rewards" style="text-decoration:underline">ดูคูปองของฉัน</button></p>` : ""}</div>
+      <div class="box"><h3>ข้อมูลของฉัน</h3>
+        <div class="desc" translate="no">${esc(m.name)} · ${esc(m.phone)}<br>${esc(m.address)}</div>
+        <label class="check" style="margin:0;align-items:flex-start"><input type="checkbox" data-frmk ${m.marketing ? "checked" : ""}> <span>รับข่าวสารและโปรโมชั่นทาง LINE ตามหมวดที่สนใจ</span></label>
+        ${m.status === "new" ? `<button class="btn line" type="button" data-act="fredit">แก้ไขข้อมูล</button>` : `<p class="desc" style="margin:0">ส่งของแล้ว แก้ที่อยู่ไม่ได้ ถ้าต้องการเปลี่ยนทักแชตแอดมินนะคะ</p>`}
+        <button type="button" class="desc" data-act="frdel" style="text-decoration:underline">ลบข้อมูลของฉัน</button>
+        <a class="desc" href="#privacy" style="text-decoration:underline">นโยบายความเป็นส่วนตัว</a></div>`}
+      <div class="box" style="background:none;border:0;box-shadow:none;padding:0"><button class="btn line" type="button" data-act="nav" data-to="#home">ไปช้อปต่อ</button></div>`;
+  }
+  if (!m && !x.open) return `<div class="fr-hero"><div class="cele">🎁</div><h2>ปิดรับลงทะเบียนชั่วคราว</h2><p>ติดตามรอบใหม่ได้ทาง LINE @ponponco นะคะ</p></div>`;
+  if (!m && x.left === 0) return `<div class="fr-hero"><div class="cele">🎁</div><h2>ของฟรีเดือนนี้หมดแล้ว</h2><p>รอบหน้าเปิดต้นเดือนถัดไปนะคะ</p></div>`;
+  const f = frForm();
+  return `<div class="fr-hero"><div class="cele">🎁</div><h2>${m ? "แก้ไขข้อมูล" : "ลงทะเบียนรับฟรี!"}</h2><p>${esc(x.title)} · ส่งฟรีทั่วไทย${x.left !== null && !m ? ` · เหลือ <b>${x.left}</b> ชุดเดือนนี้` : ""}</p></div>
+    <div class="box fr-why"><h3>เราเก็บข้อมูลไปทำอะไร</h3>
+      <ul class="gl"><li>📦 ส่งสินค้าตัวอย่างไปให้คุณ (ชื่อ เบอร์ ที่อยู่)</li><li>⭐ ถามความเห็นหลังได้ของ 1 ครั้งทาง LINE</li><li>💌 ส่งโปรเฉพาะหมวดที่สนใจ เฉพาะเมื่อคุณยินยอม</li></ul>
+      <p class="desc" style="margin:0">เก็บไม่เกิน 2 ปี แก้ไขหรือลบเองได้ที่หน้านี้ทุกเมื่อ · <a href="#privacy" style="text-decoration:underline">นโยบายความเป็นส่วนตัว</a></p></div>
+    <div class="box"><h3>ข้อมูลจัดส่ง</h3>
+      <label class="fld">ชื่อ-นามสกุลผู้รับ<input data-fr="name" maxlength="100" autocomplete="name" value="${esc(f.name)}"></label>
+      <label class="fld">เบอร์โทร<input data-fr="phone" type="tel" inputmode="tel" maxlength="20" autocomplete="tel" value="${esc(f.phone)}"></label>
+      <label class="fld">ที่อยู่ (รวมรหัสไปรษณีย์ 5 หลัก ส่งเฉพาะในไทย)<textarea data-fr="address" rows="3" maxlength="500" autocomplete="street-address">${esc(f.address)}</textarea></label></div>
+    <div class="box"><h3>หมวดที่สนใจ <small class="desc">(เลือกได้หลายอัน อย่างน้อย 1)</small></h3>
+      <div class="chips">${x.interests.map(t => `<button class="chip" type="button" data-act="frint" data-v="${esc(t)}" aria-pressed="${f.interests.includes(t)}">${f.interests.includes(t) ? "✓ " : ""}${esc(t)}</button>`).join("")}</div></div>
+    <div class="box"><h3>สินค้าที่ซื้อซ้ำบ่อยที่สุด <small class="desc">(ไม่บังคับ)</small></h3>
+      <div class="chips">${FR_REPEAT.map(t => `<button class="chip" type="button" data-act="frrep" data-v="${esc(t)}" aria-pressed="${f.repeatItem === t}">${esc(t)}</button>`).join("")}</div>
+      <label class="fld">หรือพิมพ์เอง<input data-fr="repeatItem" maxlength="60" value="${esc(f.repeatItem)}" placeholder="เช่น ถุงซิปล็อก"></label></div>
+    <div class="box">
+      <label class="check" style="margin:0;align-items:flex-start"><input type="checkbox" data-fr="consentData" ${f.consentData ? "checked" : ""}> <span><b>(จำเป็น)</b> ยินยอมให้ บริษัท ปอนปอน แอนด์ โค จำกัด ใช้ชื่อ เบอร์โทร และที่อยู่ เพื่อส่งสินค้าตัวอย่างและสอบถามความเห็นหลังได้รับ ตาม<a href="#privacy" style="text-decoration:underline">นโยบายความเป็นส่วนตัว</a></span></label>
+      <label class="check" style="margin:0;align-items:flex-start"><input type="checkbox" data-fr="consentMarketing" ${f.consentMarketing ? "checked" : ""}> <span>(ไม่บังคับ) ยินดีรับข่าวสารและโปรโมชั่นทาง LINE ตามหมวดที่สนใจ ไม่ติ๊กก็ยังรับของฟรีได้</span></label>
+      <p class="warn" id="fr-err" style="margin:0" ${FR.err ? "" : "hidden"}>${esc(FR.err)}</p>
+      <button class="btn" type="button" data-act="frsave" ${FR.busy ? "disabled" : ""}>${FR.busy ? "กำลังส่ง..." : m ? "บันทึกการแก้ไข" : "ลงทะเบียนรับฟรี"}</button>
+      ${m ? `<button class="btn line" type="button" data-act="frcancel">ยกเลิก</button>` : ""}</div>`;
+}
+function frInput(t){
+  if (t.dataset.frmk !== undefined) return frMarketing(t.checked), true;
+  if (t.dataset.fr === undefined || !FR.f) return false;
+  FR.f[t.dataset.fr] = t.type === "checkbox" ? t.checked : t.value; return true;
+}
+function frCheck(f){
+  const ph = String(f.phone || "").replace(/\D/g, "");
+  if (String(f.name || "").trim().length < 2) return "กรุณากรอกชื่อผู้รับนะคะ";
+  if (!/^0\d{8,9}$/.test(ph)) return "เบอร์โทรไม่ถูกต้องค่ะ (ตัวเลข 9–10 หลัก ขึ้นต้นด้วย 0)";
+  if (String(f.address || "").trim().length < 15 || !/(^|\D)[1-9]\d{4}(\D|$)/.test(f.address)) return "กรุณากรอกที่อยู่ให้ครบ พร้อมรหัสไปรษณีย์ 5 หลักนะคะ";
+  if (!f.interests.length) return "กรุณาเลือกหมวดที่สนใจอย่างน้อย 1 หมวดนะคะ";
+  if (!f.consentData) return "กรุณากดยินยอม (ข้อจำเป็น) ก่อนนะคะ";
+  return "";
+}
+async function frSave(){
+  const f = frForm(), bad = frCheck(f);
+  if (bad){ FR.err = bad; return keepRender(); }
+  FR.busy = true; FR.err = ""; keepRender();
+  try {
+    const isNew = !FR.data.mine;
+    const res = await api("api/free", {method: "POST", body: JSON.stringify({...f, src: frSrc()})}, await idToken());
+    FR.data.mine = res.mine; FR.f = null; FR.edit = false; FR.busy = false;
+    if (isNew && res.code){
+      try { if (liff.isInClient()) await liff.sendMessages([{type: "text", text: "ลงทะเบียนรับของฟรี #" + res.code}]); } catch (e) {}
+      openSheet(`<div class="cele">🎉</div><h2>ลงทะเบียนเรียบร้อย!</h2><p>รหัสของคุณ <b>${esc(res.code)}</b><br>ทีมงานจะตรวจข้อมูลแล้วส่งของให้เร็ว ๆ นี้ ติดตามสถานะได้ที่หน้านี้ และในแชต LINE ค่ะ</p>
+        <button class="btn" type="button" data-act="closesheet">ตกลง</button>`);
+    } else toast(res.note || "บันทึกแล้ว");
+    memberAt = 0;
+  } catch (e) { FR.busy = false; FR.err = e.message; }
+  keepRender();
+}
+async function frMarketing(on){
+  try { const m = FR.data.mine; const res = await api("api/free", {method: "POST", body: JSON.stringify({name: m.name, phone: m.phone, address: m.address, interests: m.interests, repeatItem: m.repeatItem, consentData: true, consentMarketing: on})}, await idToken());
+    FR.data.mine = res.mine; toast(on ? "เปิดรับข่าวสารแล้ว" : "ปิดรับข่าวสารแล้ว"); }
+  catch (e) { toast(e.message); }
+  keepRender();
+}
+function frClick(a, b){
+  if (a === "frreload") return frLoad();
+  if (a === "frint"){ const f = frForm(), v = b.dataset.v, i = f.interests.indexOf(v); if (i >= 0) f.interests.splice(i, 1); else f.interests.push(v); FR.err = ""; return keepRender(); }
+  if (a === "frrep"){ const f = frForm(); f.repeatItem = f.repeatItem === b.dataset.v ? "" : b.dataset.v; return keepRender(); }
+  if (a === "frsave") return frSave();
+  if (a === "fredit"){ FR.edit = true; FR.f = null; FR.err = ""; return keepRender(); }
+  if (a === "frcancel"){ FR.edit = false; FR.f = null; FR.err = ""; return keepRender(); }
+  if (a === "frdel") return openSheet(`<h2>ลบข้อมูลของฉัน?</h2><p>${FR.data.mine && FR.data.mine.status === "new" ? "ระบบจะยกเลิกการลงทะเบียนรับของฟรี และลบชื่อ เบอร์ และที่อยู่ของคุณ" : "ระบบจะลบชื่อ เบอร์ และที่อยู่ของคุณ (ของที่ส่งไปแล้วไม่กระทบ)"}</p>
+    <button class="btn" type="button" data-act="frdelgo">ลบข้อมูล</button><button class="btn line" type="button" data-act="closesheet">ยกเลิก</button>`);
+  if (a === "frdelgo"){ closeSheet(); toast("กำลังลบ..."); return idToken().then(t => api("api/free/delete", {method: "POST", body: "{}"}, t)).then(() => { toast("ลบข้อมูลแล้ว"); FR.f = null; frLoad(); }).catch(e => toast(e.message)); }
+}
+
+/* ---------- หน้า: นโยบายความเป็นส่วนตัว (#privacy) ---------- */
+let PV = null;
+function viewPrivacy(){
+  if (!PV){ PV = {}; fetch(CONFIG.API_URL + "api/free/policy").then(r => r.json()).then(d => { PV = d || {}; if (route().page === "privacy") keepRender(); }).catch(() => 0); }
+  const mail = PV.contactEmail ? ` หรืออีเมล <span translate="no">${esc(PV.contactEmail)}</span>` : "";
+  const sec = (h, body) => `<h3>${h}</h3>${body}`;
+  const ul = items => `<ul class="pv-ul">${items.map(x => `<li>${x}</li>`).join("")}</ul>`;
+  return `<div class="box pv"><h2 style="margin:0">นโยบายความเป็นส่วนตัว</h2>
+    <p>บริษัท ปอนปอน แอนด์ โค จำกัด ("PonPon" หรือ "เรา") เป็นผู้ควบคุมข้อมูลส่วนบุคคลที่เก็บผ่านร้านค้าใน LINE (LINE OA @ponponco และหน้าร้าน PonPon Shopping Center) นโยบายนี้อธิบายว่าเราเก็บข้อมูลอะไร ใช้ทำอะไร แชร์ให้ใคร เก็บนานเท่าไร และสิทธิของคุณตามพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562</p>
+    ${PV.policyDate ? `<p class="desc">มีผลตั้งแต่ ${esc(PV.policyDate)}</p>` : ""}
+    ${sec("1. ข้อมูลที่เราเก็บ", ul(["ข้อมูลบัญชี LINE: รหัสผู้ใช้และชื่อที่แสดง (เมื่อเข้าสู่ระบบ)", "ข้อมูลติดต่อและจัดส่ง: ชื่อ เบอร์โทร ที่อยู่ (เมื่อสั่งซื้อหรือลงทะเบียน)", "ข้อมูลคำสั่งซื้อ: สินค้า ยอดเงิน โค้ดส่วนลด เลขพัสดุ บัญชีรับเงินคืน (เมื่อขอคืนเงิน)", "ข้อมูลการชำระเงิน: ยอด เวลาโอน ชื่อผู้โอน และเลขอ้างอิงจากสลิป (เราไม่เก็บรูปสลิป)", "ข้อมูลสมาชิก: แต้ม ระดับ คูปอง การชวนเพื่อน ชื่อเล่น วันเกิด (ถ้าคุณให้)", "ข้อมูลรับสินค้าตัวอย่าง: หมวดที่สนใจ สินค้าที่ซื้อซ้ำ ช่องทางที่กดลิงก์มา คะแนนความพึงพอใจ", "ข้อความและรูปที่คุณส่งถึง LINE OA"]))}
+    ${sec("2. เราใช้ข้อมูลทำอะไร", ul(["รับคำสั่งซื้อ ตรวจการชำระเงิน จัดส่ง คืนเงิน และติดต่อเรื่องคำสั่งซื้อ (เพื่อปฏิบัติตามสัญญา)", "ดูแลบัญชีสมาชิก แต้ม ระดับ คูปอง และของขวัญสมาชิก (เพื่อปฏิบัติตามสัญญา)", "สิทธิพิเศษและของขวัญวันเกิด (ความยินยอม)", "ส่งสินค้าตัวอย่างและสอบถามความพึงพอใจหลังได้รับ (ความยินยอม)", "ส่งข่าวสาร โปรโมชั่น และข้อเสนอตามหมวดที่สนใจ (ความยินยอมแยกต่างหาก ไม่บังคับ)", "ป้องกันการทุจริต เช่น สลิปซ้ำ หรือลงทะเบียนรับของฟรีซ้ำ (ประโยชน์โดยชอบด้วยกฎหมาย)", "วัดผลแคมเปญและปรับปรุงสินค้าแบบภาพรวม (ประโยชน์โดยชอบด้วยกฎหมาย)", "จัดทำบัญชีและภาษี (หน้าที่ตามกฎหมาย)"]))}
+    ${sec("3. ผู้ที่เราส่งข้อมูลให้", `<p>เราไม่ขายข้อมูลของคุณ แต่ใช้ผู้ให้บริการต่อไปนี้ ซึ่งเห็นข้อมูลเท่าที่จำเป็นต่องานนั้น</p>` + ul(["LINE (LY Corporation): เข้าสู่ระบบ แชต และหน้าร้านใน LINE", "Cloudflare: เซิร์ฟเวอร์และฐานข้อมูลของระบบร้าน", "ZORT: ระบบจัดการคำสั่งซื้อและคลังสินค้า", "Thunder: ตรวจสอบสลิปโอนเงิน", "Google: ชีตสำหรับทีมงานตรวจรายชื่อผู้รับสินค้าตัวอย่าง (เข้าได้เฉพาะทีมที่เกี่ยวข้อง)", "บริษัทขนส่ง: ชื่อ เบอร์ และที่อยู่บนพัสดุ", "หน่วยงานราชการ เมื่อกฎหมายกำหนด"]) + `<p>ผู้ให้บริการบางรายอาจเก็บข้อมูลบนเซิร์ฟเวอร์นอกประเทศไทย เราเลือกใช้ผู้ให้บริการที่มีมาตรฐานการคุ้มครองข้อมูลที่เหมาะสม</p>`)}
+    ${sec("4. เก็บนานเท่าไร", ul(["คำสั่งซื้อและหลักฐานการชำระเงิน: ตามที่กฎหมายบัญชีและภาษีกำหนด", "ข้อมูลสมาชิก: จนกว่าคุณขอลบ หรือไม่มีการใช้งาน 2 ปี", "ข้อมูลรับสินค้าตัวอย่าง: 2 ปีนับจากวันลงทะเบียน หรือจนกว่าคุณขอลบ", "ความยินยอมรับข่าวสาร: จนกว่าคุณถอนความยินยอม"]) + `<p>พ้นกำหนด เราจะลบหรือทำให้ระบุตัวคนไม่ได้ เก็บไว้เฉพาะสถิติภาพรวม</p>`)}
+    ${sec("5. สิทธิของคุณ", ul(["ขอดูและขอสำเนาข้อมูลของคุณ", "ขอแก้ไขข้อมูลให้ถูกต้อง (แก้เองได้ในหน้า \"ข้อมูลสมาชิก\" และ \"รับของฟรี\")", "ขอลบข้อมูล (กดลบเองได้ในหน้าเดียวกัน ยกเว้นข้อมูลที่กฎหมายบังคับให้เก็บ)", "ถอนความยินยอมได้ทุกเมื่อ โดยไม่กระทบการสั่งซื้อที่เกิดขึ้นแล้ว", "คัดค้านการใช้ข้อมูล ขอให้ระงับการใช้ และขอให้โอนย้ายข้อมูล", "ร้องเรียนต่อสำนักงานคณะกรรมการคุ้มครองข้อมูลส่วนบุคคล (สคส.)"]) + `<p>ใช้สิทธิได้โดยทักแชต LINE OA @ponponco${mail} เราจะตอบกลับภายใน 30 วัน</p>`)}
+    ${sec("6. การดูแลข้อมูล", `<p>ข้อมูลส่งผ่านการเชื่อมต่อแบบเข้ารหัส เฉพาะแอดมินที่ได้รับอนุญาตเท่านั้นที่เข้าดูข้อมูลลูกค้าได้ และทุกการแก้ไขในหลังบ้านมีบันทึกว่าใครทำ</p>`)}
+    ${sec("7. ผู้เยาว์", `<p>ผู้ที่อายุต่ำกว่า 20 ปี ควรได้รับความยินยอมจากผู้ปกครองก่อนสมัครสมาชิกหรือลงทะเบียนรับสินค้าตัวอย่าง</p>`)}
+    ${sec("8. การเปลี่ยนแปลงนโยบาย", `<p>เมื่อมีการเปลี่ยนแปลงสำคัญ เราจะแจ้งในหน้าร้าน LINE และขอความยินยอมใหม่เมื่อจำเป็น</p>`)}
+    ${sec("9. ติดต่อเรา", `<p>บริษัท ปอนปอน แอนด์ โค จำกัด${PV.companyAddress ? " · " + esc(PV.companyAddress) : ""}${PV.contactEmail ? " · อีเมล " + esc(PV.contactEmail) : ""} · LINE OA @ponponco</p>`)}
+    <button class="btn line" type="button" data-act="back">กลับ</button></div>`;
+}
+
+/* ---------- หลังบ้าน: รับของฟรี ---------- */
+let FA = {state: "", data: null, err: "", filter: "new", sel: new Set(), set: null, q: ""};
+async function faLoad(){
+  FA.state = FA.data ? "refresh" : "loading"; FA.err = "";
+  try { FA.data = await api("api/admin/free", {method: "GET"}, await idToken()); FA.set = JSON.parse(JSON.stringify(FA.data.settings)); FA.state = "ok"; }
+  catch (e) { FA.state = "error"; FA.err = e.message; }
+  if (route().page === "admin" && AD.tab === "free") keepRender();
+}
+async function faPost(body, msg){
+  toast("กำลังทำรายการ...");
+  try { const res = await api("api/admin/free", {method: "POST", body: JSON.stringify(body)}, await idToken()); FA.data = res; FA.set = JSON.parse(JSON.stringify(res.settings)); FA.sel.clear();
+    if (res.result){ const r = res.result; openSheet(`<h2>สร้างออเดอร์ส่งของ</h2><p>สำเร็จ <b>${r.ok.length}</b> รายการ${r.ok.length ? `<br><small class="desc">${r.ok.map(x => esc(x.number)).join(", ")}</small>` : ""}</p>${r.fail.length ? `<p class="warn">ไม่สำเร็จ ${r.fail.length} รายการ<br>${r.fail.map(x => esc(x.code + ": " + x.why)).join("<br>")}</p>` : ""}<p class="desc">ออเดอร์อยู่ใน ZORT แล้ว (ยอด ฿0 ช่องทาง LINE) แพ็กและส่งตามปกติได้เลย พอ ZORT ส่งสำเร็จ ระบบจะเปลี่ยนเป็น "ได้ของแล้ว" เอง</p><button class="btn" type="button" data-act="closesheet">ตกลง</button>`); $("toast").hidden = true; }
+    else toast(msg || "บันทึกแล้ว");
+  } catch (e) { toast(e.message); }
+  keepRender();
+}
+const FA_ST = ["new", "shipping", "received", "feedback", "bought", "lapsed", "rejected"];
+const faRows = () => { const q = FA.q.trim().toLowerCase(); return FA.data.rows.filter(r => (FA.filter === "all" || r.status === FA.filter) && (!q || [r.code, r.name, r.phone, r.lineName, r.address, r.src].join(" ").toLowerCase().includes(q))); };
+function adFree(){
+  if (!FA.state) faLoad();
+  if (FA.state === "error") return `<div class="state">${esc(FA.err || "โหลดไม่สำเร็จ")}<br><br><button class="btn" type="button" data-act="ad-fareload">ลองใหม่</button></div>`;
+  if (!FA.data) return `<div class="state">กำลังโหลด...</div>`;
+  const x = FA.data, rows = faRows(), sel = rows.filter(r => FA.sel.has(r.code)), newRows = rows.filter(r => r.status === "new");
+  const link = s => x.liff + "&src=" + s;
+  return `<div class="box"><div class="acc"><h3 style="margin:0">🎁 รับของฟรี</h3><button class="mini line" type="button" data-act="ad-fareload">${FA.state === "refresh" ? "กำลังโหลด..." : "รีเฟรช"}</button></div>
+      <div class="fa-stats">${FA_ST.map(k => `<button type="button" class="fa-stat" data-act="ad-fafilter" data-k="${k}" aria-pressed="${FA.filter === k}"><b>${x.counts[k] || 0}</b><small>${esc(x.statuses[k])}</small></button>`).join("")}
+        <button type="button" class="fa-stat" data-act="ad-fafilter" data-k="all" aria-pressed="${FA.filter === "all"}"><b>${x.rows.length}</b><small>ทั้งหมด</small></button></div>
+      <p class="desc" style="margin:0">${x.settings.open ? "🟢 เปิดรับอยู่" : "🔴 ปิดรับอยู่"}${x.left !== null ? ` · เหลือเดือนนี้ ${x.left}/${x.settings.monthlyLimit} ชุด` : ""} · คะแนนเฉลี่ย ${x.rating.n ? x.rating.avg + " ★ (" + x.rating.n + " คน)" : "-"}</p></div>
+    <div class="box"><input id="fa-q" class="fa-q" placeholder="ค้นหา รหัส ชื่อ เบอร์ ที่อยู่" value="${esc(FA.q)}">
+      ${FA.filter === "new" || FA.filter === "all" ? `<div class="bo-btns"><button class="mini line" type="button" data-act="ad-faall">${newRows.length && newRows.every(r => FA.sel.has(r.code)) ? "ไม่เลือกทั้งหมด" : "เลือก \"ใหม่\" ทั้งหมด (" + newRows.length + ")"}</button>
+        <button class="mini" type="button" data-act="ad-faship" ${sel.length ? "" : "disabled"}>📦 สร้างออเดอร์ส่งของ (${sel.length})</button>
+        <button class="mini line" type="button" data-act="ad-fareject" ${sel.length ? "" : "disabled"}>ไม่ส่ง (${sel.length})</button></div>
+        <p class="desc" style="margin:0">ติ๊กคนที่ตรวจแล้วจะส่ง แล้วกด "สร้างออเดอร์ส่งของ" ระบบสร้างออเดอร์ ฿0 ใน ZORT ด้วยรหัส ${esc(x.settings.sku)} ให้คนละ 1 ชิ้น</p>` : ""}
+      <div class="items fa-list">${rows.length ? rows.slice(0, 300).map(r => `<div class="box bo-item fa-row" style="margin:0">
+        <div class="acc">${r.status === "new" ? `<label class="check" style="margin:0"><input type="checkbox" data-fasel="${esc(r.code)}" ${FA.sel.has(r.code) ? "checked" : ""}> <b translate="no">${esc(r.code)}</b></label>` : `<b translate="no">${esc(r.code)}</b>`}<span class="bo-st ${r.status === "new" ? "on" : r.status === "rejected" || r.status === "lapsed" ? "off" : "soon"}">${esc(r.statusText)}</span></div>
+        <span translate="no"><b>${esc(r.name || "(ลบข้อมูลแล้ว)")}</b> · ${esc(r.phone)}${r.lineName ? ` · LINE: ${esc(r.lineName)}` : ""}</span>
+        <span class="desc" translate="no">${esc(r.address)}</span>
+        <span class="desc">สนใจ: ${esc(r.interests.join(", ") || "-")}${r.repeatItem ? " · ซื้อซ้ำ: " + esc(r.repeatItem) : ""} · มาจาก: ${esc(r.src || "-")} · ${r.marketing ? "✅ รับข่าวสาร" : "ไม่รับข่าวสาร"}</span>
+        <span class="desc">ลงทะเบียน ${esc(dateText(r.createdAt))}${r.number ? " · ออเดอร์ " + esc(r.number) : ""}${r.tracking ? " · พัสดุ " + esc(r.tracking) : ""}${r.rating ? " · " + "★".repeat(r.rating) : ""}${r.askAt && !r.rating ? " · ส่งการ์ดให้ดาวแล้ว" : ""}</span>
+        <div class="bo-btns">${r.status === "new" ? `<button class="mini line" type="button" data-act="ad-fast" data-c="${esc(r.code)}" data-s="rejected">ไม่ส่ง</button>` : ""}
+          ${r.status === "rejected" ? `<button class="mini line" type="button" data-act="ad-fast" data-c="${esc(r.code)}" data-s="new">กลับเป็น "ใหม่"</button>` : ""}
+          ${r.status === "shipping" ? `<button class="mini line" type="button" data-act="ad-fast" data-c="${esc(r.code)}" data-s="received">ได้ของแล้ว (กดเอง)</button>` : ""}
+          ${r.phone ? `<button class="mini line" type="button" data-act="copynum" data-v="${esc(r.name + "\n" + r.phone + "\n" + r.address)}">คัดลอกที่อยู่</button>` : ""}</div></div>`).join("") : `<div class="state">ไม่มีรายการ</div>`}</div>
+      <button class="btn line" type="button" data-act="ad-facsv">⬇️ ดาวน์โหลด Excel (CSV)</button></div>
+    <div class="box"><h3>ลิงก์ลงทะเบียนแยกตามช่องทาง</h3><p class="desc" style="margin:0">ใช้ลิงก์ต่างกันในแต่ละช่องทาง ระบบจะรู้ว่าลูกค้ามาจากไหน (ดูได้ในช่อง "มาจาก")</p>
+      ${[["richmenu", "Rich Menu"], ["fb", "Facebook"], ["ig", "Instagram"], ["tiktok", "TikTok"], ["shopee", "การ์ดในกล่อง Shopee"], ["line", "แชต/บรอดแคสต์ LINE"]].map(([k, n]) => `<div class="acc"><span>${n}<br><small class="desc" translate="no">${esc(link(k))}</small></span><button class="mini line" type="button" data-act="copynum" data-v="${esc(link(k))}">คัดลอก</button></div>`).join("")}</div>
+    <div class="box"><h3>Google Sheets (ดูรายชื่อ/รีเช็ก)</h3>
+      ${x.sheetUrl ? `<p class="desc" style="margin:0">1) สร้าง Google Sheet ใหม่ › ส่วนขยาย › Apps Script › ลบโค้ดเดิม วางโค้ดด้านล่าง › บันทึก › กด Run ฟังก์ชัน <b>setup</b> 1 ครั้ง (อนุญาตสิทธิ์) ชีตจะอัปเดตเองทุกชั่วโมง<br>2) ลิงก์นี้มีรหัสลับ อย่าแชร์ ถ้าหลุดกด "เปลี่ยนลิงก์" ลิงก์เก่าจะใช้ไม่ได้ทันที</p>
+        <p class="msg" translate="no" style="font-size:11.5px;max-height:160px;overflow:auto">${esc(faScript(x.sheetUrl))}</p>
+        <div class="bo-btns"><button class="mini" type="button" data-act="copynum" data-v="${esc(faScript(x.sheetUrl))}">คัดลอกโค้ด Apps Script</button><button class="mini line" type="button" data-act="ad-fasheet">เปลี่ยนลิงก์</button></div>`
+      : `<p class="desc" style="margin:0">กดสร้างลิงก์ แล้วระบบจะให้โค้ดสำหรับวางใน Google Sheets ชีตจะดึงรายชื่อทุกชั่วโมง (อ่านอย่างเดียว แก้ในชีตไม่ย้อนกลับมาระบบ)</p><button class="btn line" type="button" data-act="ad-fasheet">สร้างลิงก์ Google Sheets</button>`}</div>
+    ${faSettings()}`;
+}
+const faScript = url => `const URL = "${url}";
+function setup(){ ScriptApp.getProjectTriggers().forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("pull").timeBased().everyHours(1).create(); pull(); }
+function onOpen(){ SpreadsheetApp.getUi().createMenu("PonPon").addItem("อัปเดตตอนนี้", "pull").addToUi(); }
+function pull(){
+  const d = JSON.parse(UrlFetchApp.fetch(URL).getContentText());
+  const sh = SpreadsheetApp.getActive().getSheetByName("รับของฟรี") || SpreadsheetApp.getActive().insertSheet("รับของฟรี");
+  sh.clearContents(); sh.getRange(1, 1, d.rows.length, d.rows[0].length).setNumberFormat("@").setValues(d.rows);
+  sh.setFrozenRows(1); sh.getRange(1, 1, 1, d.rows[0].length).setFontWeight("bold"); sh.getRange(1, d.rows[0].length + 2).setValue("อัปเดต " + d.updated);
+}`;
+function faSettings(){
+  const s = FA.set, r = s.reward;
+  const n = (k, label, v, extra = "") => `<label class="fld">${label}<input data-fs="${k}" type="number" inputmode="numeric" value="${esc(v)}" ${extra}></label>`;
+  const t = (k, label, v, ph = "") => `<label class="fld">${label}<input data-fs="${k}" value="${esc(v)}" placeholder="${esc(ph)}"></label>`;
+  const a = (k, label, v) => `<label class="fld">${label}<textarea data-fs="${k}" rows="3">${esc(v)}</textarea></label>`;
+  return `<div class="box"><h3>⚙️ ตั้งค่ารับของฟรี</h3>
+    <label class="check" style="margin:0"><input type="checkbox" data-fs="open" ${s.open ? "checked" : ""}> เปิดรับลงทะเบียน</label>
+    ${t("title", "ชื่อของฟรี (ลูกค้าเห็น)", s.title)}
+    ${t("sku", "รหัสสินค้าใน ZORT ที่ใช้ตัดสต็อก", s.sku)}
+    ${n("monthlyLimit", "จำนวนชุดต่อเดือน (0 = ไม่จำกัด)", s.monthlyLimit, 'min="0"')}
+    <b style="font-size:13.5px">การ์ดให้ดาวและรางวัล</b>
+    ${n("feedbackDays", "ส่งการ์ดให้ดาวหลังได้ของกี่วัน", s.feedbackDays, 'min="0" max="60"')}
+    ${t("askText", "ข้อความบนการ์ดให้ดาว", s.askText)}
+    ${t("image", "รูปบนการ์ดให้ดาว (ลิงก์ https ไม่ใส่ก็ได้)", s.image, "https://...")}
+    ${n("reward.value", "คูปองขอบคุณ: ลด (บาท) — 0 = ไม่ให้คูปอง", r.value, 'min="0"')}
+    ${n("reward.min", "คูปองขอบคุณ: ยอดขั้นต่ำ (บาท)", r.min, 'min="0"')}
+    ${n("reward.days", "คูปองขอบคุณ: ใช้ได้กี่วัน", r.days, 'min="1"')}
+    ${a("thanksText", "ข้อความการ์ดขอบคุณ (ตอบทันทีหลังกดดาว)", s.thanksText)}
+    ${a("confirmText", "ข้อความยืนยันหลังลงทะเบียน (ตอบในแชต)", s.confirmText)}
+    ${n("lapseDays", "นับว่า \"ไม่ซื้อ\" เมื่อได้ของแล้วเกินกี่วัน", s.lapseDays, 'min="7"')}
+    <b style="font-size:13.5px">หน้านโยบายความเป็นส่วนตัว</b>
+    ${t("companyAddress", "ที่อยู่บริษัท", s.companyAddress)}
+    ${t("contactEmail", "อีเมลติดต่อเรื่องข้อมูลส่วนตัว", s.contactEmail, "เช่น hello@ponpon.co.th")}
+    <label class="fld">วันที่นโยบายมีผล<input data-fs="policyDate" type="date" value="${esc(s.policyDate)}"></label>
+    <button class="btn" type="button" data-act="ad-fasave">บันทึกตั้งค่า</button></div>`;
+}
+function faInput(t){
+  if (t.dataset.fasel !== undefined){ if (t.checked) FA.sel.add(t.dataset.fasel); else FA.sel.delete(t.dataset.fasel); keepRender(); return true; }
+  if (t.id === "fa-q"){ FA.q = t.value; keepRender(); return true; }
+  if (t.dataset.fs === undefined || !FA.set) return false;
+  const k = t.dataset.fs, v = t.type === "checkbox" ? t.checked : t.type === "number" ? Number(t.value) : t.value;
+  if (k.startsWith("reward.")) FA.set.reward[k.slice(7)] = v; else FA.set[k] = v;
+  return true;
+}
+function faCsv(){
+  const head = ["รหัส", "วันที่ลงทะเบียน", "สถานะ", "ชื่อ", "เบอร์", "ที่อยู่", "ชื่อ LINE", "หมวดที่สนใจ", "สินค้าซื้อซ้ำ", "มาจาก", "รับข่าวสาร", "เลขออเดอร์", "เลขพัสดุ", "ดาว"];
+  const q = v => '"' + String(v ?? "").replace(/"/g, '""') + '"';
+  const lines = [head, ...faRows().map(r => [r.code, new Date(r.createdAt).toLocaleString("th-TH"), r.statusText, r.name, "'" + r.phone, r.address, r.lineName, r.interests.join(", "), r.repeatItem, r.src, r.marketing ? "ยินยอม" : "ไม่", r.number, r.tracking, r.rating || ""])].map(l => l.map(q).join(","));
+  const blob = new Blob(["﻿" + lines.join("\r\n")], {type: "text/csv;charset=utf-8"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "ponpon-free-" + today() + ".csv"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+function faClick(a, b){
+  if (a === "ad-fareload") return faLoad();
+  if (a === "ad-fafilter"){ FA.filter = b.dataset.k; FA.sel.clear(); return keepRender(); }
+  if (a === "ad-faall"){ const nr = faRows().filter(r => r.status === "new"), all = nr.length && nr.every(r => FA.sel.has(r.code)); FA.sel.clear(); if (!all) nr.forEach(r => FA.sel.add(r.code)); return keepRender(); }
+  if (a === "ad-faship"){ const c = [...FA.sel]; if (!c.length) return; return openSheet(`<h2>สร้างออเดอร์ส่งของ ${c.length} รายการ?</h2><p>ระบบจะสร้างออเดอร์ ฿0 ใน ZORT ด้วย ${esc(FA.data.settings.sku)} คนละ 1 ชิ้น และตัดสต็อกใน ZORT</p><p class="desc">${c.map(esc).join(", ")}</p><button class="btn" type="button" data-act="ad-fashipgo">ยืนยันสร้างออเดอร์</button><button class="btn line" type="button" data-act="closesheet">ยกเลิก</button>`); }
+  if (a === "ad-fashipgo"){ closeSheet(); return faPost({action: "ship", codes: [...FA.sel]}); }
+  if (a === "ad-fareject"){ const c = [...FA.sel]; closeSheet(); return (async () => { for (const code of c) await api("api/admin/free", {method: "POST", body: JSON.stringify({action: "status", code, status: "rejected"})}, await idToken()).catch(() => 0); FA.sel.clear(); toast("ตั้งเป็น \"ไม่ส่ง\" แล้ว"); faLoad(); })(); }
+  if (a === "ad-fast") return faPost({action: "status", code: b.dataset.c, status: b.dataset.s}, "เปลี่ยนสถานะแล้ว");
+  if (a === "ad-fasave") return faPost({action: "settings", value: FA.set}, "บันทึกตั้งค่าแล้ว");
+  if (a === "ad-fasheet") return faPost({action: "sheetkey"}, "สร้างลิงก์ใหม่แล้ว");
+  if (a === "ad-facsv") return faCsv();
+}
+
+/* ---------- หลังบ้าน: Rich Menu ---------- */
+let RMN = {state: "", data: null, err: "", img: {main: "", free: "", promo: ""}, busy: false};
+async function rmLoad(){
+  RMN.state = "loading"; RMN.err = "";
+  try { RMN.data = await api("api/admin/richmenu", {method: "GET"}, await idToken()); RMN.state = "ok"; }
+  catch (e) { RMN.state = "error"; RMN.err = e.message; }
+  if (route().page === "admin" && AD.tab === "richmenu") keepRender();
+}
+/* ย่อ/ครอปรูปเป็น 2500x1686 JPG ไม่เกิน 1 MB ก่อนอัปโหลด */
+function rmPrep(file){
+  return new Promise((ok, bad) => { const img = new Image(); img.onload = () => {
+    const W = 2500, H = 1686, c = document.createElement("canvas"); c.width = W; c.height = H;
+    const s = Math.max(W / img.width, H / img.height), w = img.width * s, h = img.height * s;
+    const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, W, H); g.drawImage(img, (W - w) / 2, 0, w, h);
+    let q = .92, out = c.toDataURL("image/jpeg", q); while (out.length * .75 > 1000000 && q > .5){ q -= .07; out = c.toDataURL("image/jpeg", q); }
+    URL.revokeObjectURL(img.src); ok(out); }; img.onerror = () => bad(new Error("เปิดรูปไม่ได้")); img.src = URL.createObjectURL(file); });
+}
+function adRichMenu(){
+  if (!RMN.state) rmLoad();
+  if (RMN.state === "error") return `<div class="state">${esc(RMN.err || "โหลดไม่สำเร็จ")}<br><br><button class="btn" type="button" data-act="ad-rmnreload">ลองใหม่</button></div>`;
+  const x = RMN.data, pages = [["main", "หน้า 1 · หน้าหลัก", "ช้อปเลย → หน้าร้าน · โซเชียล → linktr.ee · ติดต่อแอดมิน → พิมพ์ \"ติดต่อแอดมิน\""], ["free", "หน้า 2 · ลงทะเบียนฟรี", "ทั้งพื้นที่ใต้แถบที่อยู่ → ฟอร์มรับของฟรี"], ["promo", "หน้า 3 · โปรโมชั่น", "ทั้งพื้นที่ใต้แถบที่อยู่ → ร้าน Shopee"]];
+  const live = x && x.ids && x.ids["pp-main"] && x.defaultId === x.ids["pp-main"];
+  return `<div class="box"><h3>📱 Rich Menu 3 หน้า</h3>
+      ${!x ? `<p class="desc">กำลังโหลด...</p>` : `<p class="desc" style="margin:0">${live ? `🟢 ใช้งานอยู่ อัปโหลดล่าสุด ${esc(dateText(x.at))}` : x.at ? "⚠️ เมนูเริ่มต้นของ OA ไม่ใช่เมนูชุดนี้" : "ยังไม่เคยอัปโหลดจากหลังบ้าน"}</p>
+        ${x.aliases.length ? `<p class="desc" style="margin:0" translate="no">${x.aliases.filter(a => /^pp-/.test(a.alias)).map(a => esc(a.alias)).join(" · ")}</p>` : ""}`}
+      <p class="desc" style="margin:0">แท็บด้านบน 3 แท็บกดสลับหน้าได้ทุกหน้า รูปควรเป็น 2500×1686 px (ถ้าขนาดไม่ตรง ระบบจะย่อและครอปให้ และแปลงเป็น JPG ไม่เกิน 1 MB)</p></div>
+    ${pages.map(([k, t, d]) => `<div class="box"><h3>${t}</h3><p class="desc" style="margin:0">${esc(d)}</p>
+      ${RMN.img[k] ? `<img src="${RMN.img[k]}" alt="" style="width:100%;border-radius:12px;border:1.5px solid var(--ink)">` : ""}
+      <label class="btn line" style="text-align:center;cursor:pointer">${RMN.img[k] ? "เปลี่ยนรูป" : "เลือกรูป"}<input type="file" accept="image/png,image/jpeg" data-rmimg="${k}" hidden></label></div>`).join("")}
+    <div class="box"><button class="btn" type="button" data-act="ad-rmngo" ${RMN.img.main && RMN.img.free && RMN.img.promo && !RMN.busy ? "" : "disabled"}>${RMN.busy ? "กำลังสร้างเมนู..." : "อัปโหลดและเปิดใช้ Rich Menu"}</button>
+      <p class="desc" style="margin:0">ระบบจะสร้างเมนูชุดใหม่ ตั้งหน้าหลักเป็นเมนูเริ่มต้นของทุกคน แล้วลบชุดเก่าที่สร้างจากหลังบ้าน ลูกค้าเห็นเมนูใหม่ภายในไม่กี่นาที (บางคนต้องปิดแชตแล้วเปิดใหม่)</p></div>`;
+}
+function rmInput(t){
+  if (t.dataset.rmimg === undefined || !t.files || !t.files[0]) return false;
+  const k = t.dataset.rmimg; toast("กำลังเตรียมรูป...");
+  rmPrep(t.files[0]).then(u => { RMN.img[k] = u; $("toast").hidden = true; keepRender(); }).catch(e => toast(e.message));
+  return true;
+}
+function rmClick(a){
+  if (a === "ad-rmnreload") return rmLoad();
+  if (a === "ad-rmngo"){ RMN.busy = true; keepRender(); toast("กำลังสร้างเมนู...");
+    return idToken().then(t => api("api/admin/richmenu", {method: "POST", body: JSON.stringify({images: RMN.img})}, t))
+      .then(d => { RMN.data = d; RMN.busy = false; toast("เปิดใช้ Rich Menu ใหม่แล้ว"); keepRender(); })
+      .catch(e => { RMN.busy = false; toast(e.message); keepRender(); }); }
+}
+
 function adminClick(a, b){
   if (a.startsWith("ad-pd") || a.startsWith("ad-ph")) return pdClick(a, b);
   if (a.startsWith("ad-rp")) return rpClick(a, b);
@@ -1734,6 +2044,8 @@ function adminClick(a, b){
   if (a.startsWith("ad-ly")) return lyClick(a, b);
   if (a.startsWith("ad-shp")) return shpClick(a, b);
   if (a.startsWith("ad-nt")) return ntClick(a, b);
+  if (a.startsWith("ad-fa")) return faClick(a, b);
+  if (a.startsWith("ad-rmn")) return rmClick(a, b);
   if (a === "ad-reload") return adminLoad();
   if (a === "ad-tab"){ AD.tab = b.dataset.k; render(); return scrollTo(0, 0); }
   if (a === "ad-login"){
@@ -2444,7 +2756,7 @@ function viewPoints(){
 /* หน้า: คูปองและของขวัญของฉัน */
 function viewRewards(){
   const g = memberGate(); if (g) return g;
-  const m = MEMBER, src = s => /^tier/.test(s) ? "ของขวัญเลื่อนระดับ" : /^bday/.test(s) ? "ของขวัญวันเกิด" : s === "spin" ? "รางวัลวงล้อ" : s === "reg" ? "ของขวัญสมาชิกใหม่" : "";
+  const m = MEMBER, src = s => /^tier/.test(s) ? "ของขวัญเลื่อนระดับ" : /^bday/.test(s) ? "ของขวัญวันเกิด" : s === "spin" ? "รางวัลวงล้อ" : s === "reg" ? "ของขวัญสมาชิกใหม่" : /^free:/.test(s) ? "ขอบคุณที่ให้คะแนนของฟรี" : "";
   return `<div class="box"><h3>คูปองของฉัน</h3>${m.coupons.length ? m.coupons.map(c => `<button class="cp" type="button" data-act="usemine" data-code="${esc(c.code)}">
       <span class="l">${esc(couponFace(c))}</span><span class="m"><b>${esc(c.title)}</b><small>${esc(couponNote(c))}</small></span><span class="a">ใช้</span></button>`).join("")
       : `<p class="desc">ยังไม่มีคูปองส่วนตัว ลองหมุนวงล้อหรือสมัครสมาชิกรับคูปองได้นะคะ</p>`}</div>
@@ -2575,6 +2887,7 @@ function memberClick(a, b){
   if (a === "spingo") return spinGo();
   if (a === "refshare") return refShare();
   if (a === "pfsave") return pfSave();
+  if (a.startsWith("fr")) return frClick(a, b);
   if (a === "pfremove") return openSheet(`<h2>ลบข้อมูลส่วนตัว?</h2><p>ระบบจะลบชื่อเล่น เบอร์โทร และวันเกิด สิทธิ์วันเกิดจะใช้ไม่ได้ ส่วนแต้มและระดับสมาชิกยังอยู่ครบ</p>
       <button class="btn" type="button" data-act="pfremoveyes">ยืนยันลบข้อมูล</button><button class="btn line" type="button" data-act="closesheet">ไว้ก่อน</button>`);
   if (a === "pfremoveyes"){ closeSheet(); return idToken().then(t => api("api/member/profile", {method: "POST", body: JSON.stringify({remove: true})}, t)).then(r => { MEMBER = r.member; pf = null; toast("ลบข้อมูลแล้ว"); keepRender(); }).catch(e => toast(e.message)); }
@@ -2688,7 +3001,7 @@ document.addEventListener("input", e => {
   if (t.id === "dq"){ listQ = t.value; if (route().page !== "products"){ go("#products"); setTimeout(() => { const d = $("dq"); if (d){ d.focus(); d.setSelectionRange(d.value.length, d.value.length); } }, 0); } else if ($("plist")){ $("plist").innerHTML = productList(); const q = $("q"); if (q) q.value = listQ; } }
   if (t.id === "only"){ listOnly = t.checked; $("plist").innerHTML = productList(); }
 });
-document.addEventListener("change", e => { const t = e.target; if (t.dataset && t.dataset.nt && NT.ev){ NT.ev[t.dataset.nt] = t.checked; return; } if (t.id === "shp-file" && t.files && t.files[0]) return shpImport(t.files[0]); if (t.dataset && t.dataset.shp !== undefined && SHPI.rows){ shpInput(t); const i = Number(t.dataset.shp), p = byId.get(SHPI.assign[i].pid); t.style.borderColor = p ? "" : "var(--red)"; if (p && t.value.trim().toUpperCase().split(/\s+/)[0] === p.id && !t.value.includes(" ")) t.value = p.id + " " + p.title; return; } if (t.dataset && t.dataset.ly && route().page === "admin"){ lyInput(t); return keepRender(); } if (t.dataset && t.dataset.pf && pf){ pf[t.dataset.pf] = t.type === "checkbox" ? t.checked : t.value; return; } if (t.dataset && (t.dataset.e || t.dataset.upkey || t.dataset.pdshow) && adminInput(t)) return; if (t.dataset && t.dataset.slip && t.files && t.files[0]) uploadSlip(t.dataset.slip, t.files[0]); });
+document.addEventListener("change", e => { const t = e.target; if (t.dataset && route().page === "free" && frInput(t)) return; if (t.dataset && route().page === "admin" && (faInput(t) || rmInput(t))) return; if (t.dataset && t.dataset.nt && NT.ev){ NT.ev[t.dataset.nt] = t.checked; return; } if (t.id === "shp-file" && t.files && t.files[0]) return shpImport(t.files[0]); if (t.dataset && t.dataset.shp !== undefined && SHPI.rows){ shpInput(t); const i = Number(t.dataset.shp), p = byId.get(SHPI.assign[i].pid); t.style.borderColor = p ? "" : "var(--red)"; if (p && t.value.trim().toUpperCase().split(/\s+/)[0] === p.id && !t.value.includes(" ")) t.value = p.id + " " + p.title; return; } if (t.dataset && t.dataset.ly && route().page === "admin"){ lyInput(t); return keepRender(); } if (t.dataset && t.dataset.pf && pf){ pf[t.dataset.pf] = t.type === "checkbox" ? t.checked : t.value; return; } if (t.dataset && (t.dataset.e || t.dataset.upkey || t.dataset.pdshow) && adminInput(t)) return; if (t.dataset && t.dataset.slip && t.files && t.files[0]) uploadSlip(t.dataset.slip, t.files[0]); });
 document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.classList && e.target.classList.contains("ocard")) e.target.click(); if (e.key === "Escape") closeSheet(); if (e.key === "Enter" && e.target.id === "ly-q"){ e.preventDefault(); LY.q = e.target.value.trim(); return lyMembers(); } if (e.key === "Enter" && e.target.id === "code"){ e.preventDefault(); setCoupon(e.target.value.trim()); render(); } });
 let holdSheet = false; // ให้หน้าต่างแจ้งผลสั่งซื้อค้างไว้ตอนเปลี่ยนหน้า
 window.addEventListener("hashchange", () => { if (holdSheet) holdSheet = false; else closeSheet(); render(); });
@@ -2783,6 +3096,9 @@ start().then(async () => {
   const qs = new URLSearchParams(location.search);
   if (qs.get("page") === "orders" && route().page === "home") return go("#orders");
   if (qs.get("page") === "admin" && route().page === "home") return go("#admin");
+  if (qs.get("page") === "free" && route().page === "home"){ const sc = String(qs.get("src") || "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 30); if (sc) store.set("ponpon-free-src", sc); return go("#free"); }
+  if (["rewards", "privacy"].includes(qs.get("page")) && route().page === "home") return go("#" + qs.get("page"));
+  if (qs.get("page") === "coupons" && route().page === "home") return showCoupons();
   const no = qs.get("no") || "";
   if (qs.get("page") === "order" && /^LN-\d{6}-\d{3,}$/.test(no) && route().page === "home") return go("#order/" + no);
   const id = (qs.get("p") || "").toUpperCase();
